@@ -1,0 +1,364 @@
+@import url('https://fonts.googleapis.com/css2?family=Rubik+Spray+Paint&family=Jua&display=swap');
+@import url('https://fonts.googleapis.com/icon?family=Material+Icons');
+
+.main-topBar-container:has(~ .main-view-container main > .visualizer-container) {
+  pointer-events: none !important;
+}
+
+/* Full-screen dark container */
+.visualizer-container {
+  position: absolute;
+  inset: 0;
+  background: #0e111a;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+
+  /* Layout ratio knobs — tune these two and everything below stays in sync.
+     edge-pad   = breathing room kept from each side edge
+     center-gap = guaranteed empty space between the text panel and the
+                  visualizer, never less than this regardless of window size */
+  --edge-pad: 6%;
+  --center-gap: 8%;
+  /* Derived: max width either side can ever take. With edge-pad+edge-pad+
+     center-gap reserved, both halves split the remainder evenly, so the
+     two sides can mathematically never collide. */
+  --side-max: calc(50% - var(--edge-pad) - (var(--center-gap) / 2));
+}
+
+/* Dynamic album art backdrop */
+.visualizer-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.visualizer-backdrop::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.1) 100%);
+  z-index: 1;
+}
+
+.visualizer-backdrop__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: blur(60px) brightness(0.4);
+  transform: scale(1.1);
+}
+
+.visualizer-container > [data-tippy-root] {
+  transform: translate(-10px, 68px) !important;
+}
+
+/* Canvas: centered square in the right half */
+.visualizer-container > canvas {
+  position: absolute !important;
+  top: 50% !important;
+  left: auto !important;
+  right: var(--edge-pad) !important;
+  transform: translateY(-50%) !important;
+  width: auto !important;
+  height: 90% !important;
+  max-width: var(--side-max) !important;
+  aspect-ratio: 1 / 1 !important;
+  z-index: 2 !important;
+}
+
+
+/* Overlay: transparent, pinned to left side, vertically centered */
+.visualizer-overlay {
+  position: absolute;
+  top: 50%;
+  left: var(--edge-pad);
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.4rem, calc(var(--vis-h) * 0.015px), 1.5rem);
+  max-width: var(--side-max);
+  min-width: 220px;
+  width: clamp(220px, calc(var(--vis-w) * 0.34px), var(--side-max));
+  color: #fff;
+  z-index: 20;
+  pointer-events: none;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  backdrop-filter: none;
+  padding: 0;
+}
+
+/* "Now Playing" label — Jua font */
+.visualizer-overlay__label {
+  font-family: 'Jua', sans-serif;
+  font-size: clamp(0.7rem, calc(var(--vis-w) * 0.018px), 2.5rem);
+  font-weight: 400;
+  color: var(--theme-color, #8e95c2);
+  letter-spacing: 0.08em;
+  opacity: 0.5;
+  text-shadow: 0 0 10px color-mix(in srgb, var(--theme-color, #8e95c2) 40%, transparent);
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+}
+
+/* Wave dots next to Now Playing */
+.visualizer-overlay__wave {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  height: 1em;
+}
+
+.visualizer-overlay__wave-dot {
+  width: 4px;
+  height: 4px;
+  background: currentColor;
+  border-radius: 50%;
+  transform-origin: center;
+}
+
+.visualizer-overlay__wave.is-playing .visualizer-overlay__wave-dot {
+  animation: waveDot 0.6s ease-in-out infinite alternate;
+  animation-delay: calc(var(--i, 0) * 0.15s);
+}
+
+@keyframes waveDot {
+  0% { transform: translateY(3px) scale(0.6); opacity: 0.4; }
+  100% { transform: translateY(-3px) scale(1); opacity: 1; }
+}
+
+/* Song title — Rubik Spray Paint */
+.visualizer-overlay__title {
+  font-family: 'Rubik Spray Paint', cursive;
+  font-size: clamp(1.2rem, min(calc(var(--vis-w) * 0.045px), calc(var(--vis-w) * 0.5px / var(--title-length, 10))), 5rem);
+  font-weight: 400;
+  color: var(--theme-color, #ffffff);
+  line-height: 1.1;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  margin: 0.1rem 0 0 0;
+  text-shadow: 0 0 12px rgba(0,0,0,0.5), 0 0 10px color-mix(in srgb, var(--theme-color, #ffffff) 35%, transparent);
+}
+
+/* Artist name — Jua font, single line */
+.visualizer-overlay__artist {
+  font-family: 'Jua', sans-serif;
+  font-size: clamp(0.65rem, calc(var(--vis-w) * 0.022px), 2rem);
+  font-weight: 400;
+  color: var(--theme-color, #8e95c2);
+  margin-top: 0.1rem;
+  opacity: 0.55;
+  text-shadow: 0 0 8px color-mix(in srgb, var(--theme-color, #8e95c2) 35%, transparent);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Progress section */
+.visualizer-overlay__progress {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+  margin-top: clamp(0.8rem, calc(var(--vis-h) * 0.03px), 2rem);
+}
+
+.visualizer-overlay__time-row {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  font-family: 'Jua', sans-serif;
+  font-size: clamp(0.6rem, calc(var(--vis-w) * 0.012px), 0.95rem);
+  font-weight: 400;
+  color: var(--theme-color, #8e95c2);
+  opacity: 0.5;
+  text-shadow: 0 0 6px color-mix(in srgb, var(--theme-color, #8e95c2) 30%, transparent);
+}
+
+.visualizer-overlay__time-left,
+.visualizer-overlay__time-right {
+  min-width: 38px;
+}
+
+.visualizer-overlay__time-left {
+  text-align: left;
+}
+
+.visualizer-overlay__time-right {
+  text-align: right;
+}
+
+.visualizer-overlay__progress-bar-container {
+  position: relative;
+  width: 100%;
+  height: clamp(4px, calc(var(--vis-h) * 0.008px), 8px);
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 999px;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.visualizer-overlay__progress-bar-container:hover {
+  height: clamp(6px, calc(var(--vis-h) * 0.01px), 10px);
+}
+
+.visualizer-overlay__progress-bar {
+  height: 100%;
+  background: var(--theme-color, #8e95c2);
+  border-radius: 999px;
+  position: relative;
+  transition: width 0.15s linear;
+  box-shadow: 0 0 8px color-mix(in srgb, var(--theme-color, #8e95c2) 50%, transparent);
+}
+
+.visualizer-overlay__progress-bar::after {
+  content: '';
+  position: absolute;
+  right: calc(clamp(3px, calc(var(--vis-h) * 0.006px), 6px) * -1);
+  top: 50%;
+  transform: translateY(-50%);
+  width: clamp(8px, calc(var(--vis-h) * 0.012px), 14px);
+  height: clamp(8px, calc(var(--vis-h) * 0.012px), 14px);
+  background: var(--theme-color, #ffffff);
+  border-radius: 50%;
+  box-shadow: 0 0 6px color-mix(in srgb, var(--theme-color, #8e95c2) 70%, transparent);
+}
+
+/* Media controls — inside overlay, centered below progress bar */
+.visualizer-overlay__controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(0.6rem, calc(var(--vis-w) * 0.015px), 1.2rem);
+  margin-top: clamp(0.8rem, calc(var(--vis-h) * 0.02px), 1.5rem);
+  padding-bottom: clamp(0.5rem, calc(var(--vis-h) * 0.01px), 1rem);
+  width: 100%;
+  pointer-events: auto;
+}
+
+.visualizer-overlay__ctrl-btn {
+  background: none;
+  border: none;
+  color: var(--theme-color, #8e95c2);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  opacity: 0.7;
+  transition: opacity 0.2s, transform 0.15s;
+  pointer-events: auto;
+  text-shadow: 0 0 8px color-mix(in srgb, var(--theme-color, #8e95c2) 35%, transparent);
+}
+
+.visualizer-overlay__ctrl-btn:hover {
+  opacity: 1;
+}
+
+.visualizer-overlay__ctrl-btn:active {
+  transform: scale(0.9);
+}
+
+.visualizer-overlay__ctrl-btn--active {
+  color: var(--theme-color, #8e95c2);
+  opacity: 1;
+}
+
+.visualizer-overlay__ctrl-btn .material-icons {
+  font-size: clamp(1.3rem, calc(var(--vis-w) * 0.03px), 2.2rem);
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--theme-color, #8e95c2) 50%, transparent));
+}
+
+.visualizer-overlay__ctrl-btn--play .material-icons {
+  font-size: clamp(1.6rem, calc(var(--vis-w) * 0.04px), 2.8rem);
+}
+
+/* Size control — two-tone range track */
+.visualizer-overlay__control input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: clamp(4px, calc(var(--vis-h) * 0.006px), 6px);
+  background: linear-gradient(to right,
+    var(--theme-color, #8e95c2) 0% var(--val, 33%),
+    rgba(255, 255, 255, 0.2) var(--val, 33%) 100%);
+  border-radius: 999px;
+  outline: none;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.visualizer-overlay__control input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: clamp(10px, calc(var(--vis-h) * 0.014px), 16px);
+  height: clamp(10px, calc(var(--vis-h) * 0.014px), 16px);
+  background: var(--theme-color, #ffffff);
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 0 6px rgba(142, 149, 194, 0.6);
+}
+
+/* Volume control */
+.visualizer-overlay__volume-wrap {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.3rem, calc(var(--vis-w) * 0.008px), 0.6rem);
+}
+
+.visualizer-overlay__volume {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 0;
+  height: clamp(4px, calc(var(--vis-h) * 0.005px), 6px);
+  background: color-mix(in srgb, var(--theme-color, #8e95c2) 30%, transparent);
+  border-radius: 999px;
+  outline: none;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s, width 0.2s;
+}
+
+.visualizer-overlay__volume-wrap:hover .visualizer-overlay__volume {
+  opacity: 1;
+  width: clamp(60px, calc(var(--vis-w) * 0.08px), 100px);
+}
+
+.visualizer-overlay__volume::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: clamp(8px, calc(var(--vis-h) * 0.01px), 12px);
+  height: clamp(8px, calc(var(--vis-h) * 0.01px), 12px);
+  background: var(--theme-color, #8e95c2);
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 0 6px color-mix(in srgb, var(--theme-color, #8e95c2) 60%, transparent);
+}
+
+/* Wave dots glow */
+.visualizer-overlay__wave-dot {
+  box-shadow: 0 0 4px currentColor;
+}
+
+.app-module__main_menu_button___wQmMP_visualizer {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+.app-module__error_container___8JcIQ_visualizer {
+  max-width: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+}
+
+.app-module__error_message___soZdL_visualizer {
+  font-size: 24px;
+  font-weight: 700;
+  text-align: center;
+}

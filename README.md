@@ -29,7 +29,21 @@ A real-time audio visualizer for **Spicetify** — renders NCS-style particle ef
 
 ### Install
 
-1. Clone or download this repo into your Spicetify `CustomApps` folder:
+**Option 1 — Automatic (recommended)**
+
+Linux / macOS:
+```bash
+bash <(curl -sL https://raw.githubusercontent.com/WatashiAD/ncs-visualiser/master/install.sh)
+```
+
+Windows (PowerShell):
+```powershell
+iwr -useb https://raw.githubusercontent.com/WatashiAD/ncs-visualiser/master/install.ps1 | iex
+```
+
+**Option 2 — Manual**
+
+Clone or download this repo into your Spicetify `CustomApps` folder:
 
 ```bash
 cd ~\.spicetify\CustomApps
@@ -76,6 +90,8 @@ ncs-visualiser/
 ├── index.js         # Main visualizer app (React + WebGL2)
 ├── style.css        # All styles, fonts, animations
 ├── manifest.json    # Spicetify custom app manifest
+├── install.sh       # Linux / macOS install script
+├── install.ps1      # Windows PowerShell install script
 ├── LICENSE
 └── README.md
 ```

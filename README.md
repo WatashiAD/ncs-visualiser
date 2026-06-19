@@ -45,9 +45,9 @@ For help with installing or uninstalling, check out the official [Spicetify FAQ]
    Navigate to the `CustomApps` folder within that directory. Create a new folder named `visualizer`.
 3. **Download Project Files**  
    Download the files from this repository and copy them into the `visualizer` folder you just created:
-   - `index.js`
-   - `manifest.json`
-   - `style.css`
+   - [`index.js`](index.js)
+   - [`manifest.json`](manifest.json)
+   - [`style.css`](style.css)
 4. **Enable the Custom App**  
    Add the app to your Spicetify configuration by running:
    ```bash
@@ -96,17 +96,14 @@ If you previously had the older `ncs-visualiser` installed, remove it first to a
 
 ## 📁 File Structure
 
-```
-ncs-visualiser/
-├── resources/
-│   ├── FullScreen.png # Fullscreen mode preview screenshot
-│   └── Normal.png     # Normal mode preview screenshot
-├── index.js           # Main visualizer application (React + WebGL2)
-├── style.css          # Visualizer styling, animations, and custom typography
-├── manifest.json      # Spicetify custom app manifest definition
-├── LICENSE            # License information
-└── README.md          # Project documentation
-```
+- 📁 **[resources/](resources/)**
+  - 🖼️ **[FullScreen.png](resources/FullScreen.png)** — Fullscreen mode preview screenshot
+  - 🖼️ **[Normal.png](resources/Normal.png)** — Normal mode preview screenshot
+- 📄 **[index.js](index.js)** — Main visualizer application (React + WebGL2)
+- 📄 **[style.css](style.css)** — Visualizer styling, animations, and custom typography
+- 📄 **[manifest.json](manifest.json)** — Spicetify custom app manifest definition
+- 📄 **[LICENSE](LICENSE)** — License information
+- 📄 **[README.md](README.md)** — Project documentation
 
 ---
 
@@ -114,16 +111,16 @@ ncs-visualiser/
 
 You can customize the visualizer's appearance and sensitivity by editing these files directly:
 
-- **Font Sizes & Layout:** Edit `style.css` to adjust dynamic fonts (using `clamp()`, `vw`, and `vh` units), overlay sizing (`max-width: 42%`), or canvas offset (`right: 5%`).
+- **Font Sizes & Layout:** Edit [`style.css`](style.css) to adjust dynamic fonts (using `clamp()`, `vw`, and `vh` units), overlay sizing (`max-width: 42%`), or canvas offset (`right: 5%`).
 - **Colors:** All element styles use the CSS variable `var(--theme-color)`, which is dynamically updated at runtime.
-- **Particle Behavior:** Adjust the particle physics and radius in `index.js` (search for `0.73` or `0.86`).
+- **Particle Behavior:** Adjust the particle physics and radius in [`index.js`](index.js) (search for `0.73` or `0.86`).
 
 ---
 
 ## 🛠️ Development & Building
 
-There is **no build step required**! All React components and WebGL shaders are written inside `index.js`. 
-You can edit `index.js` or `style.css` directly and then run:
+There is **no build step required**! All React components and WebGL shaders are written inside [`index.js`](index.js). 
+You can edit [`index.js`](index.js) or [`style.css`](style.css) directly and then run:
 ```bash
 spicetify apply
 ```

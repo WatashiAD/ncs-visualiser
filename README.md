@@ -8,13 +8,12 @@ A WebGL2-powered particle sphere audio visualizer for Spotify using Spicetify. I
 
 ---
 
-## 📸 Preview
+## 📸 Previews
 
-### Normal View
-![Normal View](resources/Normal.png)
-
-### Fullscreen View
-![Fullscreen View](resources/FullScreen.png)
+<p align="center">
+  <img src="resources/Normal.png" width="49%" alt="Normal View" />
+  <img src="resources/FullScreen.png" width="49%" alt="Fullscreen View" />
+</p>
 
 ---
 
@@ -128,13 +127,14 @@ to see your changes instantly.
 
 ---
 
-## 👥 Credits
+## 👥 Credits & Attribution
 
-- Built using the **[Spicetify](https://spicetify.app)** Custom App API.
-- WebGL2 particle rendering inspired by standard NCS visualizer designs.
-- Audio analysis data powered by **Spotify Web API**.
-- Typography: [Rubik Spray Paint](https://fonts.google.com/specimen/Rubik+Spray+Paint) & [Jua](https://fonts.google.com/specimen/Jua) via Google Fonts.
-- Icons: [Material Icons](https://fonts.google.com/icons) by Google.
+- **Original Creator:** Originally designed and developed by **[Konsl](https://github.com/Konsl)** as **[spicetify-visualizer](https://github.com/Konsl/spicetify-visualizer)**.
+- **Core Platform:** Built using the **[Spicetify](https://spicetify.app)** Custom App API.
+- **Audio Rendering:** WebGL2 particle rendering inspired by NCS visualizer concepts.
+- **Data Source:** Audio analysis data powered by the **Spotify Web API**.
+- **Typography:** [Rubik Spray Paint](https://fonts.google.com/specimen/Rubik+Spray+Paint) & [Jua](https://fonts.google.com/specimen/Jua) via Google Fonts.
+- **Icons:** [Material Icons](https://fonts.google.com/icons) by Google.
 
 ---
 

@@ -1,146 +1,279 @@
+<div align="center">
+
 # NCS Visualiser
+
 ### A Real-Time Audio Visualizer for Spicetify
 
-A WebGL2-powered particle sphere audio visualizer for Spotify using Spicetify. It synchronizes particle movements with Spotify's audio analysis, featuring dynamic color extraction, a beautiful fullscreen interface, playback controls, and built-in developer tools.
+A high-performance **WebGL2-powered particle visualizer** for Spotify, built using the **Spicetify Custom App API**.
 
-[![Spicetify v2.43+](https://img.shields.io/badge/Spicetify-v2.43%2B-blue.svg?style=flat-square)](https://spicetify.app)
-[![License](https://img.shields.io/badge/license-Apache%202.0-green.svg?style=flat-square)](LICENSE)
+Synchronize stunning particle animations with Spotify's real-time audio analysis while enjoying dynamic album color extraction, fullscreen controls, and advanced developer tools.
+
+<p>
+  <img src="https://img.shields.io/badge/Spicetify-v2.43%2B-blue?style=for-the-badge" alt="Spicetify Version">
+  <img src="https://img.shields.io/badge/License-Apache_2.0-green?style=for-the-badge" alt="License">
+</p>
+
+[Preview](#preview) •
+[Features](#features) •
+[Installation](#installation) •
+[Upgrading](#upgrading--migration) •
+[Usage & Controls](#usage--controls) •
+[Customization](#customization) •
+[Development](#development) •
+[Project Structure](#project-structure) •
+[Credits](#credits) •
+[License](#license)
+
+</div>
 
 ---
 
-## 📸 Preview
+# Preview
 
-### Normal View
+---
+
+# Preview
+
+## Standard Interface
+
 ![Normal View](resources/Normal.png)
 
-### Fullscreen View
+## Fullscreen Experience
+
 ![Fullscreen View](resources/FullScreen.png)
 
 ---
 
-## ✨ Features
+# Features
 
-- 🔴 **NCS-Style Particle Sphere:** High-performance WebGL2 particle system driven by real-time amplitude curves from Spotify's audio analysis.
-- 🎨 **Dynamic Color Extraction:** Automatically extracts and applies theme colors from the playing track's album art.
-- 🖥️ **Stunning Fullscreen Mode:** Toggle a minimal, beautiful overlay displaying the track name, artist, interactive seek bar, and playback controls.
-- 🎛️ **Full Playback Controls:** Control Spotify directly from the visualizer with play/pause, next, previous, shuffle, and repeat buttons.
-- 🔊 **Volume Controller:** Quick mute button with a smooth hover-reveal volume slider.
-- 📊 **Developer Analysis Tools:** Built-in timeline overlays to visualize beats, bars, loudness, timbre, pitches, and rhythm analysis.
-- 📐 **Responsive Design:** Completely fluid typography and layout scaling perfectly to any viewport size.
+* 🔴 **Real-Time WebGL2 Particle Sphere** — High-performance GPU-rendered particle visualization synchronized with Spotify audio analysis.
 
----
+* 🎨 **Dynamic Album Color Extraction** — Automatically extracts dominant colors from album artwork and applies them throughout the interface.
 
-## 🚀 Installation
+* 🖥️ **Immersive Fullscreen Mode** — Beautiful fullscreen overlay displaying track information, progress controls, and playback actions.
 
-For help with installing or uninstalling, check out the official [Spicetify FAQ](https://spicetify.app/docs/faq) or ask on the [Spicetify Discord](https://discord.gg/VnevqPp2Rr). If you encounter any bugs or issues specific to this extension, please open an issue in the [Issues](https://github.com/WatashiAD/ncs-visualiser/issues) tab.
+* 🎛️ **Integrated Playback Controls** — Control Spotify directly from the visualizer with play/pause, next, previous, shuffle, and repeat controls.
 
-### Installation Instructions
+* 🔊 **Smart Volume Controller** — Quick mute functionality with a smooth hover-reveal volume slider.
 
-1. **Open your Spicetify Config Directory**  
-   Open your terminal/command prompt and run:
-   ```bash
-   spicetify config-dir
-   ```
-2. **Navigate & Create Folder**  
-   Navigate to the `CustomApps` folder within that directory. Create a new folder named `visualizer`.
-3. **Download Project Files**  
-   Download the files from this repository and copy them into the `visualizer` folder you just created:
-   - `index.js`
-   - `manifest.json`
-   - `style.css`
-4. **Enable the Custom App**  
-   Add the app to your Spicetify configuration by running:
-   ```bash
-   spicetify config custom_apps visualizer
-   ```
-5. **Apply Configuration**  
-   Finalize the installation and apply changes to Spotify:
-   ```bash
-   spicetify apply
-   ```
-6. **Launch**  
-   Restart Spotify. A new **Visualizer** button will appear in your sidebar/navigation panel!
+* 📊 **Developer Analysis Tools** — Built-in debugging overlays for beats, bars, loudness, timbre, pitches, and rhythm analysis.
+
+* 📐 **Responsive Interface** — Fluid layouts and typography designed to scale elegantly across all screen sizes.
+
+* 🪟 **Standalone & Picture-in-Picture Support** — Open the visualizer in a separate window or Picture-in-Picture mode.
 
 ---
 
-## 🔄 Upgrading / Migrating
+# Installation
 
-### Upgrading from the older "NCS Visualizer"
+> **Prerequisites**
+>
+> * Spotify Desktop Client
+> * Spicetify v2.43 or newer
 
-If you previously had the older `ncs-visualiser` installed, remove it first to avoid configuration conflicts:
+Need help installing Spicetify?
 
-1. Open your Spicetify config directory (`spicetify config-dir`).
-2. Navigate to `CustomApps` and **delete** the `ncs-visualiser` folder.
-3. Remove the old app from your configuration:
-   ```bash
-   spicetify config custom_apps ncs-visualiser-
-   ```
-4. Follow the **Installation Instructions** above to set up the new version.
+* Official FAQ: https://spicetify.app/docs/faq
+* Community Discord: https://discord.gg/VnevqPp2Rr
 
----
+## Step 1 — Open Your Spicetify Configuration Directory
 
-## 🛠️ Usage & Controls
-
-| Control / Action | Description |
-| :--- | :--- |
-| **Enter Fullscreen** | Click the menu button (top-right) → *Enter Fullscreen*, or press `F11`. |
-| **Interactive Seek** | Click anywhere along the progress bar to seek playback time. |
-| **Previous / Next** | Skip tracks using the overlay controls in fullscreen mode. |
-| **Play / Pause** | Toggle playback using the fullscreen button or press `Space`. |
-| **Shuffle / Repeat** | Toggle shuffle or repeat modes via fullscreen control toggles. |
-| **Volume Control** | Hover over the volume icon to reveal the slider; click to mute/unmute. |
-| **Switch Renderers** | Menu (top-right) → *Renderer* → choose between the WebGL particle sphere or analysis graphs. |
-| **Picture-in-Picture** | Menu (top-right) → *Open Window* (opens visualizer in a standalone or PiP window). |
-
----
-
-## 📁 File Structure
-
-```
-ncs-visualiser/
-├── resources/
-│   ├── FullScreen.png # Fullscreen mode preview screenshot
-│   └── Normal.png     # Normal mode preview screenshot
-├── index.js           # Main visualizer application (React + WebGL2)
-├── style.css          # Visualizer styling, animations, and custom typography
-├── manifest.json      # Spicetify custom app manifest definition
-├── LICENSE            # License information
-└── README.md          # Project documentation
+```bash
+spicetify config-dir
 ```
 
----
+## Step 2 — Create the Custom App Directory
 
-## 🎨 Customization
+Inside:
 
-You can customize the visualizer's appearance and sensitivity by editing these files directly:
+```text
+<Spicetify Config>/CustomApps/
+```
 
-- **Font Sizes & Layout:** Edit `style.css` to adjust dynamic fonts (using `clamp()`, `vw`, and `vh` units), overlay sizing (`max-width: 42%`), or canvas offset (`right: 5%`).
-- **Colors:** All element styles use the CSS variable `var(--theme-color)`, which is dynamically updated at runtime.
-- **Particle Behavior:** Adjust the particle physics and radius in `index.js` (search for `0.73` or `0.86`).
+Create a folder named:
 
----
+```text
+visualizer
+```
 
-## 🛠️ Development & Building
+Result:
 
-There is **no build step required**! All React components and WebGL shaders are written inside `index.js`. 
-You can edit `index.js` or `style.css` directly and then run:
+```text
+CustomApps/
+└── visualizer/
+```
+
+## Step 3 — Download Required Files
+
+| File                                                                                   | Description                                   |
+| -------------------------------------------------------------------------------------- | --------------------------------------------- |
+| [`index.js`](https://github.com/WatashiAD/ncs-visualiser/blob/main/index.js)           | Main application logic and WebGL renderer     |
+| [`style.css`](https://github.com/WatashiAD/ncs-visualiser/blob/main/style.css)         | Visual styling, animations, and responsive UI |
+| [`manifest.json`](https://github.com/WatashiAD/ncs-visualiser/blob/main/manifest.json) | Spicetify app manifest                        |
+
+Expected structure:
+
+```text
+visualizer/
+├── index.js
+├── style.css
+└── manifest.json
+```
+
+## Step 4 — Register the App
+
+```bash
+spicetify config custom_apps visualizer
+```
+
+## Step 5 — Apply Changes
+
 ```bash
 spicetify apply
 ```
-to see your changes instantly.
+
+## Step 6 — Restart Spotify
+
+Restart Spotify.
+
+A new **Visualizer** entry should now appear in the sidebar.
 
 ---
 
-## 👥 Credits
+# Upgrading & Migration
 
-- Built using the **[Spicetify](https://spicetify.app)** Custom App API.
-- WebGL2 particle rendering inspired by standard NCS visualizer designs.
-- Audio analysis data powered by **Spotify Web API**.
-- Typography: [Rubik Spray Paint](https://fonts.google.com/specimen/Rubik+Spray+Paint) & [Jua](https://fonts.google.com/specimen/Jua) via Google Fonts.
-- Icons: [Material Icons](https://fonts.google.com/icons) by Google.
+If you previously installed the older **ncs-visualiser**, remove it before upgrading.
+
+## Remove Old Files
+
+```text
+CustomApps/ncs-visualiser
+```
+
+## Remove Old Configuration
+
+```bash
+spicetify config custom_apps ncs-visualiser-
+```
+
+After removal, follow the installation instructions above.
 
 ---
 
-## 📄 License
+# Usage & Controls
 
-This project is licensed under the Apache License 2.0. See the [LICENSE](LICENSE) file for details.
+| Action                 | Description                                |
+| ---------------------- | ------------------------------------------ |
+| Enter Fullscreen       | Menu → **Enter Fullscreen** or press `F11` |
+| Play / Pause           | Press `Space` or use playback controls     |
+| Seek Playback          | Click anywhere on the progress bar         |
+| Previous / Next        | Skip tracks from fullscreen controls       |
+| Shuffle / Repeat       | Toggle playback modes directly             |
+| Volume Adjustment      | Hover over the volume icon                 |
+| Switch Renderer        | Menu → **Renderer**                        |
+| Open Standalone Window | Menu → **Open Window**                     |
+| Picture-in-Picture     | Available through standalone mode          |
+
+---
+
+# Customization
+
+## UI Styling
+
+Modify [`style.css`](https://github.com/WatashiAD/ncs-visualiser/blob/main/style.css) to customize:
+
+* Typography
+* Overlay dimensions
+* Canvas positioning
+* Animations
+* Layout spacing
+
+## Theme Colors
+
+All interface elements use:
+
+```css
+var(--theme-color)
+```
+
+which is dynamically updated using album artwork.
+
+## Particle Behaviour
+
+Inside [`index.js`](https://github.com/WatashiAD/ncs-visualiser/blob/main/index.js), search for values such as:
+
+```javascript
+0.73
+0.86
+```
+
+These parameters control particle radius, movement sensitivity, and animation intensity.
+
+---
+
+# Development
+
+No build process is required.
+
+| Resource                                                                               | Description                                                                    |
+| -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| [`index.js`](https://github.com/WatashiAD/ncs-visualiser/blob/main/index.js)           | Main application logic, React components, audio processing, and WebGL renderer |
+| [`style.css`](https://github.com/WatashiAD/ncs-visualiser/blob/main/style.css)         | Styling, animations, and responsive layout                                     |
+| [`manifest.json`](https://github.com/WatashiAD/ncs-visualiser/blob/main/manifest.json) | Spicetify custom app manifest                                                  |
+
+After making changes:
+
+```bash
+spicetify apply
+```
+
+Restart Spotify to see your changes instantly.
+
+---
+
+# Project Structure
+
+```text
+ncs-visualiser/
+├── resources/
+│   ├── FullScreen.png
+│   └── Normal.png
+├── index.js
+├── style.css
+├── manifest.json
+├── LICENSE
+└── README.md
+```
+
+---
+
+# Credits
+
+This project builds upon the work of several open-source projects and contributors.
+
+* Built using the **Spicetify Custom App API**
+* Audio analysis powered by the **Spotify Web API**
+* Typography provided via **Google Fonts**
+
+  * Rubik Spray Paint
+  * Jua
+* Icons provided by **Google Material Icons**
+* WebGL rendering inspired by classic NCS-style visualizers
+
+## Attribution
+
+Parts of this project's architecture and implementation are based on and adapted from:
+
+### Konsl's Spicetify Visualizer
+
+https://github.com/Konsl/spicetify-visualizer
+
+Special thanks to **Konsl** for the original implementation, inspiration, and contribution to the Spicetify ecosystem.
+
+---
+
+# License
+
+Licensed under the **Apache License 2.0**.
+
+See the [LICENSE](LICENSE) file for more information.

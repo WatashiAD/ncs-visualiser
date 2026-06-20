@@ -1,4 +1,4 @@
-# NCS Visualiser
+# NCS-Visualizer
 ### A Real-Time Audio Visualizer for Spicetify
 
 A WebGL2-powered particle sphere audio visualizer for Spotify using Spicetify. It synchronizes particle movements with Spotify's audio analysis, featuring dynamic color extraction, a beautiful fullscreen interface, playback controls, and built-in developer tools.
@@ -41,16 +41,16 @@ For help with installing or uninstalling, check out the official [Spicetify FAQ]
    spicetify config-dir
    ```
 2. **Navigate & Create Folder**  
-   Navigate to the `CustomApps` folder within that directory. Create a new folder named `visualizer`.
+   Navigate to the `CustomApps` folder within that directory. Create a new folder named `ncs-visualizer`.
 3. **Download Project Files**  
-   Download the files from this repository and copy them into the `visualizer` folder you just created:
+   Download the files from this repository and copy them into the `ncs-visualizer` folder you just created:
    - [`index.js`](index.js)
    - [`manifest.json`](manifest.json)
    - [`style.css`](style.css)
 4. **Enable the Custom App**  
    Add the app to your Spicetify configuration by running:
    ```bash
-   spicetify config custom_apps visualizer
+   spicetify config custom_apps ncs-visualizer
    ```
 5. **Apply Configuration**  
    Finalize the installation and apply changes to Spotify:
@@ -59,22 +59,6 @@ For help with installing or uninstalling, check out the official [Spicetify FAQ]
    ```
 6. **Launch**  
    Restart Spotify. A new **Visualizer** button will appear in your sidebar/navigation panel!
-
----
-
-## 🔄 Upgrading / Migrating
-
-### Upgrading from the older "NCS Visualizer"
-
-If you previously had the older `ncs-visualiser` installed, remove it first to avoid configuration conflicts:
-
-1. Open your Spicetify config directory (`spicetify config-dir`).
-2. Navigate to `CustomApps` and **delete** the `ncs-visualiser` folder.
-3. Remove the old app from your configuration:
-   ```bash
-   spicetify config custom_apps ncs-visualiser-
-   ```
-4. Follow the **Installation Instructions** above to set up the new version.
 
 ---
 

@@ -1,4 +1,4 @@
-# NCS-Visualizer
+# NCS Visualiser
 ### A Real-Time Audio Visualizer for Spicetify
 
 A WebGL2-powered particle sphere audio visualizer for Spotify using Spicetify. It synchronizes particle movements with Spotify's audio analysis, featuring dynamic color extraction, a beautiful fullscreen interface, playback controls, and built-in developer tools.
@@ -8,12 +8,13 @@ A WebGL2-powered particle sphere audio visualizer for Spotify using Spicetify. I
 
 ---
 
-## 📸 Previews
+## 📸 Preview
 
-<p align="center">
-  <img src="resources/Normal.png" width="49%" alt="Normal View" />
-  <img src="resources/FullScreen.png" width="49%" alt="Fullscreen View" />
-</p>
+### Normal View
+![Normal View](resources/Normal.png)
+
+### Fullscreen View
+![Fullscreen View](resources/FullScreen.png)
 
 ---
 
@@ -41,16 +42,16 @@ For help with installing or uninstalling, check out the official [Spicetify FAQ]
    spicetify config-dir
    ```
 2. **Navigate & Create Folder**  
-   Navigate to the `CustomApps` folder within that directory. Create a new folder named `ncs-visualizer`.
+   Navigate to the `CustomApps` folder within that directory. Create a new folder named `visualizer`.
 3. **Download Project Files**  
-   Download the files from this repository and copy them into the `ncs-visualizer` folder you just created:
-   - [`index.js`](index.js)
-   - [`manifest.json`](manifest.json)
-   - [`style.css`](style.css)
+   Download the files from this repository and copy them into the `visualizer` folder you just created:
+   - `index.js`
+   - `manifest.json`
+   - `style.css`
 4. **Enable the Custom App**  
    Add the app to your Spicetify configuration by running:
    ```bash
-   spicetify config custom_apps ncs-visualizer
+   spicetify config custom_apps visualizer
    ```
 5. **Apply Configuration**  
    Finalize the installation and apply changes to Spotify:
@@ -59,6 +60,22 @@ For help with installing or uninstalling, check out the official [Spicetify FAQ]
    ```
 6. **Launch**  
    Restart Spotify. A new **Visualizer** button will appear in your sidebar/navigation panel!
+
+---
+
+## 🔄 Upgrading / Migrating
+
+### Upgrading from the older "NCS Visualizer"
+
+If you previously had the older `ncs-visualiser` installed, remove it first to avoid configuration conflicts:
+
+1. Open your Spicetify config directory (`spicetify config-dir`).
+2. Navigate to `CustomApps` and **delete** the `ncs-visualiser` folder.
+3. Remove the old app from your configuration:
+   ```bash
+   spicetify config custom_apps ncs-visualiser-
+   ```
+4. Follow the **Installation Instructions** above to set up the new version.
 
 ---
 
@@ -79,14 +96,17 @@ For help with installing or uninstalling, check out the official [Spicetify FAQ]
 
 ## 📁 File Structure
 
-- 📁 **[resources/](resources/)**
-  - 🖼️ **[FullScreen.png](resources/FullScreen.png)** — Fullscreen mode preview screenshot
-  - 🖼️ **[Normal.png](resources/Normal.png)** — Normal mode preview screenshot
-- 📄 **[index.js](index.js)** — Main visualizer application (React + WebGL2)
-- 📄 **[style.css](style.css)** — Visualizer styling, animations, and custom typography
-- 📄 **[manifest.json](manifest.json)** — Spicetify custom app manifest definition
-- 📄 **[LICENSE](LICENSE)** — License information
-- 📄 **[README.md](README.md)** — Project documentation
+```
+ncs-visualiser/
+├── resources/
+│   ├── FullScreen.png # Fullscreen mode preview screenshot
+│   └── Normal.png     # Normal mode preview screenshot
+├── index.js           # Main visualizer application (React + WebGL2)
+├── style.css          # Visualizer styling, animations, and custom typography
+├── manifest.json      # Spicetify custom app manifest definition
+├── LICENSE            # License information
+└── README.md          # Project documentation
+```
 
 ---
 
@@ -94,16 +114,16 @@ For help with installing or uninstalling, check out the official [Spicetify FAQ]
 
 You can customize the visualizer's appearance and sensitivity by editing these files directly:
 
-- **Font Sizes & Layout:** Edit [`style.css`](style.css) to adjust dynamic fonts (using `clamp()`, `vw`, and `vh` units), overlay sizing (`max-width: 42%`), or canvas offset (`right: 5%`).
+- **Font Sizes & Layout:** Edit `style.css` to adjust dynamic fonts (using `clamp()`, `vw`, and `vh` units), overlay sizing (`max-width: 42%`), or canvas offset (`right: 5%`).
 - **Colors:** All element styles use the CSS variable `var(--theme-color)`, which is dynamically updated at runtime.
-- **Particle Behavior:** Adjust the particle physics and radius in [`index.js`](index.js) (search for `0.73` or `0.86`).
+- **Particle Behavior:** Adjust the particle physics and radius in `index.js` (search for `0.73` or `0.86`).
 
 ---
 
 ## 🛠️ Development & Building
 
-There is **no build step required**! All React components and WebGL shaders are written inside [`index.js`](index.js). 
-You can edit [`index.js`](index.js) or [`style.css`](style.css) directly and then run:
+There is **no build step required**! All React components and WebGL shaders are written inside `index.js`. 
+You can edit `index.js` or `style.css` directly and then run:
 ```bash
 spicetify apply
 ```
@@ -111,14 +131,13 @@ to see your changes instantly.
 
 ---
 
-## 👥 Credits & Attribution
+## 👥 Credits
 
-- **Original Creator:** Originally designed and developed by **[Konsl](https://github.com/Konsl)** as **[spicetify-visualizer](https://github.com/Konsl/spicetify-visualizer)**.
-- **Core Platform:** Built using the **[Spicetify](https://spicetify.app)** Custom App API.
-- **Audio Rendering:** WebGL2 particle rendering inspired by NCS visualizer concepts.
-- **Data Source:** Audio analysis data powered by the **Spotify Web API**.
-- **Typography:** [Rubik Spray Paint](https://fonts.google.com/specimen/Rubik+Spray+Paint) & [Jua](https://fonts.google.com/specimen/Jua) via Google Fonts.
-- **Icons:** [Material Icons](https://fonts.google.com/icons) by Google.
+- Built using the **[Spicetify](https://spicetify.app)** Custom App API.
+- WebGL2 particle rendering inspired by standard NCS visualizer designs.
+- Audio analysis data powered by **Spotify Web API**.
+- Typography: [Rubik Spray Paint](https://fonts.google.com/specimen/Rubik+Spray+Paint) & [Jua](https://fonts.google.com/specimen/Jua) via Google Fonts.
+- Icons: [Material Icons](https://fonts.google.com/icons) by Google.
 
 ---
 

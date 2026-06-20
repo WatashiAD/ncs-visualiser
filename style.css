@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Rubik+Spray+Paint&family=Jua&display=swap');
 @import url('https://fonts.googleapis.com/icon?family=Material+Icons');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200');
 
 .main-topBar-container:has(~ .main-view-container main > .visualizer-container) {
   pointer-events: none !important;
@@ -38,7 +39,7 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.1) 100%);
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.3) 50%, rgba(0, 0, 0, 0.1) 100%);
   z-index: 1;
 }
 
@@ -50,12 +51,12 @@
   transform: scale(1.1);
 }
 
-.visualizer-container > [data-tippy-root] {
+.visualizer-container>[data-tippy-root] {
   transform: translate(-10px, 68px) !important;
 }
 
 /* Canvas: centered square in the right half */
-.visualizer-container > canvas {
+.visualizer-container>canvas {
   position: absolute !important;
   top: 50% !important;
   left: auto !important;
@@ -127,8 +128,15 @@
 }
 
 @keyframes waveDot {
-  0% { transform: translateY(3px) scale(0.6); opacity: 0.4; }
-  100% { transform: translateY(-3px) scale(1); opacity: 1; }
+  0% {
+    transform: translateY(3px) scale(0.6);
+    opacity: 0.4;
+  }
+
+  100% {
+    transform: translateY(-3px) scale(1);
+    opacity: 1;
+  }
 }
 
 /* Song title — Rubik Spray Paint */
@@ -141,7 +149,7 @@
   letter-spacing: 0.01em;
   text-transform: uppercase;
   margin: 0.1rem 0 0 0;
-  text-shadow: 0 0 12px rgba(0,0,0,0.5), 0 0 10px color-mix(in srgb, var(--theme-color, #ffffff) 35%, transparent);
+  text-shadow: 0 0 12px rgba(0, 0, 0, 0.5), 0 0 10px color-mix(in srgb, var(--theme-color, #ffffff) 35%, transparent);
 }
 
 /* Artist name — Jua font, single line */
@@ -283,8 +291,8 @@
   appearance: none;
   height: clamp(4px, calc(var(--vis-h) * 0.006px), 6px);
   background: linear-gradient(to right,
-    var(--theme-color, #8e95c2) 0% var(--val, 33%),
-    rgba(255, 255, 255, 0.2) var(--val, 33%) 100%);
+      var(--theme-color, #8e95c2) 0% var(--val, 33%),
+      rgba(255, 255, 255, 0.2) var(--val, 33%) 100%);
   border-radius: 999px;
   outline: none;
   cursor: pointer;
@@ -361,4 +369,63 @@
   font-size: 24px;
   font-weight: 700;
   text-align: center;
+}
+
+/* Active indicator dot for shuffle & repeat */
+.visualizer-overlay__ctrl-btn {
+  position: relative !important;
+}
+.visualizer-overlay__ctrl-btn--active::after {
+  content: '' !important;
+  position: absolute !important;
+  bottom: -6px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  width: 4px !important;
+  height: 4px !important;
+  background-color: var(--theme-color, #ffffff) !important;
+  border-radius: 50% !important;
+  box-shadow: 0 0 4px var(--theme-color, #ffffff) !important;
+}
+
+/* Top bar controls */
+.visualizer-top-bar {
+  position: absolute !important;
+  top: 15px !important;
+  right: 15px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  z-index: 30 !important;
+  pointer-events: auto !important;
+}
+.visualizer-top-btn {
+  background: rgba(0, 0, 0, 0.4) !important;
+  border: none !important;
+  border-radius: 50% !important;
+  width: 36px !important;
+  height: 36px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: #fff !important;
+  cursor: pointer !important;
+  opacity: 0.7 !important;
+  transition: opacity 0.2s, background-color 0.2s, transform 0.1s !important;
+}
+.visualizer-top-btn:hover {
+  opacity: 1 !important;
+  background: rgba(0, 0, 0, 0.6) !important;
+}
+.visualizer-top-btn:active {
+  transform: scale(0.9) !important;
+}
+.visualizer-top-btn .material-icons,
+.visualizer-top-btn .material-symbols-outlined {
+  font-size: 20px !important;
+}
+
+.visualizer-top-bar > * {
+  display: flex !important;
+  align-items: center !important;
 }

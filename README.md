@@ -136,6 +136,31 @@ visualizer/
 └── README.md          # Project documentation
 ```
 
+## ⚡ Performance Optimization (Lag / Low FPS)
+
+If the WebGL particle sphere animations feel laggy, stutter, or drop frames, it is likely because Spotify is running on your system's battery-saving integrated GPU (iGPU) instead of your dedicated graphics card (dGPU, e.g., NVIDIA GeForce RTX / AMD Radeon).
+
+To force Spotify to utilize your dedicated GPU:
+
+### 1. Configure Windows Graphics Settings
+1. Open the Windows Start Menu, search for **Graphics Settings**, and open it.
+2. In the dropdown under *"Add an app"*, select **Desktop app** and click **Browse**.
+3. Navigate to and select the Spotify executable:
+   `C:\Users\<YourUsername>\AppData\Roaming\Spotify\Spotify.exe`
+4. Once Spotify is added to the list, click on it, select **Options**, choose **High Performance** (this will specify your dedicated graphics card), and click **Save**.
+
+### 2. Configure NVIDIA Control Panel (NVIDIA Users)
+1. Right-click your desktop and open the **NVIDIA Control Panel**.
+2. Go to **Manage 3D Settings** -> **Program Settings** tab.
+3. Click **Add** and select **Spotify** (or browse to `Spotify.exe`).
+4. Find **Power management mode** and set it to **Prefer maximum performance**.
+5. Click **Apply**.
+
+### 3. Verify Spotify Hardware Acceleration
+1. Open **Spotify** -> click your profile picture -> **Settings**.
+2. Search for **Hardware Acceleration** and ensure it is toggled **ON**.
+3. Restart Spotify completely (make sure to close it from the Windows system tray in the bottom right corner).
+
 ---
 
 ## 🎨 Customization

@@ -6,6 +6,16 @@ A WebGL2-powered particle sphere audio visualizer for Spotify using Spicetify. I
 [![Spicetify v2.43+](https://img.shields.io/badge/Spicetify-v2.43%2B-blue.svg?style=flat-square)](https://spicetify.app)
 [![License](https://img.shields.io/badge/license-Apache%202.0-green.svg?style=flat-square)](LICENSE)
 
+<p align="center">
+  <a href="#-installation">Installations</a> •
+  <a href="#-preview">Preview</a> •
+  <a href="#%EF%B8%8F-disclaimers">Disclaimers</a> •
+  <a href="#-features">Features</a> •
+  <a href="#-file-structure">Structure</a> •
+  <a href="#-credits">Credits</a> •
+  <a href="#-license">License</a>
+</p>
+
 ---
 
 > [!IMPORTANT]
@@ -21,6 +31,13 @@ A WebGL2-powered particle sphere audio visualizer for Spotify using Spicetify. I
 
 ### Popup View
 ![Popup View](resources/popup.png)
+
+---
+
+## ⚠️ Disclaimers
+
+*   **Spicy Lyrics Dependency:** Having the [Spicy Lyrics Spicetify Extension](https://github.com/spicylyricsapp) is highly recommended for syllable-level syncing. Without it, the visualizer will fall back to Spotify's standard line-level lyrics (or show no lyrics if they are unavailable).
+*   **Performance / GPU Selection:** If the visualizer animations feel laggy, stutter, or drop frames, you should force Spotify to run on your system's dedicated GPU (NVIDIA/AMD) rather than the integrated graphics card. Follow the steps in the [Performance Optimization](#-performance-optimization-lag--low-fps) section.
 
 ---
 

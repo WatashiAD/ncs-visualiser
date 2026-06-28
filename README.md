@@ -1,10 +1,16 @@
-# NCS Visualiser
-### A Real-Time Audio Visualizer for Spicetify
+<p align="center">
+  <h1 align="center">NCS Visualiser</h1>
+  <h3 align="center">A Real-Time Audio Visualizer for Spicetify</h3>
+</p>
 
-A WebGL2-powered particle sphere audio visualizer for Spotify using Spicetify. It synchronizes particle movements with Spotify's audio analysis, featuring dynamic color extraction, a beautiful fullscreen interface, **word-by-word synced lyrics**, playback controls, and built-in developer tools.
+<p align="center">
+  A WebGL2-powered particle sphere audio visualizer for Spotify using Spicetify. It synchronizes particle movements with Spotify's audio analysis, featuring dynamic color extraction, a beautiful fullscreen interface, <strong>word-by-word synced lyrics</strong>, playback controls, and built-in developer tools.
+</p>
 
-[![Spicetify v2.43+](https://img.shields.io/badge/Spicetify-v2.43%2B-blue.svg?style=flat-square)](https://spicetify.app)
-[![License](https://img.shields.io/badge/license-Apache%202.0-green.svg?style=flat-square)](LICENSE)
+<p align="center">
+  <a href="https://spicetify.app"><img src="https://img.shields.io/badge/Spicetify-v2.43%2B-blue.svg?style=flat-square" alt="Spicetify v2.43+" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache%202.0-green.svg?style=flat-square" alt="License" /></a>
+</p>
 
 <p align="center">
   <a href="#-installation">Installations</a> •

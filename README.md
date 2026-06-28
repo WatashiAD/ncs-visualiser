@@ -8,6 +8,9 @@ A WebGL2-powered particle sphere audio visualizer for Spotify using Spicetify. I
 
 ---
 
+> [!IMPORTANT]
+> **Having the Spicy Lyrics Spicetify Extension is highly recommended for this to work correctly.** Without it, the visualizer falls back to Spotify's line-level lyrics, or may show no lyrics if Spotify has none.
+
 ## 📸 Preview
 
 ### Normal View
@@ -71,15 +74,14 @@ For help with installing or uninstalling, check out the official [Spicetify FAQ]
 6. **Launch**  
    Restart Spotify. A new **Visualizer** button will appear in your sidebar/navigation panel!
 
-### Optional: Best Lyrics Experience
+### ⚠️ Recommended: Best Lyrics Experience
 
-For the best word-by-word synced lyrics, install the **SpicyLyrics** extension:
+Having the **Spicy Lyrics Spicetify Extension** is highly recommended for lyrics sync to work. Without it, the visualizer uses Spotify's line-level lyrics (or may show no lyrics if Spotify doesn't have them).
 
+To set it up:
 1. Install [SpicyLyrics](https://github.com/spicylyricsapp) via the Spicetify Marketplace or manually.
 2. Play a few songs with SpicyLyrics open so it caches syllable-level timing data.
 3. The visualizer will automatically pick up the cached syllable data for precise word-by-word sync.
-
-> **Note:** Without SpicyLyrics, the visualizer uses Spotify's line-level lyrics — lyrics will still display but the letter animation will sweep at a uniform pace rather than matching each word precisely.
 
 ---
 
@@ -174,7 +176,7 @@ The visualizer fetches lyrics in this priority order:
 - Built using the **[Spicetify](https://spicetify.app)** Custom App API.
 - WebGL2 particle rendering inspired by standard NCS visualizer designs.
 - Audio analysis data powered by **Spotify Web API**.
-- Lyrics sync powered by **[SpicyLyrics](https://github.com/spicylyricsapp)**.
+- Word-by-word lyrics decoding logic is powered by the **[SpicyLyrics](https://github.com/Spikerko/spicy-lyrics)** custom client structures created by **[Spikerko](https://github.com/Spikerko)**.
 - Typography: [Rubik Spray Paint](https://fonts.google.com/specimen/Rubik+Spray+Paint) & [Jua](https://fonts.google.com/specimen/Jua) via Google Fonts.
 - Icons: [Material Icons](https://fonts.google.com/icons) by Google.
 

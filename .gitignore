@@ -15,3 +15,8 @@ Desktop.ini
 # Spicetify backup/working files
 *.zip
 backup/
+
+# Local download and reference files
+dl.ps1
+objpack_full.txt
+

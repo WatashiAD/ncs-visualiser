@@ -13,11 +13,14 @@ A WebGL2-powered particle sphere audio visualizer for Spotify using Spicetify. I
 
 ## 📸 Preview
 
-### Normal View
-![Normal View](resources/Normal.png)
+### Casual View
+![Casual View](resources/casual.png)
 
 ### Fullscreen View
 ![Fullscreen View](resources/FullScreen.png)
+
+### Popup View
+![Popup View](resources/popup.png)
 
 ---
 
@@ -124,7 +127,8 @@ If you previously had the older `ncs-visualiser` installed, remove it first to a
 visualizer/
 ├── resources/
 │   ├── FullScreen.png # Fullscreen mode preview screenshot
-│   └── Normal.png     # Normal mode preview screenshot
+│   ├── casual.png     # Casual mode preview screenshot
+│   └── popup.png      # Popup mode preview screenshot
 ├── index.js           # Main visualizer application (React + WebGL2 + Lyrics)
 ├── style.css          # Visualizer styling, animations, and custom typography
 ├── manifest.json      # Spicetify custom app manifest definition

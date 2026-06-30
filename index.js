@@ -269,6 +269,110 @@ void main() {
       var _lastLineIdx = -1, _letterSpans = [], _nonSpaceChars = [];
       var _lastBgLineIdx = -1, _bgLetterSpans = [], _bgNonSpaceChars = [];
 
+      var syncedPosition = null;
+      var predictedProgress = null;
+      var syncTimings = [0.05, 0.1, 0.15, 0.75];
+      var canSyncNonLocalTimestamp = Spicetify.Player.isPlaying() ? syncTimings.length : 0;
+      var syncTimeoutId = null;
+
+      function clampToTrack(position) {
+        var duration = Spicetify.Player.data?.item?.duration?.milliseconds || (u.audioAnalysis?.track?.duration * 1000) || 180000;
+        var clamped = Math.max(0, position);
+        if (duration > 0) {
+          clamped = Math.min(clamped, duration);
+        }
+        return clamped;
+      }
+
+      function normalizeProgress(position, isPlaying) {
+        var trackId = Spicetify.Player.data?.item?.uri ?? null;
+        var measured = clampToTrack(position);
+        var now = Date.now();
+
+        if (
+          !predictedProgress ||
+          predictedProgress.TrackId !== trackId ||
+          !isPlaying
+        ) {
+          predictedProgress = { TrackId: trackId, Position: measured, UpdatedAt: now };
+          return measured;
+        }
+
+        var elapsed = Math.max(0, now - predictedProgress.UpdatedAt);
+        var predicted = predictedProgress.Position + elapsed;
+
+        var error = measured - predicted;
+        if (Math.abs(error) > 500) {
+          predicted = measured;
+        } else {
+          var alpha = 1 - Math.exp(-elapsed / 300);
+          predicted += error * alpha;
+        }
+
+        predicted = clampToTrack(predicted);
+        predictedProgress = { TrackId: trackId, Position: predicted, UpdatedAt: now };
+
+        return predicted;
+      }
+
+      function requestPositionSync() {
+        try {
+          var SpotifyPlatform = Spicetify.Platform;
+          if (!SpotifyPlatform) return;
+          var startedAt = Date.now();
+          var isLocallyPlaying = SpotifyPlatform.PlaybackAPI?._isLocal;
+
+          var getLocalPosition = function() {
+            return SpotifyPlatform.PlayerAPI._contextPlayer
+              .getPositionState({})
+              .then(function(res) {
+                return {
+                  StartedSyncAt: startedAt + (Date.now() - startedAt) / 2,
+                  Position: Number(res.position)
+                };
+              });
+          };
+
+          var getNonLocalPosition = function() {
+            var promise = Promise.resolve();
+            if (canSyncNonLocalTimestamp > 0 && SpotifyPlatform.PlayerAPI?._contextPlayer?.resume) {
+              promise = SpotifyPlatform.PlayerAPI._contextPlayer.resume({});
+            }
+            return promise.then(function() {
+              canSyncNonLocalTimestamp = Math.max(0, canSyncNonLocalTimestamp - 1);
+              var state = SpotifyPlatform.PlayerAPI?._state;
+              var Position = Spicetify.Player.isPlaying()
+                ? state.positionAsOfTimestamp + (Date.now() - state.timestamp)
+                : state.positionAsOfTimestamp;
+              return {
+                StartedSyncAt: startedAt,
+                Position: Position
+              };
+            });
+          };
+
+          var sync = isLocallyPlaying ? getLocalPosition() : getNonLocalPosition();
+
+          sync
+            .then(function(pos) {
+              syncedPosition = pos;
+            })
+            .then(function() {
+              var delay = isLocallyPlaying
+                ? 1 / 60
+                : (canSyncNonLocalTimestamp === 0
+                  ? 1 / 60
+                  : syncTimings[syncTimings.length - canSyncNonLocalTimestamp]);
+
+              syncTimeoutId = setTimeout(requestPositionSync, delay * 1000);
+            });
+        } catch (error) {
+          console.error("Sync Position: Fail, More Details:", error);
+        }
+      }
+
+      requestPositionSync();
+
       function unpackSLObjPack(packed) {
         if (!Array.isArray(packed) || packed.length !== 2) throw new Error("Invalid SLObjPack structure");
         var valuesList = packed[0];
@@ -726,21 +830,36 @@ void main() {
           }
         } catch (e) { }
 
-        var rawProgressMs = 0;
-        try {
-          var state = Spicetify.Player.origin?._state || Spicetify.Platform?.PlayerAPI?._state;
-          if (state && state.timestamp) {
-            var now = Date.now();
-            rawProgressMs = state.isPaused
-              ? state.positionAsOfTimestamp
-              : state.positionAsOfTimestamp + (now - state.timestamp);
-          } else {
+        var progressMs = 0;
+        if (!syncedPosition) {
+          var rawProgressMs = 0;
+          try {
+            var state = Spicetify.Player.origin?._state || Spicetify.Platform?.PlayerAPI?._state;
+            if (state && state.timestamp) {
+              var now = Date.now();
+              rawProgressMs = state.isPaused
+                ? state.positionAsOfTimestamp
+                : state.positionAsOfTimestamp + (now - state.timestamp);
+            } else {
+              rawProgressMs = Spicetify.Player.getProgress();
+            }
+          } catch (e) {
             rawProgressMs = Spicetify.Player.getProgress();
           }
-        } catch (e) {
-          rawProgressMs = Spicetify.Player.getProgress();
+          progressMs = rawProgressMs + 100 - playbackOffset;
+        } else {
+          var StartedSyncAt = syncedPosition.StartedSyncAt;
+          var Position = syncedPosition.Position;
+          var now = Date.now();
+          var deltaTime = now - StartedSyncAt;
+
+          if (!Spicetify.Player.isPlaying()) {
+            progressMs = normalizeProgress(Position - playbackOffset, false);
+          } else {
+            var FinalPosition = Position + deltaTime;
+            progressMs = normalizeProgress(FinalPosition + 100 - playbackOffset, true);
+          }
         }
-        var progressMs = rawProgressMs + 100 - playbackOffset;
         var ps = progressMs / 1000;
 
         var info = _getActiveLine(_cachedLyrics, ps, isRomanized);
@@ -1028,7 +1147,10 @@ void main() {
         _raf = requestAnimationFrame(_loop);
       }
       _loop();
-      return function () { cancelAnimationFrame(_raf); };
+      return function () {
+        cancelAnimationFrame(_raf);
+        if (syncTimeoutId) clearTimeout(syncTimeoutId);
+      };
     }, [refreshTrigger, Spicetify.Player.data?.item?.uri]), g.default.createElement("div", { className: "visualizer-container" + (isPlaying ? "" : " visualizer-container--paused"), ref: a }, !d && g.default.createElement(g.default.Fragment, null, g.default.createElement("div", { className: "visualizer-backdrop" }, g.default.createElement("svg", { style: { display: "none" } }, g.default.createElement("defs", null, g.default.createElement("filter", { id: "watercolor-warp" }, g.default.createElement("feTurbulence", { type: "fractalNoise", baseFrequency: "0.012", numOctaves: "3", result: "noise" }), g.default.createElement("feDisplacementMap", { in: "SourceGraphic", in2: "noise", scale: "250", xChannelSelector: "R", yChannelSelector: "G" })))), prevArt && g.default.createElement("img", { src: prevArt, className: "visualizer-backdrop__img", alt: "" }), currentArt && g.default.createElement("img", { key: fadeKey, src: currentArt, className: "visualizer-backdrop__img visualizer-backdrop__img--fade-in", alt: "" }), g.default.createElement("div", { className: "visualizer-backdrop__blob visualizer-backdrop__blob--1" }), g.default.createElement("div", { className: "visualizer-backdrop__blob visualizer-backdrop__blob--2" }), g.default.createElement("div", { className: "visualizer-backdrop__blob visualizer-backdrop__blob--3" })), g.default.createElement(p.Provider, { value: f }, e && g.default.createElement(e, { isEnabled: "running" === o.state, audioAnalysis: u.audioAnalysis, themeColor: u.themeColor, isPlaying: isPlaying })), g.default.createElement("div", { className: "visualizer-overlay", style: { "--theme-color": "rgb(" + u.themeColor.rgb.r + "," + u.themeColor.rgb.g + "," + u.themeColor.rgb.b + ")" } }, g.default.createElement("div", { className: "visualizer-overlay__label" }, "Now Playing", g.default.createElement("div", { className: "visualizer-overlay__wave" + (isPlaying ? " is-playing" : "") }, g.default.createElement("span", { className: "visualizer-overlay__wave-dot", style: { "--i": 1 } }), g.default.createElement("span", { className: "visualizer-overlay__wave-dot", style: { "--i": 2 } }), g.default.createElement("span", { className: "visualizer-overlay__wave-dot", style: { "--i": 3 } }))), g.default.createElement("div", { className: "visualizer-overlay__title-container" }, g.default.createElement("strong", { className: "visualizer-overlay__title", style: { "--title-length": (trackTitle || "No track").length } }, trackTitle || "No track"), g.default.createElement("button", { className: "visualizer-overlay__lyrics-toggle-btn" + (showLyrics ? " visualizer-overlay__lyrics-toggle-btn--active" : ""), onClick: () => { var nextVal = !showLyrics; setShowLyrics(nextVal); if (nextVal) handleRefreshLyrics(); }, title: showLyrics ? "Hide Lyrics" : "Show Lyrics" }, g.default.createElement("span", { className: "material-symbols-outlined" }, "lyrics"))), g.default.createElement("div", { className: "visualizer-overlay__artist" }, Spicetify.Player.data?.item?.artists?.map(a => a.name).join(", ") || ""), g.default.createElement("div", { className: "visualizer-overlay__progress" }, g.default.createElement("div", { className: "visualizer-overlay__time-row" }, g.default.createElement("div", { className: "visualizer-overlay__time-left" }, formatTime(isDraggingSeek ? dragProgress : trackProgress)), g.default.createElement("div", { className: "visualizer-overlay__time-right" }, formatTime(u.audioAnalysis?.track?.duration || 0))), g.default.createElement("div", { ref: progressBarContainerRef, className: "visualizer-overlay__progress-bar-container" + (isDraggingSeek ? " visualizer-overlay__progress-bar-container--dragging" : ""), onMouseDown: handleSeekMouseDown }, g.default.createElement("div", { className: "visualizer-overlay__progress-bar", style: { width: (100 * ((isDraggingSeek ? dragProgress : trackProgress) / (u.audioAnalysis?.track?.duration || 1))) + "%" } }))), (n || r.isSecondaryWindow) && g.default.createElement("div", { className: "visualizer-overlay__controls" }, g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn" + (isLiked ? " visualizer-overlay__ctrl-btn--liked" : ""), onClick: () => { Spicetify.Player.toggleHeart(); setIsLiked(!isLiked); } }, g.default.createElement("span", { className: "material-icons" }, isLiked ? "favorite" : "favorite_border")), g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn" + (shuffle ? " visualizer-overlay__ctrl-btn--active" : ""), onClick: () => Spicetify.Player.toggleShuffle() }, g.default.createElement("span", { className: "material-icons" }, "shuffle")), g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn", onClick: () => Spicetify.Player.prev() }, g.default.createElement("span", { className: "material-icons" }, "skip_previous")), g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn visualizer-overlay__ctrl-btn--play", onClick: () => Spicetify.Player.togglePlay() }, g.default.createElement("span", { className: "material-icons" }, isPlaying ? "pause" : "play_arrow")), g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn", onClick: () => Spicetify.Player.next() }, g.default.createElement("span", { className: "material-icons" }, "skip_next")), g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn" + (repeatMode ? " visualizer-overlay__ctrl-btn--active" : ""), onClick: () => Spicetify.Player.toggleRepeat() }, g.default.createElement("span", { className: "material-icons" }, 2 === repeatMode ? "repeat_one" : repeatMode ? "repeat" : "repeat")), g.default.createElement("div", { className: "visualizer-overlay__volume-wrap" }, g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn", onClick: () => Spicetify.Player.setMuted && Spicetify.Player.setMuted(!Spicetify.Player.isMuted()) }, g.default.createElement("span", { className: "material-icons" }, Spicetify.Player.isMuted && Spicetify.Player.isMuted() || volume === 0 ? "volume_off" : volume < .5 ? "volume_down" : "volume_up")), g.default.createElement("input", { type: "range", className: "visualizer-overlay__volume", min: "0", max: "1", step: "0.01", value: volume, onChange: e => Spicetify.Player.setVolume(parseFloat(e.target.value)) }))), showLyrics && lyricsLine && g.default.createElement("div", { className: "visualizer-overlay__lyrics" }, hasNoLyrics ? g.default.createElement("div", { key: "no-lyrics", className: "visualizer-overlay__no-lyrics-container" }, g.default.createElement("span", { className: "visualizer-overlay__lyrics-text" }, "No lyrics available"), g.default.createElement("button", { className: "visualizer-overlay__lyrics-refresh-btn-inline", onClick: handleRefreshLyrics, title: "Refresh Lyrics", style: { background: "none", border: "none", cursor: "pointer", padding: "0", display: "inline-flex", alignItems: "center", justifyContent: "center", color: "var(--theme-color, #ffffff)" } }, g.default.createElement("span", { className: "material-symbols-outlined", style: { fontSize: "1.2rem" } }, "refresh"))) : g.default.createElement(g.default.Fragment, null, g.default.createElement("div", { ref: lyricsContainerRef, key: "lyrics-words", className: "visualizer-overlay__lyrics-text", id: "vis-lyrics-words" }), g.default.createElement("div", { ref: lyricsBgContainerRef, key: "lyrics-bg-words", className: "visualizer-overlay__lyrics-bg-text", id: "vis-lyrics-bg-words", style: { display: "none" } })))), !r.isSecondaryWindow && g.default.createElement("div", { className: "visualizer-top-bar" }, u.audioAnalysis?.isFallback && g.default.createElement(Spicetify.ReactComponent.TooltipWrapper, { label: "Spotify doesn't have audio analysis data for this song right now, so this animation is simulated and not synced to the music.", placement: "bottom" }, g.default.createElement("button", { className: "visualizer-top-btn", type: "button", "aria-label": "Simulated animation notice" }, g.default.createElement("span", { className: "material-symbols-outlined" }, "info"))), g.default.createElement("button", { className: "visualizer-top-btn", title: n ? "Exit Fullscreen" : "Enter Fullscreen", onClick: () => n ? a.current?.ownerDocument.exitFullscreen() : a.current?.requestFullscreen() }, g.default.createElement("span", { className: "material-symbols-outlined" }, n ? "fullscreen_exit" : "fullscreen")), g.default.createElement("button", { className: "visualizer-top-btn", title: r.isSecondaryWindow ? "Close Window" : "Open Popup", onClick: () => r.isSecondaryWindow ? window.close() : (async r => { try { let e = window.open("", "", "width=960,height=540"); if (!e) { let t = "fallback PiP API is not available"; if (window.documentPictureInPicture && (window.documentPictureInPicture.window ? t = "cannot open another PiP window" : e = await window.documentPictureInPicture.requestWindow({ width: 960, height: 540 }).catch(e => (t = e ? "" + e : "unknown error", null))), !e) return void Spicetify.showNotification(_.default.createElement("span", null, "Failed to open window: ", t, ". Try with devtools using", " ", _.default.createElement("code", { style: { fontSize: "12px", background: "rgba(0 0 0 / 0.2)", borderRadius: "4px", padding: "2px" } }, "spicetify enable-devtools"), "."), !0) } let t = e.document; Array.from(document.styleSheets).forEach(e => { e.ownerNode && "tagName" in e.ownerNode && (e = e.ownerNode, e = t.importNode(e, !0), t.head.appendChild(e)) }), t.documentElement.className = document.documentElement.className, t.body.className = document.body.className; var i = D.getStyleSheetManager(), a = Spicetify.ReactDOM.unmountComponentAtNode(t.body), n = _.default.createElement(we, { isSecondaryWindow: !0, onWindowDestroyed: a, initialRenderer: r }); i ? Spicetify.ReactDOM.render(_.default.createElement(i, { target: t.head }, n), t.body) : (Spicetify.showNotification("[Visualizer] Could not find StyleSheetManager. Styles in popup window probably won't work.", !0), Spicetify.ReactDOM.render(n, t.body)) } catch (e) { console.error("[Visualizer]", "error opening popup window", e); let t = e ? "" + e : "unknown error"; Spicetify.showNotification("Failed to open window: " + t, !0) } })(t) }, g.default.createElement("span", { className: "material-symbols-outlined" }, r.isSecondaryWindow ? "pip_exit" : "pip")))), "loading" === o.state ? g.default.createElement(B, null) : "error" === o.state ? g.default.createElement("div", { className: y.error_container }, g.default.createElement("div", { className: y.error_message }, o.errorData.message), 0 === o.errorData.recovery && g.default.createElement(Spicetify.ReactComponent.ButtonPrimary, { onClick: () => m(Spicetify.Player.data) }, "Try again")) : null)
   } var _e = r(i()); return xe = k, M(n({}, "__esModule", { value: !0 }), xe)
 })(); let render = () => visualizer.default();

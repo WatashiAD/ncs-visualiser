@@ -373,10 +373,50 @@ void main() {
 
       requestPositionSync();
 
+      function _injectFonts(doc) {
+        if (!doc) return;
+        try {
+          if (!doc.querySelector("link[data-visualizer-fonts='true']")) {
+            var p1 = doc.createElement("link");
+            p1.rel = "preconnect";
+            p1.href = "https://fonts.googleapis.com";
+            p1.setAttribute("data-visualizer-fonts", "true");
+            doc.head.appendChild(p1);
+
+            var p2 = doc.createElement("link");
+            p2.rel = "preconnect";
+            p2.href = "https://fonts.gstatic.com";
+            p2.crossOrigin = "anonymous";
+            p2.setAttribute("data-visualizer-fonts", "true");
+            doc.head.appendChild(p2);
+
+            var fl = doc.createElement("link");
+            fl.rel = "stylesheet";
+            fl.href = "https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&family=Rubik+Spray+Paint&family=Sniglet:wght@400;800&display=swap";
+            fl.setAttribute("data-visualizer-fonts", "true");
+            doc.head.appendChild(fl);
+          }
+        } catch (e) { }
+      }
+      _injectFonts(document);
+
       function unpackSLObjPack(packed) {
-        if (!Array.isArray(packed) || packed.length !== 2) throw new Error("Invalid SLObjPack structure");
+        if (!packed) return null;
+        if (typeof packed === "object" && packed.Type && packed.Content) return packed;
+        if (typeof packed === "string") {
+          try {
+            var parsed = JSON.parse(packed);
+            if (parsed && (parsed.Type || parsed.Content)) return parsed;
+            packed = parsed;
+          } catch (e) { }
+        }
+        if (!Array.isArray(packed) || packed.length !== 2) {
+          if (typeof packed === "object" && (packed.Type || packed.Content)) return packed;
+          return null;
+        }
         var valuesList = packed[0];
         var stream = packed[1];
+        if (!Array.isArray(valuesList) || !Array.isArray(stream)) return null;
         var streamLen = stream.length;
         var cursor = 0;
         function decode(depth) {
@@ -433,7 +473,12 @@ void main() {
             default: throw new Error("Unknown opcode " + op);
           }
         }
-        return decode(0);
+        try {
+          return decode(0);
+        } catch (e) {
+          console.warn("[Visualizer Lyrics] unpackSLObjPack decode error:", e);
+          return null;
+        }
       }
 
       var _spotifyTokenCache = null;
@@ -463,6 +508,22 @@ void main() {
         return null;
       }
 
+      function _getSpicyLyricsVersion() {
+        try {
+          var parentMeta = window.parent?._spicy_lyrics_metadata || window._spicy_lyrics_metadata;
+          if (parentMeta) {
+            if (parentMeta.LoadedVersion) return parentMeta.LoadedVersion;
+            if (parentMeta.version) return parentMeta.version;
+            if (parentMeta.Version) return parentMeta.Version;
+          }
+          var v = Spicetify.LocalStorage?.get("SL:version") || Spicetify.LocalStorage?.get("spicylyrics:version");
+          if (v) return v;
+          if (window.parent?._spicy_lyrics?.version) return window.parent._spicy_lyrics.version;
+          if (window._spicy_lyrics?.version) return window._spicy_lyrics.version;
+        } catch (e) { }
+        return "6.3.1";
+      }
+
       async function _fetchSpicyLyricsApi(id, _retryCount) {
         if (!_retryCount) _retryCount = 0;
         if (_retryCount > 3) { console.warn("[Visualizer Lyrics] SpicyLyrics max retries reached"); return null; }
@@ -470,16 +531,7 @@ void main() {
           var token = await _getSpotifyToken();
           if (!token) { console.warn("[Visualizer Lyrics] No Spotify token available"); return null; }
 
-          var slVersion = "6.1.1";
-          try {
-            var parentMeta = window.parent?._spicy_lyrics_metadata || window._spicy_lyrics_metadata;
-            if (parentMeta && parentMeta.LoadedVersion) {
-              slVersion = parentMeta.LoadedVersion;
-            } else {
-              var v = Spicetify.LocalStorage.get("SL:version");
-              if (v) slVersion = v;
-            }
-          } catch (e) { }
+          var slVersion = _getSpicyLyricsVersion();
 
           var url = "https://api.spicylyrics.org/query";
           var body = {
@@ -492,7 +544,7 @@ void main() {
             "SpicyLyrics-WebAuth": "Bearer " + token
           };
 
-          console.log("[Visualizer Lyrics] Fetching SpicyLyrics for:", id, "(attempt " + (_retryCount + 1) + ")");
+          console.log("[Visualizer Lyrics] Fetching SpicyLyrics (v" + slVersion + ") for:", id, "(attempt " + (_retryCount + 1) + ")");
 
           var data = null;
 
@@ -579,47 +631,123 @@ void main() {
         }
       }
 
-
       // In-memory lyrics cache (independent of SpicyLyrics extension)
       var _lyricsMemCache = new Map();
       var _LYRICS_CACHE_TTL = 30 * 60 * 1000; // 30 minutes
 
       // Read from the SpicyLyrics extension's CacheStorage as backup
       async function _fetchFromSLExtensionCache(id) {
-        try {
-          var c = await caches.open("SpicyLyrics_LyricsStore_g1");
-          var r = await c.match("/" + id);
-          if (!r) {
-            console.log("[Visualizer Lyrics] No entry in SpicyLyrics extension cache for", id);
-            return null;
-          }
-          var w = await r.json();
-          if (!w) return null;
-          // Handle cache wrapper format
-          var ct = w.Content || w.Value || w;
-          if (!ct || ct === "NO_LYRICS") {
-            console.log("[Visualizer Lyrics] SpicyLyrics extension cache has NO_LYRICS for", id);
-            return null;
-          }
-          // If it's a string, try to parse
-          if (typeof ct === "string") {
-            try { ct = JSON.parse(ct); } catch (e) { return null; }
-          }
-          if (ct && (ct.Type === "Syllable" || ct.Type === "Line") && ct.Content) {
-            console.log("[Visualizer Lyrics] Got lyrics from SpicyLyrics extension cache, type:", ct.Type, "items:", ct.Content.length);
-            return ct;
-          }
-          console.log("[Visualizer Lyrics] SpicyLyrics extension cache entry format not recognized:", Object.keys(ct));
-          return null;
-        } catch (e) {
-          console.warn("[Visualizer Lyrics] Error reading SpicyLyrics extension cache:", e?.message || e);
-          return null;
+        if (typeof caches === "undefined") return null;
+        var storeNames = ["SpicyLyrics_LyricsStore_g1", "SpicyLyrics_LyricsStore"];
+        var keysToTry = ["/" + id, id, "/spotify:track:" + id, "spotify:track:" + id];
+        for (var s = 0; s < storeNames.length; s++) {
+          try {
+            var c = await caches.open(storeNames[s]);
+            for (var k = 0; k < keysToTry.length; k++) {
+              var r = await c.match(keysToTry[k]);
+              if (r) {
+                var w = await r.json();
+                if (w) {
+                  var ct = w.Content || w.Value || w.data || w;
+                  if (!ct || ct === "NO_LYRICS") {
+                    console.log("[Visualizer Lyrics] SpicyLyrics extension cache (" + storeNames[s] + ") has NO_LYRICS for", id);
+                    return null;
+                  }
+                  if (typeof ct === "string") {
+                    try { ct = JSON.parse(ct); } catch (e) { }
+                  }
+                  if (Array.isArray(ct) && ct.length === 2) {
+                    ct = unpackSLObjPack(ct);
+                  }
+                  if (ct && (ct.Type === "Syllable" || ct.Type === "Line" || ct.Type === "Static") && ct.Content) {
+                    console.log("[Visualizer Lyrics] Got lyrics from SpicyLyrics extension cache (" + storeNames[s] + "), type:", ct.Type, "items:", ct.Content.length);
+                    return ct;
+                  }
+                }
+              }
+            }
+          } catch (e) { }
         }
+        return null;
+      }
+
+      // Read from the SpicyLyrics extension's IndexedDB as backup
+      async function _fetchFromSLExtensionIDB(id) {
+        if (typeof indexedDB === "undefined") return null;
+        return new Promise(function (resolve) {
+          try {
+            var req = indexedDB.open("spicylyrics");
+            req.onerror = function () { resolve(null); };
+            req.onsuccess = function (ev) {
+              try {
+                var db = ev.target.result;
+                if (!db.objectStoreNames.contains("lyricsStore")) {
+                  db.close();
+                  return resolve(null);
+                }
+                var tx = db.transaction("lyricsStore", "readonly");
+                var store = tx.objectStore("lyricsStore");
+                var keysToTry = [id, "spotify:track:" + id, "/" + id, "/spotify:track:" + id];
+                var tryNextKey = function (idx) {
+                  if (idx >= keysToTry.length) {
+                    db.close();
+                    return resolve(null);
+                  }
+                  var getReq = store.get(keysToTry[idx]);
+                  getReq.onsuccess = function () {
+                    var val = getReq.result;
+                    if (val) {
+                      var ct = val.Content || val.Value || val.data || val;
+                      if (typeof ct === "string") {
+                        try { ct = JSON.parse(ct); } catch (e) { }
+                      }
+                      if (ct && ct !== "NO_LYRICS") {
+                        if (Array.isArray(ct) && ct.length === 2) {
+                          ct = unpackSLObjPack(ct);
+                        }
+                        if (ct && (ct.Type === "Syllable" || ct.Type === "Line" || ct.Type === "Static") && ct.Content) {
+                          console.log("[Visualizer Lyrics] Got lyrics from SpicyLyrics IndexedDB, type:", ct.Type, "items:", ct.Content.length);
+                          db.close();
+                          return resolve(ct);
+                        }
+                      }
+                    }
+                    tryNextKey(idx + 1);
+                  };
+                  getReq.onerror = function () { tryNextKey(idx + 1); };
+                };
+                tryNextKey(0);
+              } catch (e) {
+                resolve(null);
+              }
+            };
+          } catch (e) {
+            resolve(null);
+          }
+        });
+      }
+
+      // Read from SpicyLyrics global state if present
+      function _fetchFromSLGlobal(id) {
+        try {
+          var sl = window.parent?._spicy_lyrics || window._spicy_lyrics;
+          if (sl) {
+            if (typeof sl.getLyrics === "function") {
+              var res = sl.getLyrics(id);
+              if (res && res.Content) return res;
+            }
+            if (sl.currentLyrics && (sl.currentLyrics.uri === "spotify:track:" + id || sl.currentLyrics.id === id)) {
+              if (sl.currentLyrics.data && sl.currentLyrics.data.Content) return sl.currentLyrics.data;
+              if (sl.currentLyrics.Content) return sl.currentLyrics;
+            }
+          }
+        } catch (e) { }
+        return null;
       }
 
       async function _fetchLyrics(id) {
         try {
-          console.log("[Visualizer Lyrics] === Fetching lyrics (SpicyLyrics only) for track:", id, "===");
+          console.log("[Visualizer Lyrics] === Fetching lyrics (SpicyLyrics compatible) for track:", id, "===");
 
           // 0. Check in-memory cache first
           var memEntry = _lyricsMemCache.get(id);
@@ -635,9 +763,9 @@ void main() {
             _lyricsMemCache.set(id, { data: raw, ts: Date.now() });
             return raw;
           }
-          console.warn("[Visualizer Lyrics] SpicyLyrics API returned nothing");
+          console.warn("[Visualizer Lyrics] SpicyLyrics API returned nothing, trying extension storage fallbacks");
 
-          // 2. Backup: Read from SpicyLyrics extension's cache (if extension has fetched it)
+          // 2. Backup: Read from SpicyLyrics extension's cache storage (if extension has fetched it)
           raw = await _fetchFromSLExtensionCache(id);
           if (raw) {
             console.log("[Visualizer Lyrics] ✓ Got lyrics from SpicyLyrics extension cache, type:", raw.Type);
@@ -645,8 +773,24 @@ void main() {
             return raw;
           }
 
+          // 3. Backup: Read from SpicyLyrics IndexedDB storage
+          raw = await _fetchFromSLExtensionIDB(id);
+          if (raw) {
+            console.log("[Visualizer Lyrics] ✓ Got lyrics from SpicyLyrics IndexedDB, type:", raw.Type);
+            _lyricsMemCache.set(id, { data: raw, ts: Date.now() });
+            return raw;
+          }
+
+          // 4. Backup: Check SpicyLyrics global exposed objects
+          raw = _fetchFromSLGlobal(id);
+          if (raw) {
+            console.log("[Visualizer Lyrics] ✓ Got lyrics from SpicyLyrics global state, type:", raw.Type);
+            _lyricsMemCache.set(id, { data: raw, ts: Date.now() });
+            return raw;
+          }
+
           // No lyrics available from SpicyLyrics
-          console.warn("[Visualizer Lyrics] No lyrics available from SpicyLyrics (API + extension cache both empty) for", id);
+          console.warn("[Visualizer Lyrics] No lyrics available from SpicyLyrics (API + caches + IndexedDB all empty) for", id);
           _lyricsMemCache.set(id, { data: null, ts: Date.now() });
           return null;
         } catch (e) {
@@ -1151,6 +1295,6 @@ void main() {
         cancelAnimationFrame(_raf);
         if (syncTimeoutId) clearTimeout(syncTimeoutId);
       };
-    }, [refreshTrigger, Spicetify.Player.data?.item?.uri]), g.default.createElement("div", { className: "visualizer-container" + (isPlaying ? "" : " visualizer-container--paused"), ref: a }, !d && g.default.createElement(g.default.Fragment, null, g.default.createElement("div", { className: "visualizer-backdrop" }, g.default.createElement("svg", { style: { display: "none" } }, g.default.createElement("defs", null, g.default.createElement("filter", { id: "watercolor-warp" }, g.default.createElement("feTurbulence", { type: "fractalNoise", baseFrequency: "0.012", numOctaves: "3", result: "noise" }), g.default.createElement("feDisplacementMap", { in: "SourceGraphic", in2: "noise", scale: "250", xChannelSelector: "R", yChannelSelector: "G" })))), prevArt && g.default.createElement("img", { src: prevArt, className: "visualizer-backdrop__img", alt: "" }), currentArt && g.default.createElement("img", { key: fadeKey, src: currentArt, className: "visualizer-backdrop__img visualizer-backdrop__img--fade-in", alt: "" }), g.default.createElement("div", { className: "visualizer-backdrop__blob visualizer-backdrop__blob--1" }), g.default.createElement("div", { className: "visualizer-backdrop__blob visualizer-backdrop__blob--2" }), g.default.createElement("div", { className: "visualizer-backdrop__blob visualizer-backdrop__blob--3" })), g.default.createElement(p.Provider, { value: f }, e && g.default.createElement(e, { isEnabled: "running" === o.state, audioAnalysis: u.audioAnalysis, themeColor: u.themeColor, isPlaying: isPlaying })), g.default.createElement("div", { className: "visualizer-overlay", style: { "--theme-color": "rgb(" + u.themeColor.rgb.r + "," + u.themeColor.rgb.g + "," + u.themeColor.rgb.b + ")" } }, g.default.createElement("div", { className: "visualizer-overlay__label" }, "Now Playing", g.default.createElement("div", { className: "visualizer-overlay__wave" + (isPlaying ? " is-playing" : "") }, g.default.createElement("span", { className: "visualizer-overlay__wave-dot", style: { "--i": 1 } }), g.default.createElement("span", { className: "visualizer-overlay__wave-dot", style: { "--i": 2 } }), g.default.createElement("span", { className: "visualizer-overlay__wave-dot", style: { "--i": 3 } }))), g.default.createElement("div", { className: "visualizer-overlay__title-container" }, g.default.createElement("strong", { className: "visualizer-overlay__title", style: { "--title-length": (trackTitle || "No track").length } }, trackTitle || "No track"), g.default.createElement("button", { className: "visualizer-overlay__lyrics-toggle-btn" + (showLyrics ? " visualizer-overlay__lyrics-toggle-btn--active" : ""), onClick: () => { var nextVal = !showLyrics; setShowLyrics(nextVal); if (nextVal) handleRefreshLyrics(); }, title: showLyrics ? "Hide Lyrics" : "Show Lyrics" }, g.default.createElement("span", { className: "material-symbols-outlined" }, "lyrics"))), g.default.createElement("div", { className: "visualizer-overlay__artist" }, Spicetify.Player.data?.item?.artists?.map(a => a.name).join(", ") || ""), g.default.createElement("div", { className: "visualizer-overlay__progress" }, g.default.createElement("div", { className: "visualizer-overlay__time-row" }, g.default.createElement("div", { className: "visualizer-overlay__time-left" }, formatTime(isDraggingSeek ? dragProgress : trackProgress)), g.default.createElement("div", { className: "visualizer-overlay__time-right" }, formatTime(u.audioAnalysis?.track?.duration || 0))), g.default.createElement("div", { ref: progressBarContainerRef, className: "visualizer-overlay__progress-bar-container" + (isDraggingSeek ? " visualizer-overlay__progress-bar-container--dragging" : ""), onMouseDown: handleSeekMouseDown }, g.default.createElement("div", { className: "visualizer-overlay__progress-bar", style: { width: (100 * ((isDraggingSeek ? dragProgress : trackProgress) / (u.audioAnalysis?.track?.duration || 1))) + "%" } }))), (n || r.isSecondaryWindow) && g.default.createElement("div", { className: "visualizer-overlay__controls" }, g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn" + (isLiked ? " visualizer-overlay__ctrl-btn--liked" : ""), onClick: () => { Spicetify.Player.toggleHeart(); setIsLiked(!isLiked); } }, g.default.createElement("span", { className: "material-icons" }, isLiked ? "favorite" : "favorite_border")), g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn" + (shuffle ? " visualizer-overlay__ctrl-btn--active" : ""), onClick: () => Spicetify.Player.toggleShuffle() }, g.default.createElement("span", { className: "material-icons" }, "shuffle")), g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn", onClick: () => Spicetify.Player.prev() }, g.default.createElement("span", { className: "material-icons" }, "skip_previous")), g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn visualizer-overlay__ctrl-btn--play", onClick: () => Spicetify.Player.togglePlay() }, g.default.createElement("span", { className: "material-icons" }, isPlaying ? "pause" : "play_arrow")), g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn", onClick: () => Spicetify.Player.next() }, g.default.createElement("span", { className: "material-icons" }, "skip_next")), g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn" + (repeatMode ? " visualizer-overlay__ctrl-btn--active" : ""), onClick: () => Spicetify.Player.toggleRepeat() }, g.default.createElement("span", { className: "material-icons" }, 2 === repeatMode ? "repeat_one" : repeatMode ? "repeat" : "repeat")), g.default.createElement("div", { className: "visualizer-overlay__volume-wrap" }, g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn", onClick: () => Spicetify.Player.setMuted && Spicetify.Player.setMuted(!Spicetify.Player.isMuted()) }, g.default.createElement("span", { className: "material-icons" }, Spicetify.Player.isMuted && Spicetify.Player.isMuted() || volume === 0 ? "volume_off" : volume < .5 ? "volume_down" : "volume_up")), g.default.createElement("input", { type: "range", className: "visualizer-overlay__volume", min: "0", max: "1", step: "0.01", value: volume, onChange: e => Spicetify.Player.setVolume(parseFloat(e.target.value)) }))), showLyrics && lyricsLine && g.default.createElement("div", { className: "visualizer-overlay__lyrics" }, hasNoLyrics ? g.default.createElement("div", { key: "no-lyrics", className: "visualizer-overlay__no-lyrics-container" }, g.default.createElement("span", { className: "visualizer-overlay__lyrics-text" }, "No lyrics available"), g.default.createElement("button", { className: "visualizer-overlay__lyrics-refresh-btn-inline", onClick: handleRefreshLyrics, title: "Refresh Lyrics", style: { background: "none", border: "none", cursor: "pointer", padding: "0", display: "inline-flex", alignItems: "center", justifyContent: "center", color: "var(--theme-color, #ffffff)" } }, g.default.createElement("span", { className: "material-symbols-outlined", style: { fontSize: "1.2rem" } }, "refresh"))) : g.default.createElement(g.default.Fragment, null, g.default.createElement("div", { ref: lyricsContainerRef, key: "lyrics-words", className: "visualizer-overlay__lyrics-text", id: "vis-lyrics-words" }), g.default.createElement("div", { ref: lyricsBgContainerRef, key: "lyrics-bg-words", className: "visualizer-overlay__lyrics-bg-text", id: "vis-lyrics-bg-words", style: { display: "none" } })))), !r.isSecondaryWindow && g.default.createElement("div", { className: "visualizer-top-bar" }, u.audioAnalysis?.isFallback && g.default.createElement(Spicetify.ReactComponent.TooltipWrapper, { label: "Spotify doesn't have audio analysis data for this song right now, so this animation is simulated and not synced to the music.", placement: "bottom" }, g.default.createElement("button", { className: "visualizer-top-btn", type: "button", "aria-label": "Simulated animation notice" }, g.default.createElement("span", { className: "material-symbols-outlined" }, "info"))), g.default.createElement("button", { className: "visualizer-top-btn", title: n ? "Exit Fullscreen" : "Enter Fullscreen", onClick: () => n ? a.current?.ownerDocument.exitFullscreen() : a.current?.requestFullscreen() }, g.default.createElement("span", { className: "material-symbols-outlined" }, n ? "fullscreen_exit" : "fullscreen")), g.default.createElement("button", { className: "visualizer-top-btn", title: r.isSecondaryWindow ? "Close Window" : "Open Popup", onClick: () => r.isSecondaryWindow ? window.close() : (async r => { try { let e = window.open("", "", "width=960,height=540"); if (!e) { let t = "fallback PiP API is not available"; if (window.documentPictureInPicture && (window.documentPictureInPicture.window ? t = "cannot open another PiP window" : e = await window.documentPictureInPicture.requestWindow({ width: 960, height: 540 }).catch(e => (t = e ? "" + e : "unknown error", null))), !e) return void Spicetify.showNotification(_.default.createElement("span", null, "Failed to open window: ", t, ". Try with devtools using", " ", _.default.createElement("code", { style: { fontSize: "12px", background: "rgba(0 0 0 / 0.2)", borderRadius: "4px", padding: "2px" } }, "spicetify enable-devtools"), "."), !0) } let t = e.document; Array.from(document.styleSheets).forEach(e => { e.ownerNode && "tagName" in e.ownerNode && (e = e.ownerNode, e = t.importNode(e, !0), t.head.appendChild(e)) }), t.documentElement.className = document.documentElement.className, t.body.className = document.body.className; var i = D.getStyleSheetManager(), a = Spicetify.ReactDOM.unmountComponentAtNode(t.body), n = _.default.createElement(we, { isSecondaryWindow: !0, onWindowDestroyed: a, initialRenderer: r }); i ? Spicetify.ReactDOM.render(_.default.createElement(i, { target: t.head }, n), t.body) : (Spicetify.showNotification("[Visualizer] Could not find StyleSheetManager. Styles in popup window probably won't work.", !0), Spicetify.ReactDOM.render(n, t.body)) } catch (e) { console.error("[Visualizer]", "error opening popup window", e); let t = e ? "" + e : "unknown error"; Spicetify.showNotification("Failed to open window: " + t, !0) } })(t) }, g.default.createElement("span", { className: "material-symbols-outlined" }, r.isSecondaryWindow ? "pip_exit" : "pip")))), "loading" === o.state ? g.default.createElement(B, null) : "error" === o.state ? g.default.createElement("div", { className: y.error_container }, g.default.createElement("div", { className: y.error_message }, o.errorData.message), 0 === o.errorData.recovery && g.default.createElement(Spicetify.ReactComponent.ButtonPrimary, { onClick: () => m(Spicetify.Player.data) }, "Try again")) : null)
+    }, [refreshTrigger, Spicetify.Player.data?.item?.uri]), g.default.createElement("div", { className: "visualizer-container" + (isPlaying ? "" : " visualizer-container--paused"), ref: a }, !d && g.default.createElement(g.default.Fragment, null, g.default.createElement("div", { className: "visualizer-backdrop" }, g.default.createElement("svg", { style: { display: "none" } }, g.default.createElement("defs", null, g.default.createElement("filter", { id: "watercolor-warp" }, g.default.createElement("feTurbulence", { type: "fractalNoise", baseFrequency: "0.012", numOctaves: "3", result: "noise" }), g.default.createElement("feDisplacementMap", { in: "SourceGraphic", in2: "noise", scale: "250", xChannelSelector: "R", yChannelSelector: "G" })))), prevArt && g.default.createElement("img", { src: prevArt, className: "visualizer-backdrop__img", alt: "" }), currentArt && g.default.createElement("img", { key: fadeKey, src: currentArt, className: "visualizer-backdrop__img visualizer-backdrop__img--fade-in", alt: "" }), g.default.createElement("div", { className: "visualizer-backdrop__blob visualizer-backdrop__blob--1" }), g.default.createElement("div", { className: "visualizer-backdrop__blob visualizer-backdrop__blob--2" }), g.default.createElement("div", { className: "visualizer-backdrop__blob visualizer-backdrop__blob--3" })), g.default.createElement(p.Provider, { value: f }, e && g.default.createElement(e, { isEnabled: "running" === o.state, audioAnalysis: u.audioAnalysis, themeColor: u.themeColor, isPlaying: isPlaying })), g.default.createElement("div", { className: "visualizer-overlay", style: { "--theme-color": "rgb(" + u.themeColor.rgb.r + "," + u.themeColor.rgb.g + "," + u.themeColor.rgb.b + ")" } }, g.default.createElement("div", { className: "visualizer-overlay__label" }, "Now Playing", g.default.createElement("div", { className: "visualizer-overlay__wave" + (isPlaying ? " is-playing" : "") }, g.default.createElement("span", { className: "visualizer-overlay__wave-dot", style: { "--i": 1 } }), g.default.createElement("span", { className: "visualizer-overlay__wave-dot", style: { "--i": 2 } }), g.default.createElement("span", { className: "visualizer-overlay__wave-dot", style: { "--i": 3 } }))), g.default.createElement("div", { className: "visualizer-overlay__title-container" }, g.default.createElement("strong", { className: "visualizer-overlay__title", style: { "--title-length": (trackTitle || "No track").length } }, trackTitle || "No track"), g.default.createElement("button", { className: "visualizer-overlay__lyrics-toggle-btn" + (showLyrics ? " visualizer-overlay__lyrics-toggle-btn--active" : ""), onClick: () => { var nextVal = !showLyrics; setShowLyrics(nextVal); if (nextVal) handleRefreshLyrics(); }, title: showLyrics ? "Hide Lyrics" : "Show Lyrics" }, g.default.createElement("span", { className: "material-symbols-outlined" }, "lyrics"))), g.default.createElement("div", { className: "visualizer-overlay__artist" }, Spicetify.Player.data?.item?.artists?.map(a => a.name).join(", ") || ""), g.default.createElement("div", { className: "visualizer-overlay__progress" }, g.default.createElement("div", { className: "visualizer-overlay__time-row" }, g.default.createElement("div", { className: "visualizer-overlay__time-left" }, formatTime(isDraggingSeek ? dragProgress : trackProgress)), g.default.createElement("div", { className: "visualizer-overlay__time-right" }, formatTime(u.audioAnalysis?.track?.duration || 0))), g.default.createElement("div", { ref: progressBarContainerRef, className: "visualizer-overlay__progress-bar-container" + (isDraggingSeek ? " visualizer-overlay__progress-bar-container--dragging" : ""), onMouseDown: handleSeekMouseDown }, g.default.createElement("div", { className: "visualizer-overlay__progress-bar", style: { width: (100 * ((isDraggingSeek ? dragProgress : trackProgress) / (u.audioAnalysis?.track?.duration || 1))) + "%" } }))), (n || r.isSecondaryWindow) && g.default.createElement("div", { className: "visualizer-overlay__controls" }, g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn" + (isLiked ? " visualizer-overlay__ctrl-btn--liked" : ""), onClick: () => { Spicetify.Player.toggleHeart(); setIsLiked(!isLiked); } }, g.default.createElement("span", { className: "material-icons" }, isLiked ? "favorite" : "favorite_border")), g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn" + (shuffle ? " visualizer-overlay__ctrl-btn--active" : ""), onClick: () => Spicetify.Player.toggleShuffle() }, g.default.createElement("span", { className: "material-icons" }, "shuffle")), g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn", onClick: () => Spicetify.Player.prev() }, g.default.createElement("span", { className: "material-icons" }, "skip_previous")), g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn visualizer-overlay__ctrl-btn--play", onClick: () => Spicetify.Player.togglePlay() }, g.default.createElement("span", { className: "material-icons" }, isPlaying ? "pause" : "play_arrow")), g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn", onClick: () => Spicetify.Player.next() }, g.default.createElement("span", { className: "material-icons" }, "skip_next")), g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn" + (repeatMode ? " visualizer-overlay__ctrl-btn--active" : ""), onClick: () => Spicetify.Player.toggleRepeat() }, g.default.createElement("span", { className: "material-icons" }, 2 === repeatMode ? "repeat_one" : repeatMode ? "repeat" : "repeat")), g.default.createElement("div", { className: "visualizer-overlay__volume-wrap" }, g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn", onClick: () => Spicetify.Player.setMuted && Spicetify.Player.setMuted(!Spicetify.Player.isMuted()) }, g.default.createElement("span", { className: "material-icons" }, Spicetify.Player.isMuted && Spicetify.Player.isMuted() || volume === 0 ? "volume_off" : volume < .5 ? "volume_down" : "volume_up")), g.default.createElement("input", { type: "range", className: "visualizer-overlay__volume", min: "0", max: "1", step: "0.01", value: volume, onChange: e => Spicetify.Player.setVolume(parseFloat(e.target.value)) }))), showLyrics && lyricsLine && g.default.createElement("div", { className: "visualizer-overlay__lyrics" }, hasNoLyrics ? g.default.createElement("div", { key: "no-lyrics", className: "visualizer-overlay__no-lyrics-container" }, g.default.createElement("span", { className: "visualizer-overlay__lyrics-text" }, "No lyrics available"), g.default.createElement("button", { className: "visualizer-overlay__lyrics-refresh-btn-inline", onClick: handleRefreshLyrics, title: "Refresh Lyrics", style: { background: "none", border: "none", cursor: "pointer", padding: "0", display: "inline-flex", alignItems: "center", justifyContent: "center", color: "var(--theme-color, #ffffff)" } }, g.default.createElement("span", { className: "material-symbols-outlined", style: { fontSize: "1.2rem" } }, "refresh"))) : g.default.createElement(g.default.Fragment, null, g.default.createElement("div", { ref: lyricsContainerRef, key: "lyrics-words", className: "visualizer-overlay__lyrics-text", id: "vis-lyrics-words" }), g.default.createElement("div", { ref: lyricsBgContainerRef, key: "lyrics-bg-words", className: "visualizer-overlay__lyrics-bg-text", id: "vis-lyrics-bg-words", style: { display: "none" } })))), !r.isSecondaryWindow && g.default.createElement("div", { className: "visualizer-top-bar" }, u.audioAnalysis?.isFallback && g.default.createElement(Spicetify.ReactComponent.TooltipWrapper, { label: "Spotify doesn't have audio analysis data for this song right now, so this animation is simulated and not synced to the music.", placement: "bottom" }, g.default.createElement("button", { className: "visualizer-top-btn", type: "button", "aria-label": "Simulated animation notice" }, g.default.createElement("span", { className: "material-symbols-outlined" }, "info"))), g.default.createElement("button", { className: "visualizer-top-btn", title: n ? "Exit Fullscreen" : "Enter Fullscreen", onClick: () => n ? a.current?.ownerDocument.exitFullscreen() : a.current?.requestFullscreen() }, g.default.createElement("span", { className: "material-symbols-outlined" }, n ? "fullscreen_exit" : "fullscreen")), g.default.createElement("button", { className: "visualizer-top-btn", title: r.isSecondaryWindow ? "Close Window" : "Open Popup", onClick: () => r.isSecondaryWindow ? window.close() : (async r => { try { let e = window.open("", "", "width=960,height=540"); if (!e) { let t = "fallback PiP API is not available"; if (window.documentPictureInPicture && (window.documentPictureInPicture.window ? t = "cannot open another PiP window" : e = await window.documentPictureInPicture.requestWindow({ width: 960, height: 540 }).catch(e => (t = e ? "" + e : "unknown error", null))), !e) return void Spicetify.showNotification(_.default.createElement("span", null, "Failed to open window: ", t, ". Try with devtools using", " ", _.default.createElement("code", { style: { fontSize: "12px", background: "rgba(0 0 0 / 0.2)", borderRadius: "4px", padding: "2px" } }, "spicetify enable-devtools"), "."), !0) } let t = e.document; Array.from(document.styleSheets).forEach(e => { e.ownerNode && "tagName" in e.ownerNode && (e = e.ownerNode, e = t.importNode(e, !0), t.head.appendChild(e)) }), _injectFonts(t), t.documentElement.className = document.documentElement.className, t.body.className = document.body.className; var i = D.getStyleSheetManager(), a = Spicetify.ReactDOM.unmountComponentAtNode(t.body), n = _.default.createElement(we, { isSecondaryWindow: !0, onWindowDestroyed: a, initialRenderer: r }); i ? Spicetify.ReactDOM.render(_.default.createElement(i, { target: t.head }, n), t.body) : (Spicetify.showNotification("[Visualizer] Could not find StyleSheetManager. Styles in popup window probably won't work.", !0), Spicetify.ReactDOM.render(n, t.body)) } catch (e) { console.error("[Visualizer]", "error opening popup window", e); let t = e ? "" + e : "unknown error"; Spicetify.showNotification("Failed to open window: " + t, !0) } })(t) }, g.default.createElement("span", { className: "material-symbols-outlined" }, r.isSecondaryWindow ? "pip_exit" : "pip")))), "loading" === o.state ? g.default.createElement(B, null) : "error" === o.state ? g.default.createElement("div", { className: y.error_container }, g.default.createElement("div", { className: y.error_message }, o.errorData.message), 0 === o.errorData.recovery && g.default.createElement(Spicetify.ReactComponent.ButtonPrimary, { onClick: () => m(Spicetify.Player.data) }, "Try again")) : null)
   } var _e = r(i()); return xe = k, M(n({}, "__esModule", { value: !0 }), xe)
 })(); let render = () => visualizer.default();

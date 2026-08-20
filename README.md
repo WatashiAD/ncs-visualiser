@@ -1,49 +1,19 @@
-<p align="center">
-  <h1 align="center">NCS Visualiser</h1>
-  <h3 align="center">A Real-Time Audio Visualizer for Spicetify</h3>
-</p>
+# NCS-Visualizer
+### A Real-Time Audio Visualizer for Spicetify
 
-<p align="center">
-  A WebGL2-powered particle sphere audio visualizer for Spotify using Spicetify. It synchronizes particle movements with Spotify's audio analysis, featuring dynamic color extraction, a beautiful fullscreen interface, <strong>word-by-word synced lyrics</strong>, playback controls, and built-in developer tools.
-</p>
+A WebGL2-powered particle sphere audio visualizer for Spotify using Spicetify. It synchronizes particle movements with Spotify's audio analysis, featuring dynamic color extraction, a beautiful fullscreen interface, playback controls, and built-in developer tools.
 
-<p align="center">
-  <a href="https://spicetify.app"><img src="https://img.shields.io/badge/Spicetify-v2.43%2B-blue.svg?style=flat-square" alt="Spicetify v2.43+" /></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache%202.0-green.svg?style=flat-square" alt="License" /></a>
-</p>
-
-<p align="center">
-  <a href="#-installation">Installations</a> •
-  <a href="#-preview">Preview</a> •
-  <a href="#%EF%B8%8F-disclaimers">Disclaimers</a> •
-  <a href="#-features">Features</a> •
-  <a href="#-file-structure">Structure</a> •
-  <a href="#-credits">Credits</a> •
-  <a href="#-license">License</a>
-</p>
+[![Spicetify v2.43+](https://img.shields.io/badge/Spicetify-v2.43%2B-blue.svg?style=flat-square)](https://spicetify.app)
+[![License](https://img.shields.io/badge/license-Apache%202.0-green.svg?style=flat-square)](LICENSE)
 
 ---
 
-> [!IMPORTANT]
-> **Having the Spicy Lyrics Spicetify Extension is highly recommended for this to work correctly.** Without it, the visualizer falls back to Spotify's line-level lyrics, or may show no lyrics if Spotify has none.
+## 📸 Previews
 
-## 📸 Preview
-
-### Casual View
-![Casual View](resources/casual.png)
-
-### Fullscreen View
-![Fullscreen View](resources/FullScreen.png)
-
-### Popup View
-![Popup View](resources/popup.png)
-
----
-
-## ⚠️ Disclaimers
-
-*   **Spicy Lyrics Dependency:** Having the [Spicy Lyrics Spicetify Extension](https://github.com/spicylyricsapp) is highly recommended for syllable-level syncing. Without it, the visualizer will fall back to Spotify's standard line-level lyrics (or show no lyrics if they are unavailable).
-*   **Performance / GPU Selection:** If the visualizer animations feel laggy, stutter, or drop frames, you should force Spotify to run on your system's dedicated GPU (NVIDIA/AMD) rather than the integrated graphics card. Follow the steps in the [Performance Optimization](#-performance-optimization-lag--low-fps) section.
+<p align="center">
+  <img src="resources/Normal.png" width="49%" alt="Normal View" />
+  <img src="resources/FullScreen.png" width="49%" alt="Fullscreen View" />
+</p>
 
 ---
 
@@ -56,16 +26,6 @@
 - 🔊 **Volume Controller:** Quick mute button with a smooth hover-reveal volume slider.
 - 📊 **Developer Analysis Tools:** Built-in timeline overlays to visualize beats, bars, loudness, timbre, pitches, and rhythm analysis.
 - 📐 **Responsive Design:** Completely fluid typography and layout scaling perfectly to any viewport size.
-
-### 🎤 Synced Lyrics
-
-- **Word-by-Word Sync:** When paired with the [SpicyLyrics](https://github.com/spicylyricsapp) extension, lyrics are displayed with precise syllable-level sync — each word lights up exactly as it's being sung.
-- **Smooth Letter Animations:** Letters transition with a glowing highlight sweep. Already-sung letters stay lit with the theme color while upcoming letters remain dim, creating a flowing karaoke-style fill effect.
-- **Active Word Zoom:** The word currently being sung smoothly scales up (1.12×) with a soft ease-in-out transition, then gently scales back down.
-- **Music Note Interludes:** During instrumental breaks, animated music symbols (♪ ♫ ♬) bounce and glow in an overlapping sine-wave pattern — one fading in while the previous fades out.
-- **Line Fade Transitions:** When a lyric line ends, all letters gracefully fade out together before the next line appears.
-- **Lyrics Toggle:** Show/hide lyrics with a single click on the lyrics icon next to the song title.
-- **Graceful Fallback:** If SpicyLyrics data isn't available, the visualizer falls back to Spotify's line-level lyrics with evenly distributed letter animation.
 
 ---
 
@@ -81,16 +41,16 @@ For help with installing or uninstalling, check out the official [Spicetify FAQ]
    spicetify config-dir
    ```
 2. **Navigate & Create Folder**  
-   Navigate to the `CustomApps` folder within that directory. Create a new folder named `visualizer`.
+   Navigate to the `CustomApps` folder within that directory. Create a new folder named `ncs-visualizer`.
 3. **Download Project Files**  
-   Download the files from this repository and copy them into the `visualizer` folder you just created:
-   - `index.js`
-   - `manifest.json`
-   - `style.css`
+   Download the files from this repository and copy them into the `ncs-visualizer` folder you just created:
+   - [`index.js`](index.js)
+   - [`manifest.json`](manifest.json)
+   - [`style.css`](style.css)
 4. **Enable the Custom App**  
    Add the app to your Spicetify configuration by running:
    ```bash
-   spicetify config custom_apps visualizer
+   spicetify config custom_apps ncs-visualizer
    ```
 5. **Apply Configuration**  
    Finalize the installation and apply changes to Spotify:
@@ -99,31 +59,6 @@ For help with installing or uninstalling, check out the official [Spicetify FAQ]
    ```
 6. **Launch**  
    Restart Spotify. A new **Visualizer** button will appear in your sidebar/navigation panel!
-
-### ⚠️ Recommended: Best Lyrics Experience
-
-Having the **Spicy Lyrics Spicetify Extension** is highly recommended for lyrics sync to work. Without it, the visualizer uses Spotify's line-level lyrics (or may show no lyrics if Spotify doesn't have them).
-
-To set it up:
-1. Install [SpicyLyrics](https://github.com/spicylyricsapp) via the Spicetify Marketplace or manually.
-2. Play a few songs with SpicyLyrics open so it caches syllable-level timing data.
-3. The visualizer will automatically pick up the cached syllable data for precise word-by-word sync.
-
----
-
-## 🔄 Upgrading / Migrating
-
-### Upgrading from the older "NCS Visualizer"
-
-If you previously had the older `ncs-visualiser` installed, remove it first to avoid configuration conflicts:
-
-1. Open your Spicetify config directory (`spicetify config-dir`).
-2. Navigate to `CustomApps` and **delete** the `ncs-visualiser` folder.
-3. Remove the old app from your configuration:
-   ```bash
-   spicetify config custom_apps ncs-visualiser-
-   ```
-4. Follow the **Installation Instructions** above to set up the new version.
 
 ---
 
@@ -137,8 +72,6 @@ If you previously had the older `ncs-visualiser` installed, remove it first to a
 | **Play / Pause** | Toggle playback using the fullscreen button or press `Space`. |
 | **Shuffle / Repeat** | Toggle shuffle or repeat modes via fullscreen control toggles. |
 | **Volume Control** | Hover over the volume icon to reveal the slider; click to mute/unmute. |
-| **Toggle Lyrics** | Click the lyrics icon (🎤) next to the song title to show/hide synced lyrics. |
-| **Refresh Lyrics** | If lyrics show "No lyrics available", click the refresh button to retry. |
 | **Switch Renderers** | Menu (top-right) → *Renderer* → choose between the WebGL particle sphere or analysis graphs. |
 | **Picture-in-Picture** | Menu (top-right) → *Open Window* (opens visualizer in a standalone or PiP window). |
 
@@ -146,43 +79,14 @@ If you previously had the older `ncs-visualiser` installed, remove it first to a
 
 ## 📁 File Structure
 
-```
-visualizer/
-├── resources/
-│   ├── FullScreen.png # Fullscreen mode preview screenshot
-│   ├── casual.png     # Casual mode preview screenshot
-│   └── popup.png      # Popup mode preview screenshot
-├── index.js           # Main visualizer application (React + WebGL2 + Lyrics)
-├── style.css          # Visualizer styling, animations, and custom typography
-├── manifest.json      # Spicetify custom app manifest definition
-├── LICENSE            # License information
-└── README.md          # Project documentation
-```
-
-## ⚡ Performance Optimization (Lag / Low FPS)
-
-If the WebGL particle sphere animations feel laggy, stutter, or drop frames, it is likely because Spotify is running on your system's battery-saving integrated GPU (iGPU) instead of your dedicated graphics card (dGPU, e.g., NVIDIA GeForce RTX / AMD Radeon).
-
-To force Spotify to utilize your dedicated GPU:
-
-### 1. Configure Windows Graphics Settings
-1. Open the Windows Start Menu, search for **Graphics Settings**, and open it.
-2. In the dropdown under *"Add an app"*, select **Desktop app** and click **Browse**.
-3. Navigate to and select the Spotify executable:
-   `C:\Users\<YourUsername>\AppData\Roaming\Spotify\Spotify.exe`
-4. Once Spotify is added to the list, click on it, select **Options**, choose **High Performance** (this will specify your dedicated graphics card), and click **Save**.
-
-### 2. Configure NVIDIA Control Panel (NVIDIA Users)
-1. Right-click your desktop and open the **NVIDIA Control Panel**.
-2. Go to **Manage 3D Settings** -> **Program Settings** tab.
-3. Click **Add** and select **Spotify** (or browse to `Spotify.exe`).
-4. Find **Power management mode** and set it to **Prefer maximum performance**.
-5. Click **Apply**.
-
-### 3. Verify Spotify Hardware Acceleration
-1. Open **Spotify** -> click your profile picture -> **Settings**.
-2. Search for **Hardware Acceleration** and ensure it is toggled **ON**.
-3. Restart Spotify completely (make sure to close it from the Windows system tray in the bottom right corner).
+- 📁 **[resources/](resources/)**
+  - 🖼️ **[FullScreen.png](resources/FullScreen.png)** — Fullscreen mode preview screenshot
+  - 🖼️ **[Normal.png](resources/Normal.png)** — Normal mode preview screenshot
+- 📄 **[index.js](index.js)** — Main visualizer application (React + WebGL2)
+- 📄 **[style.css](style.css)** — Visualizer styling, animations, and custom typography
+- 📄 **[manifest.json](manifest.json)** — Spicetify custom app manifest definition
+- 📄 **[LICENSE](LICENSE)** — License information
+- 📄 **[README.md](README.md)** — Project documentation
 
 ---
 
@@ -190,18 +94,16 @@ To force Spotify to utilize your dedicated GPU:
 
 You can customize the visualizer's appearance and sensitivity by editing these files directly:
 
-- **Font Sizes & Layout:** Edit `style.css` to adjust dynamic fonts (using `clamp()`, `vw`, and `vh` units), overlay sizing (`max-width: 42%`), or canvas offset (`right: 5%`).
+- **Font Sizes & Layout:** Edit [`style.css`](style.css) to adjust dynamic fonts (using `clamp()`, `vw`, and `vh` units), overlay sizing (`max-width: 42%`), or canvas offset (`right: 5%`).
 - **Colors:** All element styles use the CSS variable `var(--theme-color)`, which is dynamically updated at runtime.
-- **Particle Behavior:** Adjust the particle physics and radius in `index.js` (search for `0.73` or `0.86`).
-- **Lyrics Animation:** Tune the word zoom scale (`1.12`), glow decay time (`0.2s`), and line fade duration (`0.5s`) in `index.js`. Adjust the word scale transition speed in `style.css` (`.vis-word` transition).
-- **Music Note Interlude:** Modify the overlapping wave pattern for music symbols in `index.js` (search for `vis-music-note`).
+- **Particle Behavior:** Adjust the particle physics and radius in [`index.js`](index.js) (search for `0.73` or `0.86`).
 
 ---
 
 ## 🛠️ Development & Building
 
-There is **no build step required**! All React components and WebGL shaders are written inside `index.js`. 
-You can edit `index.js` or `style.css` directly and then run:
+There is **no build step required**! All React components and WebGL shaders are written inside [`index.js`](index.js). 
+You can edit [`index.js`](index.js) or [`style.css`](style.css) directly and then run:
 ```bash
 spicetify apply
 ```
@@ -209,28 +111,14 @@ to see your changes instantly.
 
 ---
 
-## 🎤 Lyrics Data Sources
+## 👥 Credits & Attribution
 
-The visualizer fetches lyrics in this priority order:
-
-| Priority | Source | Sync Quality | Description |
-| :---: | :--- | :--- | :--- |
-| 1 | SpicyLyrics Cache | ⭐ Syllable-level | Best quality — per-word timing from the SpicyLyrics extension |
-| 2 | SpicyLyrics API | ⭐ Syllable-level | Fresh fetch from SpicyLyrics backend |
-| 3 | Spotify `wg://` API | Line-level | Spotify's color-lyrics endpoint |
-| 4 | Spotify `spclient` API | Line-level | Spotify's spclient endpoint |
-| 5 | Spotify `hm://` API | Line-level | Older Spotify lyrics endpoint |
-
----
-
-## 👥 Credits
-
-- Built using the **[Spicetify](https://spicetify.app)** Custom App API.
-- WebGL2 particle rendering inspired by standard NCS visualizer designs.
-- Audio analysis data powered by **Spotify Web API**.
-- Word-by-word lyrics decoding logic is powered by the **[SpicyLyrics](https://github.com/Spikerko/spicy-lyrics)** custom client structures created by **[Spikerko](https://github.com/Spikerko)**.
-- Typography: [Rubik Spray Paint](https://fonts.google.com/specimen/Rubik+Spray+Paint) & [Jua](https://fonts.google.com/specimen/Jua) via Google Fonts.
-- Icons: [Material Icons](https://fonts.google.com/icons) by Google.
+- **Original Creator:** Originally designed and developed by **[Konsl](https://github.com/Konsl)** as **[spicetify-visualizer](https://github.com/Konsl/spicetify-visualizer)**.
+- **Core Platform:** Built using the **[Spicetify](https://spicetify.app)** Custom App API.
+- **Audio Rendering:** WebGL2 particle rendering inspired by NCS visualizer concepts.
+- **Data Source:** Audio analysis data powered by the **Spotify Web API**.
+- **Typography:** [Rubik Spray Paint](https://fonts.google.com/specimen/Rubik+Spray+Paint), [Sniglet](https://fonts.google.com/specimen/Sniglet) & [Mochiy Pop One](https://fonts.google.com/specimen/Mochiy+Pop+One) via Google Fonts.
+- **Icons:** [Material Icons](https://fonts.google.com/icons) by Google.
 
 ---
 

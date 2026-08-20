@@ -117,7 +117,7 @@ to see your changes instantly.
 - **Core Platform:** Built using the **[Spicetify](https://spicetify.app)** Custom App API.
 - **Audio Rendering:** WebGL2 particle rendering inspired by NCS visualizer concepts.
 - **Data Source:** Audio analysis data powered by the **Spotify Web API**.
-- **Typography:** [Rubik Spray Paint](https://fonts.google.com/specimen/Rubik+Spray+Paint) & [Jua](https://fonts.google.com/specimen/Jua) via Google Fonts.
+- **Typography:** [Rubik Spray Paint](https://fonts.google.com/specimen/Rubik+Spray+Paint), [Sniglet](https://fonts.google.com/specimen/Sniglet) & [Mochiy Pop One](https://fonts.google.com/specimen/Mochiy+Pop+One) via Google Fonts.
 - **Icons:** [Material Icons](https://fonts.google.com/icons) by Google.
 
 ---

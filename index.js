@@ -1114,21 +1114,20 @@ return lyrics;
       var nextLiked = !currentlyLiked;
       setIsLiked(nextLiked);
       try {
-        if (typeof Spicetify.Player.setHeart === "function") {
-          Spicetify.Player.setHeart(nextLiked);
-        } else if (typeof Spicetify.Player.toggleHeart === "function") {
-          Spicetify.Player.toggleHeart();
-        } else if (Spicetify.Platform?.LibraryAPI) {
+        if (Spicetify.Platform?.LibraryAPI) {
           if (nextLiked) {
             Spicetify.Platform.LibraryAPI.add({ uris: [uri] });
           } else {
             Spicetify.Platform.LibraryAPI.remove({ uris: [uri] });
           }
+        } else if (typeof Spicetify.Player.setHeart === "function") {
+          Spicetify.Player.setHeart(nextLiked);
+        } else if (typeof Spicetify.Player.toggleHeart === "function") {
+          Spicetify.Player.toggleHeart();
         }
       } catch (e) {
         console.warn("[Visualizer] Toggle like error:", e);
       }
-      setTimeout(() => { _verifyLikedStatus(uri); }, 1200);
     };
     (0, g.useEffect)(() => { if (r.isSecondaryWindow) { let isDragging = !1, startX, startY; const onMouseDown = e => { if (e.target.closest("button,input,.visualizer-overlay__progress-bar-container,.visualizer-overlay__volume-wrap")) return; isDragging = !0; startX = e.screenX; startY = e.screenY }, onMouseMove = e => { if (isDragging) { const dx = e.screenX - startX, dy = e.screenY - startY; window.moveBy(dx, dy); startX = e.screenX; startY = e.screenY } }, onMouseUp = () => { isDragging = !1 }; window.addEventListener("mousedown", onMouseDown); window.addEventListener("mousemove", onMouseMove); window.addEventListener("mouseup", onMouseUp); return () => { window.removeEventListener("mousedown", onMouseDown); window.removeEventListener("mousemove", onMouseMove); window.removeEventListener("mouseup", onMouseUp) } } }, [r.isSecondaryWindow]); function formatTime(s) { if (!s || !isFinite(s)) return "0:00"; var m = Math.floor(s / 60), sec = Math.floor(s % 60); return m + ":" + String(sec).padStart(2, "0") } let a = (0, g.useRef)(null); a.current && !a.current.ownerDocument.defaultView && r.onWindowDestroyed?.(); var n = !!(t => { let [e, r] = (0, Re.useState)(t?.fullscreenElement ?? null); return (0, Re.useEffect)(() => { if (t) { let e = () => r(t.fullscreenElement); return t.addEventListener("fullscreenchange", e), () => t.removeEventListener("fullscreenchange", e) } }, [t]), e })(a.current?.ownerDocument); let [o, s] = (0, g.useState)({ state: "loading" }), [u, l] = (0, g.useState)({ themeColor: Spicetify.Color.fromHex("#535353") }), themeColorRef = (0, g.useRef)(null); themeColorRef.current = u.themeColor; let c = (0, g.useCallback)(t => s(e => "error" === e.state && 2 === e.errorData.recovery ? e : t), []), f = (0, g.useCallback)((e, t) => { c({ state: "error", errorData: { message: e, recovery: t } }) }, []), d = "error" === o.state && 2 === o.errorData.recovery, h = (0, g.useMemo)(() => new pe, []), m = (0, g.useCallback)(async e => { e = e?.item; if (e) { var t = Spicetify.URI.fromString(e.uri); if (t.type !== Spicetify.URI.Type.TRACK) f("Error: The type of track you're listening to is currently not supported", 1); else { c({ state: "loading" }); try { var r, i, t = `https://spclient.wg.spotify.com/audio-attributes/v1/audio-analysis/${t.id}?format=json`, [t, e] = await Promise.all([Spicetify.CosmosAsync.get(t).catch(e => (console.error("[Visualizer]", e), { isFallback: !0, track: { duration: (Spicetify.Player.data?.item?.duration?.milliseconds || 180000) / 1e3 }, segments: [], bars: [], beats: [], sections: [], tatums: [] })), h.fetch(23, e.metadata.image_url).catch(e => (console.error("[Visualizer] Could not load extracted color metadata. Status: " + ye[e]), null)).then(e => { try { var t; return e && 0 !== e.value.length && "type.googleapis.com/spotify.context_track_color.ColorResult" === e.typeUrl ? (e = e.value, t = Te, e = new DataView(e.buffer, e.byteOffset, e.byteLength), t = t[1](e).colorLight?.rgb?.toString(16).padStart(6, "0") ?? "535353", Spicetify.Color.fromHex("#" + t)) : Spicetify.Color.fromHex("#535353") } catch (r) { return console.error("[Visualizer] Failed to parse extracted color metadata, using fallback.", r), Spicetify.Color.fromHex("#535353") } })]); if (t) if ("object" != typeof t) f(`Invalid audio analysis data (${t})`, 0); else { if (!("track" in t && "segments" in t)) { console.warn("[Visualizer] No audio analysis available for this track, using fallback.", t); t = { isFallback: !0, track: { duration: (Spicetify.Player.data?.item?.duration?.milliseconds || 180000) / 1e3 }, segments: [], bars: [], beats: [], sections: [], tatums: [] } } l({ audioAnalysis: t, themeColor: e }), c({ state: "running" }) } else f("Error: The audio analysis could not be loaded, please check your internet connection", 0) } catch (r) { console.error("[Visualizer] Unexpected error while loading track data, using fallback.", r), l({ audioAnalysis: { isFallback: !0, track: { duration: (Spicetify.Player.data?.item?.duration?.milliseconds || 180000) / 1e3 }, segments: [], bars: [], beats: [], sections: [], tatums: [] }, themeColor: Spicetify.Color.fromHex("#535353") }), c({ state: "running" }) } } } else f("Start playing a song to see the visualization!", 1) }, [h]); return (0, g.useEffect)(() => { if (!d) { let e = e => { e?.data && m(e.data); try { var lk = (typeof Spicetify.Player.getHeart === "function") ? !!Spicetify.Player.getHeart() : (e?.data?.item?.metadata?.["collection.in_collection"] === "true"); setIsLiked(lk); } catch (err) { } }; return Spicetify.Player.addEventListener("songchange", e), m(Spicetify.Player.data), () => Spicetify.Player.removeEventListener("songchange", e) } }, [d, m]), (0, g.useEffect)(() => {
       if (!d) {
@@ -2356,7 +2355,7 @@ return lyrics;
           }
         }
 
-        function _animateWords(spans, words, isBg) {
+        function _animateWords(spans, words, isBg, isLineOnly) {
           if (!words || words.length === 0) return;
           var lineStart = words[0].startTime;
           var lineEnd = words[words.length - 1].endTime;
@@ -2364,6 +2363,46 @@ return lyrics;
           if (lineDur < 0.05) lineDur = 0.05;
           var P = (ps - lineStart) / lineDur;
           P = Math.max(0, Math.min(1, P));
+
+          if (isLineOnly) {
+            var totalChars = 0;
+            for (var w = 0; w < words.length; w++) { totalChars += (words[w].letterSpans || []).length; }
+            if (totalChars === 0) return;
+            var charIdx = 0;
+            var edgeWidth = Math.max(3, Math.round(totalChars * 0.15));
+            for (var w = 0; w < spans.length; w++) {
+              var span = spans[w];
+              var word = words[w];
+              if (!word) continue;
+              var letters = word.letterSpans || [];
+              var numLetters = letters.length;
+              _setStyle(span, "transform", "scale(1) translateZ(0)");
+              _setStyle(span, "filter", "none");
+              for (var i = 0; i < numLetters; i++) {
+                if (!letters[i]) continue;
+                var x = (charIdx + 0.5) / totalChars;
+                var edgeDist = (P - x) * totalChars / edgeWidth;
+                var fillAmt = Math.max(0, Math.min(1, 0.5 + edgeDist * 0.5));
+                fillAmt = Math.round(fillAmt * 20) * 5;
+                _setStyle(letters[i], "transform", "scale(1) translateZ(0)");
+                if (fillAmt <= 0) {
+                  _setStyle(letters[i], "color", "var(--vis-unsung-color)");
+                  _setStyle(letters[i], "opacity", String(isBg ? 0.25 : 0.40));
+                  _setStyle(letters[i], "filter", "none");
+                } else if (fillAmt >= 100) {
+                  _setStyle(letters[i], "color", "var(--vis-sung-color)");
+                  _setStyle(letters[i], "opacity", String(isBg ? 0.6 : 0.95));
+                  _setStyle(letters[i], "filter", "drop-shadow(0 0 " + (isBg ? 4 : 8) + "px var(--vis-glow-color))");
+                } else {
+                  _setStyle(letters[i], "color", "color-mix(in srgb, var(--vis-sung-color) " + fillAmt + "%, var(--vis-unsung-color))");
+                  _setStyle(letters[i], "opacity", ((isBg ? 0.25 : 0.40) + (isBg ? 0.35 : 0.55) * (fillAmt / 100)).toFixed(2));
+                  _setStyle(letters[i], "filter", "drop-shadow(0 0 " + (isBg ? 4 : 6) + "px var(--vis-glow-color))");
+                }
+                charIdx++;
+              }
+            }
+            return;
+          }
           var edgeHalf = 1.5 / Math.max(1, (words.reduce(function(a, w) { return a + (w.chars || []).length; }, 0) || 1));
           for (var w = 0; w < spans.length; w++) {
             var span = spans[w];
@@ -2480,11 +2519,12 @@ return lyrics;
           }
         }
 
+        var _isLineOnlyLyrics = _cachedLyrics && _cachedLyrics.Type === "Line";
         if (el && _wordSpans.length > 0 && _wordSpans.length === _lineWords.length) {
-          _animateWords(_wordSpans, _lineWords, false);
+          _animateWords(_wordSpans, _lineWords, false, _isLineOnlyLyrics);
         }
         if (bgEl && _bgWordSpans.length > 0 && _bgWordSpans.length === _bgLineWords.length) {
-          _animateWords(_bgWordSpans, _bgLineWords, true);
+          _animateWords(_bgWordSpans, _bgLineWords, true, _isLineOnlyLyrics);
         }
         } catch (e) { }
       }

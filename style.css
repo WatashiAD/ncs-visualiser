@@ -629,7 +629,7 @@
   display: inline-block;
   transform-origin: 50% 50%;
   will-change: transform, filter;
-  transition: transform 0.32s cubic-bezier(0.25, 1, 0.5, 1), filter 0.25s ease-out;
+  transition: none !important;
 }
 
 .vis-letter {

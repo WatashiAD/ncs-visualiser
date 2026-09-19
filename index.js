@@ -1595,14 +1595,20 @@ void main() {
                 }
               }
 
-              var wordScale = isBg ? 1.06 : 1.12;
-              span.style.transform = "scale(" + wordScale + ")";
-              var glowR1 = isBg ? "12px" : "18px";
-              var glowR2 = isBg ? "24px" : "36px";
-              span.style.filter = "drop-shadow(0 0 " + glowR1 + " var(--vis-glow-color)) drop-shadow(0 0 " + glowR2 + " var(--vis-glow-outer))";
+              var peakScale = isBg ? 1.06 : 1.12;
+              var growEase = Math.sin(progress * Math.PI * 0.5);
+              var wordScale = 1.0 + (peakScale - 1.0) * growEase;
+              span.style.transform = "scale(" + wordScale.toFixed(4) + ")";
+              var glowAlpha = 0.35 + 0.65 * growEase;
+              var glowR1 = (isBg ? 10 : 16) * glowAlpha;
+              var glowR2 = (isBg ? 20 : 32) * glowAlpha;
+              span.style.filter = "drop-shadow(0 0 " + glowR1.toFixed(1) + "px var(--vis-glow-color)) drop-shadow(0 0 " + glowR2.toFixed(1) + "px var(--vis-glow-outer))";
             } else {
+              var dur = word.endTime - word.startTime;
+              var peakScale = isBg ? 1.06 : 1.12;
               var elapsed = ps - word.endTime;
-              var settleFactor = Math.max(0, 1.0 - elapsed * 7.0);
+              var returnDur = Math.min(0.40, Math.max(0.18, dur * 0.50));
+              var decayFactor = elapsed < returnDur ? Math.pow(1.0 - elapsed / returnDur, 2.0) : 0;
               for (var i = 0; i < numLetters; i++) {
                 if (!letters[i]) continue;
                 letters[i].style.color = "var(--vis-sung-color)";
@@ -1612,21 +1618,22 @@ void main() {
                 letters[i].style.webkitTextFillColor = "initial";
                 letters[i].style.textShadow = "none";
                 letters[i].style.filter = "none";
-                if (settleFactor > 0.01) {
-                  var settledScale = 1.0 + maxBulge * 0.12 * settleFactor;
+                if (decayFactor > 0.01) {
+                  var settledScale = 1.0 + maxBulge * 0.12 * decayFactor;
                   letters[i].style.transform = "scale(" + settledScale.toFixed(4) + ")";
                 } else {
                   letters[i].style.transform = "scale(1)";
                 }
               }
-              if (elapsed < 0.5) {
-                var fade = Math.exp(-elapsed * 6);
-                var glowR = isBg ? "8px" : "14px";
-                span.style.filter = "drop-shadow(0 0 " + glowR + " color-mix(in srgb, var(--vis-glow-color) " + Math.round(fade * 100) + "%, transparent))";
+              if (decayFactor > 0.01) {
+                var settledWordScale = 1.0 + (peakScale - 1.0) * decayFactor;
+                span.style.transform = "scale(" + settledWordScale.toFixed(4) + ")";
+                var fadeGlow = (isBg ? 8 : 14) * decayFactor;
+                span.style.filter = "drop-shadow(0 0 " + fadeGlow.toFixed(1) + "px var(--vis-glow-color))";
               } else {
+                span.style.transform = "scale(1)";
                 span.style.filter = "none";
               }
-              span.style.transform = "scale(1)";
             }
           }
         }

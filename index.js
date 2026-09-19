@@ -1973,7 +1973,7 @@ return lyrics;
           } catch (e) {
             rawProgressMs = Spicetify.Player.getProgress();
           }
-          progressMs = rawProgressMs + 100 - playbackOffset;
+          progressMs = rawProgressMs - playbackOffset;
         } else {
           var StartedSyncAt = syncedPosition.StartedSyncAt;
           var Position = syncedPosition.Position;
@@ -1984,7 +1984,7 @@ return lyrics;
             progressMs = normalizeProgress(Position - playbackOffset, false);
           } else {
             var FinalPosition = Position + deltaTime;
-            progressMs = normalizeProgress(FinalPosition + 100 - playbackOffset, true);
+            progressMs = normalizeProgress(FinalPosition - playbackOffset, true);
           }
         }
         var ps = progressMs / 1000;
@@ -2288,6 +2288,14 @@ return lyrics;
         }
 
         function _animateWords(spans, words, isBg) {
+          if (!words || words.length === 0) return;
+          var lineStart = words[0].startTime;
+          var lineEnd = words[words.length - 1].endTime;
+          var lineDur = lineEnd - lineStart;
+          if (lineDur < 0.05) lineDur = 0.05;
+          var P = (ps - lineStart) / lineDur;
+          P = Math.max(0, Math.min(1, P));
+          var edgeHalf = 1.5 / Math.max(1, (words.reduce(function(a, w) { return a + (w.chars || []).length; }, 0) || 1));
           for (var w = 0; w < spans.length; w++) {
             var span = spans[w];
             var word = words[w];
@@ -2307,14 +2315,16 @@ return lyrics;
                 _setStyle(letters[i], "opacity", String(isBg ? 0.25 : 0.40));
                 _setStyle(letters[i], "filter", "none");
               }
-            } else if (ps <= word.endTime) {
+              continue;
+            }
+            if (ps <= word.endTime) {
               var dur = word.endTime - word.startTime;
               var progress = dur > 0 ? (ps - word.startTime) / dur : 1;
               progress = Math.max(0, Math.min(1, progress));
 
               var avgCharDur = numLetters > 0 ? dur / numLetters : dur;
               var speedFactor = Math.min(1.0, Math.max(0.0, (avgCharDur - 0.08) / 0.35));
-              var maxBulge = (0.10 + 0.14 * speedFactor) * (isBg ? 0.7 : 1.0);
+              var maxBulge = (0.18 + 0.16 * speedFactor) * (isBg ? 0.7 : 1.0);
 
               var activeCharIdx = 0;
               for (var cIdx = 0; cIdx < numLetters; cIdx++) {
@@ -2345,37 +2355,35 @@ return lyrics;
                 var letterScale = 1.0 + maxBulge * weight;
                 letters[i].style.transform = "scale(" + letterScale.toFixed(4) + ") translateZ(0)";
 
-                if (ps < chStart) {
+                var xMid = (chStart + chEnd) * 0.5 - lineStart;
+                var xNorm = lineDur > 0 ? xMid / lineDur : 0;
+                var edgeDist = (P - xNorm) / edgeHalf;
+                var fillAmt = Math.max(0, Math.min(1, 0.5 + edgeDist * 0.5));
+                fillAmt = Math.round(fillAmt * 20) * 5;
+
+                if (fillAmt <= 0) {
                   _setStyle(letters[i], "color", "var(--vis-unsung-color)");
                   _setStyle(letters[i], "opacity", String(isBg ? 0.25 : 0.40));
                   _setStyle(letters[i], "filter", "none");
-                } else if (ps > chEnd) {
+                } else if (fillAmt >= 100) {
                   _setStyle(letters[i], "color", "var(--vis-sung-color)");
                   _setStyle(letters[i], "opacity", String(isBg ? 0.6 : 0.95));
                   _setStyle(letters[i], "filter", "drop-shadow(0 0 " + (isBg ? 4 : 8) + "px var(--vis-glow-color))");
                 } else {
-                  var charProg = chDur > 0 ? (ps - chStart) / chDur : 1;
-                  charProg = Math.max(0, Math.min(1, charProg));
-                  if (charProg < 0.55) {
-                    var halfPct = isBg ? 30 : 45;
-                    _setStyle(letters[i], "color", "color-mix(in srgb, var(--vis-sung-color) " + halfPct + "%, var(--vis-unsung-color))");
-                  } else {
-                    _setStyle(letters[i], "color", "var(--vis-sung-color)");
-                  }
-                  var activeOp = (isBg ? 0.25 : 0.40) + (isBg ? 0.35 : 0.55) * charProg;
-                  _setStyle(letters[i], "opacity", activeOp.toFixed(2));
-                  _setStyle(letters[i], "filter", "drop-shadow(0 0 " + (isBg ? 5 : 8) + "px var(--vis-glow-color))");
+                  _setStyle(letters[i], "color", "color-mix(in srgb, var(--vis-sung-color) " + fillAmt + "%, var(--vis-unsung-color))");
+                  _setStyle(letters[i], "opacity", ((isBg ? 0.25 : 0.40) + (isBg ? 0.35 : 0.55) * (fillAmt / 100)).toFixed(2));
+                  _setStyle(letters[i], "filter", "drop-shadow(0 0 " + (isBg ? 4 : 6) + "px var(--vis-glow-color))");
                 }
               }
 
-              var peakScale = isBg ? 1.06 : 1.12;
+              var peakScale = isBg ? 1.10 : 1.18;
               var growEase = Math.sin(progress * Math.PI * 0.5);
               var wordScale = 1.0 + (peakScale - 1.0) * growEase;
               _setStyle(span, "transform", "scale(" + wordScale.toFixed(4) + ") translateZ(0)");
               _setStyle(span, "filter", "none");
             } else {
               var dur = word.endTime - word.startTime;
-              var peakScale = isBg ? 1.06 : 1.12;
+              var peakScale = isBg ? 1.10 : 1.18;
               var elapsed = ps - word.endTime;
               var returnDur = Math.min(0.40, Math.max(0.18, dur * 0.50));
               var decayFactor = elapsed < returnDur ? Math.pow(1.0 - elapsed / returnDur, 2.0) : 0;

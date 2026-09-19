@@ -26,6 +26,9 @@ A WebGL2-powered particle sphere audio visualizer for Spotify using Spicetify. I
 - 🔊 **Volume Controller:** Quick mute button with a smooth hover-reveal volume slider.
 - 📊 **Developer Analysis Tools:** Built-in timeline overlays to visualize beats, bars, loudness, timbre, pitches, and rhythm analysis.
 - 📐 **Responsive Design:** Completely fluid typography and layout scaling perfectly to any viewport size.
+- 🔄 **Built-in Auto-Updater:** One-click update from the top bar — no manual file copying needed.
+- 🎤 **Synchronized Lyrics:** Real-time word-by-word animated lyrics with gradient fill, glow effects, and romanization support for Japanese, Chinese, and Korean.
+- 🖼️ **Kawarp WebGL Background:** GPU-accelerated fluid animated backdrop driven by album art colors.
 
 ---
 
@@ -59,6 +62,23 @@ For help with installing or uninstalling, check out the official [Spicetify FAQ]
    ```
 6. **Launch**  
    Restart Spotify. A new **Visualizer** button will appear in your sidebar/navigation panel!
+
+---
+
+## 🔄 Updating
+
+The visualizer has a **built-in auto-updater**. When a new version is available, a download icon will appear in the top-right button bar of the visualizer.
+
+### How to Update
+
+1. **Click the download icon** in the top bar of the visualizer when it appears.
+2. Wait for the files to download — a notification will confirm completion.
+3. **Restart Spotify**, then run:
+   ```bash
+   spicetify apply
+   ```
+
+If the auto-updater cannot write directly to the app directory, the files will be downloaded to your **Downloads** folder. In that case, copy them into your Spicetify `CustomApps/visualiser/` directory manually before running `spicetify apply`.
 
 ---
 

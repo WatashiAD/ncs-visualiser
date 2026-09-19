@@ -1031,7 +1031,7 @@ return lyrics;
           } else {
             Spicetify.showNotification("Update downloaded to Downloads (" + saved + "/" + _UPDATE_FILES.length + ") - copy to CustomApps/visualiser/ and run: spicetify apply");
           }
-          window.open("https://github.com/" + _UPDATE_REPO + "#" + _UPDATE_BRANCH, "_blank");
+          window.open("https://github.com/" + _UPDATE_REPO + "/#-installation", "_blank");
         } else {
           Spicetify.showNotification("Update download failed - check DevTools console");
         }

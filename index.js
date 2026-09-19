@@ -279,7 +279,7 @@ void main() {
   var _fetching = false;
 
   // ---- Auto-update (download + spicetify apply) & lyrics romanization pipeline ----
-  var _LOCAL_SHA = "d74e5df84a745792c31501dfc601ee8406db5ab9";
+  var _LOCAL_SHA = "d151ab0b3e190286ba935aea0b3cb979dd297ac1";
     var _UPDATE_REPO = "WatashiAD/ncs-visualiser";
     var _UPDATE_BRANCH = "main";
     var _UPDATE_FILES = ["index.js", "style.css", "manifest.json"];
@@ -965,7 +965,7 @@ return lyrics;
         });
       }
     }, [isPlaying]);
-    (0, g.useEffect)(() => { var check = function () { try { var cached = null; try { cached = sessionStorage.getItem("ncs-vis-update-check"); } catch (e) { } if (cached) { try { var parsed = JSON.parse(cached); if (parsed && parsed.t && Date.now() - parsed.t < 3600e3) { setHasUpdate(!!parsed.up); return; } } catch (e) { } } fetch("https://api.github.com/repos/" + _UPDATE_REPO + "/commits?per_page=1", { headers: { Accept: "application/vnd.github.v3+json" } }).then(r => r.ok ? r.json() : null).then(data => { if (data && Array.isArray(data) && data.length > 0) { var isNewer = data[0].sha !== _LOCAL_SHA; setHasUpdate(isNewer); try { sessionStorage.setItem("ncs-vis-update-check", JSON.stringify({ t: Date.now(), up: isNewer })); } catch (e) { } } }).catch(() => { }) } catch (e) { } }; check(); }, []); const handleSeekMouseDown = e => { const container = progressBarContainerRef.current; if (container) { const rect = container.getBoundingClientRect(), duration = u.audioAnalysis?.track?.duration || 0; if (duration > 0) { setIsDraggingSeek(!0); const calculateProgress = clientX => { let frac = (clientX - rect.left) / rect.width; return frac = Math.max(0, Math.min(1, frac)), frac * duration }; setDragProgress(calculateProgress(e.clientX)); const onMouseMove = moveEvent => { setDragProgress(calculateProgress(moveEvent.clientX)) }, onMouseUp = upEvent => { const finalProgress = calculateProgress(upEvent.clientX); Spicetify.Player.seek(Math.round(1000 * finalProgress)); setIsDraggingSeek(!1); const win = container.ownerDocument.defaultView || window; win.removeEventListener("mousemove", onMouseMove); win.removeEventListener("mouseup", onMouseUp) }; const win = container.ownerDocument.defaultView || window; win.addEventListener("mousemove", onMouseMove); win.addEventListener("mouseup", onMouseUp) } } };
+    (0, g.useEffect)(() => { var check = function () { try { var cached = null; try { cached = sessionStorage.getItem("ncs-vis-update-check"); } catch (e) { } if (cached) { try { var parsed = JSON.parse(cached); if (parsed && parsed.t && Date.now() - parsed.t < 3600e3) { setHasUpdate(!!parsed.up); return; } } catch (e) { } } fetch("https://api.github.com/repos/" + _UPDATE_REPO + "/commits?per_page=1", { headers: { Accept: "application/vnd.github.v3+json" } }).then(r => r.ok ? r.json() : null).then(data => { if (data && Array.isArray(data) && data.length > 0) { var remoteSHA = data[0].sha; var localSHA = _LOCAL_SHA; try { var stored = localStorage.getItem("ncs-vis-local-sha"); if (stored) localSHA = stored; } catch (e) { } var isNewer = remoteSHA !== localSHA; setHasUpdate(isNewer); try { sessionStorage.setItem("ncs-vis-update-check", JSON.stringify({ t: Date.now(), up: isNewer })); } catch (e) { } } }).catch(() => { }) } catch (e) { } }; check(); }, []); const handleSeekMouseDown = e => { const container = progressBarContainerRef.current; if (container) { const rect = container.getBoundingClientRect(), duration = u.audioAnalysis?.track?.duration || 0; if (duration > 0) { setIsDraggingSeek(!0); const calculateProgress = clientX => { let frac = (clientX - rect.left) / rect.width; return frac = Math.max(0, Math.min(1, frac)), frac * duration }; setDragProgress(calculateProgress(e.clientX)); const onMouseMove = moveEvent => { setDragProgress(calculateProgress(moveEvent.clientX)) }, onMouseUp = upEvent => { const finalProgress = calculateProgress(upEvent.clientX); Spicetify.Player.seek(Math.round(1000 * finalProgress)); setIsDraggingSeek(!1); const win = container.ownerDocument.defaultView || window; win.removeEventListener("mousemove", onMouseMove); win.removeEventListener("mouseup", onMouseUp) }; const win = container.ownerDocument.defaultView || window; win.addEventListener("mousemove", onMouseMove); win.addEventListener("mouseup", onMouseUp) } } };
     const handleRefreshLyrics = async () => {
       var uri = Spicetify.Player.data?.item?.uri;
       if (!uri) return;
@@ -1025,6 +1025,15 @@ return lyrics;
         }
         if (saved > 0) {
           try { sessionStorage.setItem("ncs-vis-update-downloaded", "1"); } catch (e3) { }
+          try {
+            var latestRes = await nativeFetch("https://api.github.com/repos/" + _UPDATE_REPO + "/commits?per_page=1", { headers: { Accept: "application/vnd.github.v3+json" } });
+            if (latestRes.ok) {
+              var latestData = await latestRes.json();
+              if (latestData && latestData[0] && latestData[0].sha) {
+                localStorage.setItem("ncs-vis-local-sha", latestData[0].sha);
+              }
+            }
+          } catch (e5) { }
           setUpdateDownloaded(true);
           if (appDir && Spicetify.Platform?.LocalFilesAPI?.writeFile) {
             Spicetify.showNotification("Update applied to app directory (" + saved + "/" + _UPDATE_FILES.length + ") - run: spicetify apply");

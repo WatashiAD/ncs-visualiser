@@ -1091,7 +1091,27 @@ return lyrics;
     const handleToggleLike = async () => {
       var uri = Spicetify.Player.data?.item?.uri || Spicetify.Player.origin?._state?.item?.uri;
       if (!uri) return;
-      var nextLiked = !isLiked;
+      var currentlyLiked = false;
+      try {
+        if (Spicetify.Platform?.LibraryAPI) {
+          var p;
+          try { p = Spicetify.Platform.LibraryAPI.contains({ uris: [uri] }); } catch (_) {}
+          if (!p || typeof p.then !== "function") {
+            try { p = Spicetify.Platform.LibraryAPI.contains([uri]); } catch (_) {}
+          }
+          if (p && typeof p.then === "function") {
+            var res = await p.catch(() => null);
+            if (res !== null && res !== undefined) {
+              var val;
+              if (Array.isArray(res)) val = res[0];
+              else if (typeof res === "object") val = res[uri] ?? res.isSaved ?? res.contains ?? res[Object.keys(res)[0]];
+              else val = res;
+              if (val !== undefined && val !== null) currentlyLiked = !!val;
+            }
+          }
+        }
+      } catch (e) {}
+      var nextLiked = !currentlyLiked;
       setIsLiked(nextLiked);
       try {
         if (typeof Spicetify.Player.setHeart === "function") {

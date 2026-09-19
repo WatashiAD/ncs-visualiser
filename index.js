@@ -420,9 +420,17 @@ void main() {
       return out !== txt ? out : null;
     }
 
+    function _cleanRomanized(v) {
+      if (typeof v !== "string") return v;
+      v = v.replace(/\s+/g, " ").trim();
+      v = v.replace(/\s+([\)\]\},;.:!?〜～♪♫♬、。！？」）…])/g, "$1");
+      return v;
+    }
+
     function _setTranslit(target, line, value) {
       if (!value || value === "" || typeof value !== "string" || target.TransliteratedText !== undefined) return false;
-      target.TransliteratedText = value;
+      var cleaned = _cleanRomanized(value);
+      target.TransliteratedText = cleaned || value;
       if (line) line.HasTransliterations = true;
       return true;
     }
@@ -891,7 +899,7 @@ return lyrics;
   var _bgAnimController = new BackgroundAnimationController();
 
   function we(r) {
-    let [t, i] = (0, g.useState)(() => { var e = new Set(Se.map(e => e.id)), t = r.initialRenderer; return t && e.has(t) || (t = new URLSearchParams(Spicetify.Platform?.History?.location?.search || "").get("renderer")) && e.has(t) ? t : "ncs" }); (0, g.useEffect)(() => { var e = new URLSearchParams; e.set("renderer", t), Spicetify.Platform?.History?.replace({ search: e.toString() }) }, [t]); var e = Se.find(e => e.id === t)?.renderer; let [albumArt, setAlbumArt] = (0, g.useState)(Spicetify.Player.data?.item?.metadata?.image_url ?? ""), [currentArt, setCurrentArt] = (0, g.useState)(Spicetify.Player.data?.item?.metadata?.image_url ?? ""), [prevArt, setPrevArt] = (0, g.useState)(""), [fadeKey, setFadeKey] = (0, g.useState)(0), [isPlaying, setIsPlaying] = (0, g.useState)(Spicetify.Player.isPlaying), [trackTitle, setTrackTitle] = (0, g.useState)(Spicetify.Player.data?.item?.name ?? ""), [trackProgress, setTrackProgress] = (0, g.useState)(Spicetify.Player.getProgress() / 1e3), [volume, setVolume] = (0, g.useState)(Spicetify.Player.getVolume() || 0), [shuffle, setShuffle] = (0, g.useState)("function" == typeof Spicetify.Player.getShuffle && Spicetify.Player.getShuffle()), [repeatMode, setRepeatMode] = (0, g.useState)("function" == typeof Spicetify.Player.getRepeat ? +Spicetify.Player.getRepeat() || 0 : 0), [isDraggingSeek, setIsDraggingSeek] = (0, g.useState)(!1), [dragProgress, setDragProgress] = (0, g.useState)(0), [isLiked, setIsLiked] = (0, g.useState)(() => { try { if (typeof Spicetify.Player.getHeart === "function") return !!Spicetify.Player.getHeart(); } catch (e) { } var meta = Spicetify.Player.data?.item?.metadata || Spicetify.Player.origin?._state?.item?.metadata; return meta?.["collection.in_collection"] === "true"; }), [lyricsLine, setLyricsLine] = (0, g.useState)(""),[showLyrics, setShowLyrics] = (0, g.useState)(true), [refreshTrigger, setRefreshTrigger] = (0, g.useState)(0), [hasNoLyrics, setHasNoLyrics] = (0, g.useState)(false), [hasUpdate, setHasUpdate] = (0, g.useState)(false), [isDownloadingUpdate, setIsDownloadingUpdate] = (0, g.useState)(false), [updateDownloaded, setUpdateDownloaded] = (0, g.useState)(() => { try { return sessionStorage.getItem("ncs-vis-update-downloaded") === "1"; } catch (e) { return false; } }), [isRomanized, setIsRomanized] = (0, g.useState)(() => { try { var s = Spicetify.LocalStorage.get("SL:uiState"); return s ? !!JSON.parse(s)?.romanization : false } catch(e) { return false } }); let progressBarContainerRef = (0, g.useRef)(null), lastUriRef = (0, g.useRef)(""), lyricsContainerRef = (0, g.useRef)(null), lyricsBgContainerRef = (0, g.useRef)(null), kawarpCanvasRef = (0, g.useRef)(null), kawarpInstanceRef = (0, g.useRef)(null);
+    let [t, i] = (0, g.useState)(() => { var e = new Set(Se.map(e => e.id)), t = r.initialRenderer; return t && e.has(t) || (t = new URLSearchParams(Spicetify.Platform?.History?.location?.search || "").get("renderer")) && e.has(t) ? t : "ncs" }); (0, g.useEffect)(() => { var e = new URLSearchParams; e.set("renderer", t), Spicetify.Platform?.History?.replace({ search: e.toString() }) }, [t]); var e = Se.find(e => e.id === t)?.renderer; let [albumArt, setAlbumArt] = (0, g.useState)(Spicetify.Player.data?.item?.metadata?.image_url ?? ""), [currentArt, setCurrentArt] = (0, g.useState)(Spicetify.Player.data?.item?.metadata?.image_url ?? ""), [prevArt, setPrevArt] = (0, g.useState)(""), [fadeKey, setFadeKey] = (0, g.useState)(0), [isPlaying, setIsPlaying] = (0, g.useState)(Spicetify.Player.isPlaying), [trackTitle, setTrackTitle] = (0, g.useState)(Spicetify.Player.data?.item?.name ?? ""), [trackProgress, setTrackProgress] = (0, g.useState)(Spicetify.Player.getProgress() / 1e3), [volume, setVolume] = (0, g.useState)(Spicetify.Player.getVolume() || 0), [shuffle, setShuffle] = (0, g.useState)("function" == typeof Spicetify.Player.getShuffle && Spicetify.Player.getShuffle()), [repeatMode, setRepeatMode] = (0, g.useState)("function" == typeof Spicetify.Player.getRepeat ? +Spicetify.Player.getRepeat() || 0 : 0), [isDraggingSeek, setIsDraggingSeek] = (0, g.useState)(!1), [dragProgress, setDragProgress] = (0, g.useState)(0), [isLiked, setIsLiked] = (0, g.useState)(() => { try { if (typeof Spicetify.Player.getHeart === "function") return !!Spicetify.Player.getHeart(); } catch (e) { } var meta = Spicetify.Player.data?.item?.metadata || Spicetify.Player.origin?._state?.item?.metadata; return meta?.["collection.in_collection"] === "true"; }), [lyricsLine, setLyricsLine] = (0, g.useState)(""),[showLyrics, setShowLyrics] = (0, g.useState)(true), [refreshTrigger, setRefreshTrigger] = (0, g.useState)(0), [hasNoLyrics, setHasNoLyrics] = (0, g.useState)(false), [hasUpdate, setHasUpdate] = (0, g.useState)(false), [isDownloadingUpdate, setIsDownloadingUpdate] = (0, g.useState)(false), [updateDownloaded, setUpdateDownloaded] = (0, g.useState)(() => { try { return sessionStorage.getItem("ncs-vis-update-downloaded") === "1"; } catch (e) { return false; } }), [isRomanized, setIsRomanized] = (0, g.useState)(() => { try { var s = Spicetify.LocalStorage.get("SL:uiState"); return s ? !!JSON.parse(s)?.romanization : false } catch(e) { return false } }); let progressBarContainerRef = (0, g.useRef)(null), lastUriRef = (0, g.useRef)(""), lyricsContainerRef = (0, g.useRef)(null), lyricsBgContainerRef = (0, g.useRef)(null), kawarpCanvasRef = (0, g.useRef)(null), kawarpInstanceRef = (0, g.useRef)(null), backdropParallaxRef = (0, g.useRef)(null);
     (0, g.useEffect)(() => {
       var canvas = kawarpCanvasRef.current;
       if (canvas && !kawarpInstanceRef.current) {
@@ -924,6 +932,32 @@ return lyrics;
         kawarpInstanceRef.current.loadImage(currentArt);
       }
     }, [currentArt]);
+    (0, g.useEffect)(() => {
+      var el = backdropParallaxRef.current;
+      if (!el) return;
+      var raf = 0, tx = 0, ty = 0, cx = 0, cy = 0;
+      var step = function () {
+        raf = 0;
+        cx += (tx - cx) * 0.12;
+        cy += (ty - cy) * 0.12;
+        el.style.setProperty("--prlx-x", (cx * 42).toFixed(2) + "px");
+        el.style.setProperty("--prlx-y", (cy * 30).toFixed(2) + "px");
+        el.style.setProperty("--prlx-rx", (-cy * 6).toFixed(2) + "deg");
+        el.style.setProperty("--prlx-ry", (cx * 6).toFixed(2) + "deg");
+        if (Math.abs(tx - cx) > 0.01 || Math.abs(ty - cy) > 0.01) raf = requestAnimationFrame(step);
+      };
+      var onMove = function (e) {
+        var w = window.innerWidth || 1, h = window.innerHeight || 1;
+        tx = (e.clientX / w - 0.5) * 2;
+        ty = (e.clientY / h - 0.5) * 2;
+        if (!raf) raf = requestAnimationFrame(step);
+      };
+      window.addEventListener("pointermove", onMove, { passive: true });
+      return function () {
+        window.removeEventListener("pointermove", onMove);
+        if (raf) cancelAnimationFrame(raf);
+      };
+    }, []);
     (0, g.useEffect)(() => {
       if (kawarpInstanceRef.current) {
         kawarpInstanceRef.current.setOptions({
@@ -1051,6 +1085,12 @@ return lyrics;
       _cachedTrackId = ""; _cachedLyrics = undefined; _fetching = false;
       var _lastLineIdx = -1, _wordSpans = [], _lineWords = [];
       var _lastBgLineIdx = -1, _bgWordSpans = [], _bgLineWords = [];
+      var _letterStyleCache = new WeakMap();
+      function _setStyle(el, prop, val) {
+        var rec = _letterStyleCache.get(el);
+        if (!rec) { rec = {}; _letterStyleCache.set(el, rec); }
+        if (rec[prop] !== val) { rec[prop] = val; el.style[prop] = val; }
+      }
 
       var syncedPosition = null;
       var predictedProgress = null;
@@ -2258,15 +2298,14 @@ return lyrics;
             var chars = word.chars || [];
 
             if (ps < word.startTime) {
-              span.style.filter = "none";
-              span.style.transform = "scale(1)";
+              _setStyle(span, "filter", "none");
+              _setStyle(span, "transform", "scale(1) translateZ(0)");
               for (var i = 0; i < numLetters; i++) {
-                if (letters[i]) {
-                  letters[i].style.transform = "scale(1)";
-                  letters[i].style.color = "var(--vis-unsung-color)";
-                  letters[i].style.opacity = String(isBg ? 0.25 : 0.40);
-                  letters[i].style.filter = "none";
-                }
+                if (!letters[i]) continue;
+                _setStyle(letters[i], "transform", "scale(1) translateZ(0)");
+                _setStyle(letters[i], "color", "var(--vis-unsung-color)");
+                _setStyle(letters[i], "opacity", String(isBg ? 0.25 : 0.40));
+                _setStyle(letters[i], "filter", "none");
               }
             } else if (ps <= word.endTime) {
               var dur = word.endTime - word.startTime;
@@ -2304,43 +2343,36 @@ return lyrics;
                 var dist = i - activeCharIdx;
                 var weight = Math.exp(-0.5 * (dist * dist) / (sigma * sigma));
                 var letterScale = 1.0 + maxBulge * weight;
-                letters[i].style.transform = "scale(" + letterScale.toFixed(4) + ")";
+                letters[i].style.transform = "scale(" + letterScale.toFixed(4) + ") translateZ(0)";
 
                 if (ps < chStart) {
-                  if (weight > 0.08 && dist > 0 && dist < 1.8) {
-                    var preGlow = Math.round(weight * 35);
-                    letters[i].style.color = "color-mix(in srgb, var(--vis-sung-color) " + preGlow + "%, var(--vis-unsung-color))";
-                    letters[i].style.opacity = ((isBg ? 0.25 : 0.40) + (isBg ? 0.18 : 0.28) * weight).toFixed(3);
-                    letters[i].style.filter = weight > 0.25 ? "drop-shadow(0 0 " + (weight * (isBg ? 4 : 8)).toFixed(1) + "px var(--vis-glow-color))" : "none";
-                  } else {
-                    letters[i].style.color = "var(--vis-unsung-color)";
-                    letters[i].style.opacity = String(isBg ? 0.25 : 0.40);
-                    letters[i].style.filter = "none";
-                  }
+                  _setStyle(letters[i], "color", "var(--vis-unsung-color)");
+                  _setStyle(letters[i], "opacity", String(isBg ? 0.25 : 0.40));
+                  _setStyle(letters[i], "filter", "none");
                 } else if (ps > chEnd) {
-                  letters[i].style.color = "var(--vis-sung-color)";
-                  letters[i].style.opacity = String(isBg ? 0.6 : 0.95);
-                  letters[i].style.filter = "none";
+                  _setStyle(letters[i], "color", "var(--vis-sung-color)");
+                  _setStyle(letters[i], "opacity", String(isBg ? 0.6 : 0.95));
+                  _setStyle(letters[i], "filter", "drop-shadow(0 0 " + (isBg ? 4 : 8) + "px var(--vis-glow-color))");
                 } else {
                   var charProg = chDur > 0 ? (ps - chStart) / chDur : 1;
                   charProg = Math.max(0, Math.min(1, charProg));
-                  var sungPct = Math.round(charProg * 100);
-                  letters[i].style.color = "color-mix(in srgb, var(--vis-sung-color) " + sungPct + "%, var(--vis-unsung-color))";
+                  if (charProg < 0.55) {
+                    var halfPct = isBg ? 30 : 45;
+                    _setStyle(letters[i], "color", "color-mix(in srgb, var(--vis-sung-color) " + halfPct + "%, var(--vis-unsung-color))");
+                  } else {
+                    _setStyle(letters[i], "color", "var(--vis-sung-color)");
+                  }
                   var activeOp = (isBg ? 0.25 : 0.40) + (isBg ? 0.35 : 0.55) * charProg;
-                  letters[i].style.opacity = activeOp.toFixed(3);
-                  var glowSize = (Math.max(0.35, weight) * (isBg ? 6 : 12)).toFixed(1);
-                  letters[i].style.filter = "drop-shadow(0 0 " + glowSize + "px var(--vis-glow-color))";
+                  _setStyle(letters[i], "opacity", activeOp.toFixed(2));
+                  _setStyle(letters[i], "filter", "drop-shadow(0 0 " + (isBg ? 5 : 8) + "px var(--vis-glow-color))");
                 }
               }
 
               var peakScale = isBg ? 1.06 : 1.12;
               var growEase = Math.sin(progress * Math.PI * 0.5);
               var wordScale = 1.0 + (peakScale - 1.0) * growEase;
-              span.style.transform = "scale(" + wordScale.toFixed(4) + ")";
-              var glowAlpha = 0.35 + 0.65 * growEase;
-              var glowR1 = (isBg ? 10 : 16) * glowAlpha;
-              var glowR2 = (isBg ? 20 : 32) * glowAlpha;
-              span.style.filter = "drop-shadow(0 0 " + glowR1.toFixed(1) + "px var(--vis-glow-color)) drop-shadow(0 0 " + glowR2.toFixed(1) + "px var(--vis-glow-outer))";
+              _setStyle(span, "transform", "scale(" + wordScale.toFixed(4) + ") translateZ(0)");
+              _setStyle(span, "filter", "none");
             } else {
               var dur = word.endTime - word.startTime;
               var peakScale = isBg ? 1.06 : 1.12;
@@ -2349,24 +2381,23 @@ return lyrics;
               var decayFactor = elapsed < returnDur ? Math.pow(1.0 - elapsed / returnDur, 2.0) : 0;
               for (var i = 0; i < numLetters; i++) {
                 if (!letters[i]) continue;
-                letters[i].style.color = "var(--vis-sung-color)";
-                letters[i].style.opacity = String(isBg ? 0.6 : 0.95);
-                letters[i].style.filter = "none";
+                _setStyle(letters[i], "color", "var(--vis-sung-color)");
+                _setStyle(letters[i], "opacity", String(isBg ? 0.6 : 0.95));
+                _setStyle(letters[i], "filter", "drop-shadow(0 0 " + (isBg ? 4 : 8) + "px var(--vis-glow-color))");
                 if (decayFactor > 0.01) {
                   var settledScale = 1.0 + maxBulge * 0.12 * decayFactor;
-                  letters[i].style.transform = "scale(" + settledScale.toFixed(4) + ")";
+                  letters[i].style.transform = "scale(" + settledScale.toFixed(4) + ") translateZ(0)";
                 } else {
-                  letters[i].style.transform = "scale(1)";
+                  letters[i].style.transform = "scale(1) translateZ(0)";
                 }
               }
               if (decayFactor > 0.01) {
                 var settledWordScale = 1.0 + (peakScale - 1.0) * decayFactor;
-                span.style.transform = "scale(" + settledWordScale.toFixed(4) + ")";
-                var fadeGlow = (isBg ? 8 : 14) * decayFactor;
-                span.style.filter = "drop-shadow(0 0 " + fadeGlow.toFixed(1) + "px var(--vis-glow-color))";
+                _setStyle(span, "transform", "scale(" + settledWordScale.toFixed(4) + ") translateZ(0)");
+                _setStyle(span, "filter", "none");
               } else {
-                span.style.transform = "scale(1)";
-                span.style.filter = "none";
+                _setStyle(span, "transform", "scale(1) translateZ(0)");
+                _setStyle(span, "filter", "none");
               }
             }
           }
@@ -2416,6 +2447,6 @@ return lyrics;
         if (syncTimeoutId) clearTimeout(syncTimeoutId);
         Spicetify.Player.removeEventListener("songchange", _songChangeHandler);
       };
-    }, [refreshTrigger, Spicetify.Player.data?.item?.uri, isRomanized]), g.default.createElement("div", { className: "visualizer-container" + (isPlaying ? "" : " visualizer-container--paused"), ref: a, style: { "--theme-color": "rgb(" + (u?.themeColor?.rgb?.r ?? 83) + "," + (u?.themeColor?.rgb?.g ?? 83) + "," + (u?.themeColor?.rgb?.b ?? 83) + ")" } }, !d && g.default.createElement(g.default.Fragment, null, g.default.createElement("div", { className: "visualizer-backdrop" }, g.default.createElement("canvas", { ref: kawarpCanvasRef, className: "visualizer-backdrop__canvas spicy-dynamic-bg" }), prevArt && g.default.createElement("img", { src: prevArt, className: "visualizer-backdrop__img", alt: "" }), currentArt && g.default.createElement("img", { key: fadeKey, src: currentArt, className: "visualizer-backdrop__img visualizer-backdrop__img--fade-in", alt: "" })), g.default.createElement(p.Provider, { value: f }, e && g.default.createElement(e, { isEnabled: "running" === o.state, audioAnalysis: u.audioAnalysis, themeColor: u.themeColor, isPlaying: isPlaying })), g.default.createElement("div", { className: "visualizer-overlay", style: { "--theme-color": "rgb(" + (u?.themeColor?.rgb?.r ?? 83) + "," + (u?.themeColor?.rgb?.g ?? 83) + "," + (u?.themeColor?.rgb?.b ?? 83) + ")" } }, g.default.createElement("div", { className: "visualizer-overlay__upper" }, g.default.createElement("div", { className: "visualizer-overlay__label" }, "Now Playing", g.default.createElement("div", { className: "visualizer-overlay__wave" + (isPlaying ? " is-playing" : "") }, g.default.createElement("span", { className: "visualizer-overlay__wave-dot", style: { "--i": 1 } }), g.default.createElement("span", { className: "visualizer-overlay__wave-dot", style: { "--i": 2 } }), g.default.createElement("span", { className: "visualizer-overlay__wave-dot", style: { "--i": 3 } }))), g.default.createElement("div", { className: "visualizer-overlay__title-container" }, g.default.createElement("strong", { className: "visualizer-overlay__title", style: { "--title-length": (trackTitle || "No track").length } }, trackTitle || "No track")), g.default.createElement("div", { className: "visualizer-overlay__artist" }, Spicetify.Player.data?.item?.artists?.map(a => a.name).join(", ") || ""), g.default.createElement("div", { className: "visualizer-overlay__progress" }, g.default.createElement("div", { className: "visualizer-overlay__time-row" }, g.default.createElement("div", { className: "visualizer-overlay__time-left" }, formatTime(isDraggingSeek ? dragProgress : trackProgress)), g.default.createElement("div", { className: "visualizer-overlay__time-right" }, formatTime(u.audioAnalysis?.track?.duration || 0))), g.default.createElement("div", { ref: progressBarContainerRef, className: "visualizer-overlay__progress-bar-container" + (isDraggingSeek ? " visualizer-overlay__progress-bar-container--dragging" : ""), onMouseDown: handleSeekMouseDown }, g.default.createElement("div", { className: "visualizer-overlay__progress-bar", style: { width: (100 * ((isDraggingSeek ? dragProgress : trackProgress) / (u.audioAnalysis?.track?.duration || 1))) + "%" } }))), (n || r.isSecondaryWindow) && g.default.createElement("div", { className: "visualizer-overlay__controls" }, g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn" + (isLiked ? " visualizer-overlay__ctrl-btn--liked" : ""), onClick: handleToggleLike, title: isLiked ? "Remove from Your Library" : "Save to Your Library" }, g.default.createElement("span", { className: "material-icons" }, isLiked ? "favorite" : "favorite_border")), g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn" + (shuffle ? " visualizer-overlay__ctrl-btn--active" : ""), onClick: () => Spicetify.Player.toggleShuffle() }, g.default.createElement("span", { className: "material-icons" }, "shuffle")), g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn", onClick: () => Spicetify.Player.prev() }, g.default.createElement("span", { className: "material-icons" }, "skip_previous")), g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn visualizer-overlay__ctrl-btn--play", onClick: () => Spicetify.Player.togglePlay() }, g.default.createElement("span", { className: "material-icons" }, isPlaying ? "pause" : "play_arrow")), g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn", onClick: () => Spicetify.Player.next() }, g.default.createElement("span", { className: "material-icons" }, "skip_next")), g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn" + (repeatMode ? " visualizer-overlay__ctrl-btn--active" : ""), onClick: () => Spicetify.Player.toggleRepeat() }, g.default.createElement("span", { className: "material-icons" }, 2 === repeatMode ? "repeat_one" : repeatMode ? "repeat" : "repeat")), g.default.createElement("div", { className: "visualizer-overlay__volume-wrap" }, g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn", onClick: () => Spicetify.Player.setMuted && Spicetify.Player.setMuted(!Spicetify.Player.isMuted()) }, g.default.createElement("span", { className: "material-icons" }, Spicetify.Player.isMuted && Spicetify.Player.isMuted() || volume === 0 ? "volume_off" : volume < .5 ? "volume_down" : "volume_up")), g.default.createElement("input", { type: "range", className: "visualizer-overlay__volume", min: "0", max: "1", step: "0.01", value: volume, onChange: e => Spicetify.Player.setVolume(parseFloat(e.target.value)) })))), showLyrics && lyricsLine && g.default.createElement("div", { className: "visualizer-overlay__lyrics" }, hasNoLyrics ? g.default.createElement("div", { key: "no-lyrics", className: "visualizer-overlay__no-lyrics-container" }, g.default.createElement("span", { className: "visualizer-overlay__lyrics-text" }, "No lyrics available"), g.default.createElement("button", { className: "visualizer-overlay__lyrics-refresh-btn-inline", onClick: handleRefreshLyrics, title: "Refresh Lyrics", style: { background: "none", border: "none", cursor: "pointer", padding: "0", display: "inline-flex", alignItems: "center", justifyContent: "center", color: "var(--theme-color, #ffffff)" } }, g.default.createElement("span", { className: "material-symbols-outlined", style: { fontSize: "1.2rem" } }, "refresh"))) : g.default.createElement(g.default.Fragment, null, g.default.createElement("div", { ref: lyricsContainerRef, key: "lyrics-words", className: "visualizer-overlay__lyrics-text", id: "vis-lyrics-words" }), g.default.createElement("div", { ref: lyricsBgContainerRef, key: "lyrics-bg-words", className: "visualizer-overlay__lyrics-bg-text", id: "vis-lyrics-bg-words", style: { display: "none" } })))), !r.isSecondaryWindow && g.default.createElement("div", { className: "visualizer-top-bar" }, u.audioAnalysis?.isFallback && g.default.createElement(Spicetify.ReactComponent.TooltipWrapper, { label: "Spotify doesn't have audio analysis data for this song right now, so this animation is simulated and not synced to the music.", placement: "bottom" }, g.default.createElement("button", { className: "visualizer-top-btn", type: "button", "aria-label": "Simulated animation notice" }, g.default.createElement("span", { className: "material-symbols-outlined" }, "info"))), g.default.createElement(Spicetify.ReactComponent.TooltipWrapper, { label: showLyrics ? "Hide Lyrics" : "Show Lyrics", placement: "bottom" }, g.default.createElement("button", { className: "visualizer-top-btn" + (showLyrics ? " visualizer-top-btn--active" : ""), onClick: () => { var nextVal = !showLyrics; setShowLyrics(nextVal); if (nextVal) handleRefreshLyrics(); } }, g.default.createElement("span", { className: "material-symbols-outlined" }, "lyrics"))), g.default.createElement(Spicetify.ReactComponent.TooltipWrapper, { label: isRomanized ? "Show Original Lyrics" : "Show Romanized Lyrics", placement: "bottom" }, g.default.createElement("button", { className: "visualizer-top-btn" + (isRomanized ? " visualizer-top-btn--active" : ""), onClick: handleToggleRomanization }, g.default.createElement("span", { className: "material-symbols-outlined" }, "translate"))), g.default.createElement(Spicetify.ReactComponent.TooltipWrapper, { label: n ? "Exit Fullscreen" : "Enter Fullscreen", placement: "bottom" }, g.default.createElement("button", { className: "visualizer-top-btn", onClick: () => n ? a.current?.ownerDocument.exitFullscreen() : a.current?.requestFullscreen() }, g.default.createElement("span", { className: "material-symbols-outlined" }, n ? "fullscreen_exit" : "fullscreen"))), hasUpdate && g.default.createElement(Spicetify.ReactComponent.TooltipWrapper, { label: updateDownloaded ? "Update downloaded - run spicetify apply in your terminal" : (isDownloadingUpdate ? "Downloading update..." : "Update available - click to download"), placement: "bottom" }, g.default.createElement("button", { className: "visualizer-top-btn visualizer-top-btn--update" + (updateDownloaded ? " visualizer-top-btn--downloaded" : ""), title: updateDownloaded ? "Update downloaded - run spicetify apply in your terminal" : "Download update", disabled: isDownloadingUpdate, onClick: () => handleUpdateDownload() }, g.default.createElement("span", { className: "material-symbols-outlined" }, updateDownloaded ? "check_circle" : (isDownloadingUpdate ? "downloading" : "download")))), g.default.createElement("button", { className: "visualizer-top-btn", title: r.isSecondaryWindow ? "Close Window" : "Open Popup", onClick: () => r.isSecondaryWindow ? window.close() : (async r => { try { let e = null; try { e = window.open("about:blank", "_blank", "width=960,height=540"); } catch(err) { e = null; } if (!e) { let t = "fallback PiP API is not available"; if (window.documentPictureInPicture && (window.documentPictureInPicture.window ? t = "cannot open another PiP window" : e = await window.documentPictureInPicture.requestWindow({ width: 960, height: 540 }).catch(e => (t = e ? "" + e : "unknown error", null))), !e) return void Spicetify.showNotification(_.default.createElement("span", null, "Failed to open window: ", t, ". Try with devtools using", " ", _.default.createElement("code", { style: { fontSize: "12px", background: "rgba(0 0 0 / 0.2)", borderRadius: "4px", padding: "2px" } }, "spicetify enable-devtools"), "."), !0) } let t = e.document; Array.from(document.styleSheets).forEach(e => { e.ownerNode && "tagName" in e.ownerNode && (e = e.ownerNode, e = t.importNode(e, !0), t.head.appendChild(e)) }), _injectFonts(t), t.documentElement.className = document.documentElement.className, t.body.className = document.body.className; var i = D.getStyleSheetManager(), a = Spicetify.ReactDOM.unmountComponentAtNode(t.body), n = _.default.createElement(we, { isSecondaryWindow: !0, onWindowDestroyed: a, initialRenderer: r }); i ? Spicetify.ReactDOM.render(_.default.createElement(i, { target: t.head }, n), t.body) : (Spicetify.showNotification("[Visualizer] Could not find StyleSheetManager. Styles in popup window probably won't work.", !0), Spicetify.ReactDOM.render(n, t.body)) } catch (e) { console.error("[Visualizer]", "error opening popup window", e); let t = e ? "" + e : "unknown error"; Spicetify.showNotification("Failed to open window: " + t, !0) } })(t) }, g.default.createElement("span", { className: "material-symbols-outlined" }, r.isSecondaryWindow ? "pip_exit" : "pip")))), "loading" === o.state ? g.default.createElement(B, null) : "error" === o.state ? g.default.createElement("div", { className: y.error_container }, g.default.createElement("div", { className: y.error_message }, o.errorData.message), 0 === o.errorData.recovery && g.default.createElement(Spicetify.ReactComponent.ButtonPrimary, { onClick: () => m(Spicetify.Player.data) }, "Try again")) : null)
+    }, [refreshTrigger, Spicetify.Player.data?.item?.uri, isRomanized]), g.default.createElement("div", { className: "visualizer-container" + (isPlaying ? "" : " visualizer-container--paused"), ref: a, style: { "--theme-color": "rgb(" + (u?.themeColor?.rgb?.r ?? 83) + "," + (u?.themeColor?.rgb?.g ?? 83) + "," + (u?.themeColor?.rgb?.b ?? 83) + ")" } }, !d && g.default.createElement(g.default.Fragment, null, g.default.createElement("div", { className: "visualizer-backdrop" }, g.default.createElement("canvas", { ref: kawarpCanvasRef, className: "visualizer-backdrop__canvas spicy-dynamic-bg" }), g.default.createElement("div", { ref: backdropParallaxRef, className: "visualizer-backdrop__parallax" }, prevArt && g.default.createElement("img", { src: prevArt, className: "visualizer-backdrop__img", alt: "" }), currentArt && g.default.createElement("img", { key: fadeKey, src: currentArt, className: "visualizer-backdrop__img visualizer-backdrop__img--fade-in", alt: "" }))), g.default.createElement(p.Provider, { value: f }, e && g.default.createElement(e, { isEnabled: "running" === o.state, audioAnalysis: u.audioAnalysis, themeColor: u.themeColor, isPlaying: isPlaying })), g.default.createElement("div", { className: "visualizer-overlay", style: { "--theme-color": "rgb(" + (u?.themeColor?.rgb?.r ?? 83) + "," + (u?.themeColor?.rgb?.g ?? 83) + "," + (u?.themeColor?.rgb?.b ?? 83) + ")" } }, g.default.createElement("div", { className: "visualizer-overlay__upper" }, g.default.createElement("div", { className: "visualizer-overlay__label" }, "Now Playing", g.default.createElement("div", { className: "visualizer-overlay__wave" + (isPlaying ? " is-playing" : "") }, g.default.createElement("span", { className: "visualizer-overlay__wave-dot", style: { "--i": 1 } }), g.default.createElement("span", { className: "visualizer-overlay__wave-dot", style: { "--i": 2 } }), g.default.createElement("span", { className: "visualizer-overlay__wave-dot", style: { "--i": 3 } }))), g.default.createElement("div", { className: "visualizer-overlay__title-container" }, g.default.createElement("strong", { className: "visualizer-overlay__title", style: { "--title-length": (trackTitle || "No track").length } }, trackTitle || "No track")), g.default.createElement("div", { className: "visualizer-overlay__artist" }, Spicetify.Player.data?.item?.artists?.map(a => a.name).join(", ") || ""), g.default.createElement("div", { className: "visualizer-overlay__progress" }, g.default.createElement("div", { className: "visualizer-overlay__time-row" }, g.default.createElement("div", { className: "visualizer-overlay__time-left" }, formatTime(isDraggingSeek ? dragProgress : trackProgress)), g.default.createElement("div", { className: "visualizer-overlay__time-right" }, formatTime(u.audioAnalysis?.track?.duration || 0))), g.default.createElement("div", { ref: progressBarContainerRef, className: "visualizer-overlay__progress-bar-container" + (isDraggingSeek ? " visualizer-overlay__progress-bar-container--dragging" : ""), onMouseDown: handleSeekMouseDown }, g.default.createElement("div", { className: "visualizer-overlay__progress-bar", style: { width: (100 * ((isDraggingSeek ? dragProgress : trackProgress) / (u.audioAnalysis?.track?.duration || 1))) + "%" } }))), (n || r.isSecondaryWindow) && g.default.createElement("div", { className: "visualizer-overlay__controls" }, g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn" + (isLiked ? " visualizer-overlay__ctrl-btn--liked" : ""), onClick: handleToggleLike, title: isLiked ? "Remove from Your Library" : "Save to Your Library" }, g.default.createElement("span", { className: "material-icons" }, isLiked ? "favorite" : "favorite_border")), g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn" + (shuffle ? " visualizer-overlay__ctrl-btn--active" : ""), onClick: () => Spicetify.Player.toggleShuffle() }, g.default.createElement("span", { className: "material-icons" }, "shuffle")), g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn", onClick: () => Spicetify.Player.prev() }, g.default.createElement("span", { className: "material-icons" }, "skip_previous")), g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn visualizer-overlay__ctrl-btn--play", onClick: () => Spicetify.Player.togglePlay() }, g.default.createElement("span", { className: "material-icons" }, isPlaying ? "pause" : "play_arrow")), g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn", onClick: () => Spicetify.Player.next() }, g.default.createElement("span", { className: "material-icons" }, "skip_next")), g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn" + (repeatMode ? " visualizer-overlay__ctrl-btn--active" : ""), onClick: () => Spicetify.Player.toggleRepeat() }, g.default.createElement("span", { className: "material-icons" }, 2 === repeatMode ? "repeat_one" : repeatMode ? "repeat" : "repeat")), g.default.createElement("div", { className: "visualizer-overlay__volume-wrap" }, g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn", onClick: () => Spicetify.Player.setMuted && Spicetify.Player.setMuted(!Spicetify.Player.isMuted()) }, g.default.createElement("span", { className: "material-icons" }, Spicetify.Player.isMuted && Spicetify.Player.isMuted() || volume === 0 ? "volume_off" : volume < .5 ? "volume_down" : "volume_up")), g.default.createElement("input", { type: "range", className: "visualizer-overlay__volume", min: "0", max: "1", step: "0.01", value: volume, onChange: e => Spicetify.Player.setVolume(parseFloat(e.target.value)) })))), showLyrics && lyricsLine && g.default.createElement("div", { className: "visualizer-overlay__lyrics" }, hasNoLyrics ? g.default.createElement("div", { key: "no-lyrics", className: "visualizer-overlay__no-lyrics-container" }, g.default.createElement("span", { className: "visualizer-overlay__lyrics-text" }, "No lyrics available"), g.default.createElement("button", { className: "visualizer-overlay__lyrics-refresh-btn-inline", onClick: handleRefreshLyrics, title: "Refresh Lyrics", style: { background: "none", border: "none", cursor: "pointer", padding: "0", display: "inline-flex", alignItems: "center", justifyContent: "center", color: "var(--theme-color, #ffffff)" } }, g.default.createElement("span", { className: "material-symbols-outlined", style: { fontSize: "1.2rem" } }, "refresh"))) : g.default.createElement(g.default.Fragment, null, g.default.createElement("div", { ref: lyricsContainerRef, key: "lyrics-words", className: "visualizer-overlay__lyrics-text", id: "vis-lyrics-words" }), g.default.createElement("div", { ref: lyricsBgContainerRef, key: "lyrics-bg-words", className: "visualizer-overlay__lyrics-bg-text", id: "vis-lyrics-bg-words", style: { display: "none" } })))), !r.isSecondaryWindow && g.default.createElement("div", { className: "visualizer-top-bar" }, u.audioAnalysis?.isFallback && g.default.createElement(Spicetify.ReactComponent.TooltipWrapper, { label: "Spotify doesn't have audio analysis data for this song right now, so this animation is simulated and not synced to the music.", placement: "bottom" }, g.default.createElement("button", { className: "visualizer-top-btn", type: "button", "aria-label": "Simulated animation notice" }, g.default.createElement("span", { className: "material-symbols-outlined" }, "info"))), g.default.createElement(Spicetify.ReactComponent.TooltipWrapper, { label: showLyrics ? "Hide Lyrics" : "Show Lyrics", placement: "bottom" }, g.default.createElement("button", { className: "visualizer-top-btn" + (showLyrics ? " visualizer-top-btn--active" : ""), onClick: () => { var nextVal = !showLyrics; setShowLyrics(nextVal); if (nextVal) handleRefreshLyrics(); } }, g.default.createElement("span", { className: "material-symbols-outlined" }, "lyrics"))), g.default.createElement(Spicetify.ReactComponent.TooltipWrapper, { label: isRomanized ? "Show Original Lyrics" : "Show Romanized Lyrics", placement: "bottom" }, g.default.createElement("button", { className: "visualizer-top-btn" + (isRomanized ? " visualizer-top-btn--active" : ""), onClick: handleToggleRomanization }, g.default.createElement("span", { className: "material-symbols-outlined" }, "translate"))), g.default.createElement(Spicetify.ReactComponent.TooltipWrapper, { label: n ? "Exit Fullscreen" : "Enter Fullscreen", placement: "bottom" }, g.default.createElement("button", { className: "visualizer-top-btn", onClick: () => n ? a.current?.ownerDocument.exitFullscreen() : a.current?.requestFullscreen() }, g.default.createElement("span", { className: "material-symbols-outlined" }, n ? "fullscreen_exit" : "fullscreen"))), hasUpdate && g.default.createElement(Spicetify.ReactComponent.TooltipWrapper, { label: updateDownloaded ? "Update downloaded - run spicetify apply in your terminal" : (isDownloadingUpdate ? "Downloading update..." : "Update available - click to download"), placement: "bottom" }, g.default.createElement("button", { className: "visualizer-top-btn visualizer-top-btn--update" + (updateDownloaded ? " visualizer-top-btn--downloaded" : ""), title: updateDownloaded ? "Update downloaded - run spicetify apply in your terminal" : "Download update", disabled: isDownloadingUpdate, onClick: () => handleUpdateDownload() }, g.default.createElement("span", { className: "material-symbols-outlined" }, updateDownloaded ? "check_circle" : (isDownloadingUpdate ? "downloading" : "download")))), g.default.createElement("button", { className: "visualizer-top-btn", title: r.isSecondaryWindow ? "Close Window" : "Open Popup", onClick: () => r.isSecondaryWindow ? window.close() : (async r => { try { let e = null; try { e = window.open("about:blank", "_blank", "width=960,height=540"); } catch(err) { e = null; } if (!e) { let t = "fallback PiP API is not available"; if (window.documentPictureInPicture && (window.documentPictureInPicture.window ? t = "cannot open another PiP window" : e = await window.documentPictureInPicture.requestWindow({ width: 960, height: 540 }).catch(e => (t = e ? "" + e : "unknown error", null))), !e) return void Spicetify.showNotification(_.default.createElement("span", null, "Failed to open window: ", t, ". Try with devtools using", " ", _.default.createElement("code", { style: { fontSize: "12px", background: "rgba(0 0 0 / 0.2)", borderRadius: "4px", padding: "2px" } }, "spicetify enable-devtools"), "."), !0) } let t = e.document; Array.from(document.styleSheets).forEach(e => { e.ownerNode && "tagName" in e.ownerNode && (e = e.ownerNode, e = t.importNode(e, !0), t.head.appendChild(e)) }), _injectFonts(t), t.documentElement.className = document.documentElement.className, t.body.className = document.body.className; var i = D.getStyleSheetManager(), a = Spicetify.ReactDOM.unmountComponentAtNode(t.body), n = _.default.createElement(we, { isSecondaryWindow: !0, onWindowDestroyed: a, initialRenderer: r }); i ? Spicetify.ReactDOM.render(_.default.createElement(i, { target: t.head }, n), t.body) : (Spicetify.showNotification("[Visualizer] Could not find StyleSheetManager. Styles in popup window probably won't work.", !0), Spicetify.ReactDOM.render(n, t.body)) } catch (e) { console.error("[Visualizer]", "error opening popup window", e); let t = e ? "" + e : "unknown error"; Spicetify.showNotification("Failed to open window: " + t, !0) } })(t) }, g.default.createElement("span", { className: "material-symbols-outlined" }, r.isSecondaryWindow ? "pip_exit" : "pip")))), "loading" === o.state ? g.default.createElement(B, null) : "error" === o.state ? g.default.createElement("div", { className: y.error_container }, g.default.createElement("div", { className: y.error_message }, o.errorData.message), 0 === o.errorData.recovery && g.default.createElement(Spicetify.ReactComponent.ButtonPrimary, { onClick: () => m(Spicetify.Player.data) }, "Try again")) : null)
   } var _e = r(i()); return xe = k, M(n({}, "__esModule", { value: !0 }), xe)
 })(); let render = () => visualizer.default();

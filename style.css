@@ -78,9 +78,22 @@
   filter: saturate(2.4) brightness(0.65);
 }
 
-.visualizer-backdrop__img {
+.visualizer-backdrop__parallax {
+  position: absolute;
+  left: -10%;
+  top: -10%;
   width: 120%;
   height: 120%;
+  z-index: 0;
+  transform: perspective(900px) rotateX(var(--prlx-rx, 0deg)) rotateY(var(--prlx-ry, 0deg)) translate3d(var(--prlx-x, 0px), var(--prlx-y, 0px), 0) scale(1.06);
+  transform-style: preserve-3d;
+  transform-origin: center center;
+  will-change: transform;
+}
+
+.visualizer-backdrop__img {
+  width: 100%;
+  height: 100%;
   object-fit: cover;
   filter: blur(50px) brightness(0.45) saturate(2.5) contrast(1.05);
   transform-origin: center center;
@@ -88,8 +101,7 @@
   opacity: 0.8;
   z-index: 0;
   position: absolute;
-  top: -10%;
-  left: -10%;
+  inset: 0;
   animation: float-backdrop 45s infinite ease-in-out;
 }
 
@@ -583,7 +595,7 @@
   white-space: nowrap;
   display: inline-block;
   transform-origin: 50% 50%;
-  will-change: transform, filter;
+  will-change: transform;
   transition: none !important;
 }
 
@@ -593,7 +605,7 @@
   letter-spacing: 0.04em;
   color: var(--vis-unsung-color);
   opacity: 0.40;
-  will-change: transform, color, opacity, filter;
+  will-change: transform;
   transition: none !important;
 }
 

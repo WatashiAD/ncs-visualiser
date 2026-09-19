@@ -1,0 +1,104 @@
+# AGENTS.md
+
+## What this is
+A Spicetify **Custom App** — an NCS-style real-time audio visualizer that runs inside Spotify's client UI. It is a fork of Konsl's `spicetify-visualizer`, extended with **inline lyrics** (a SpicyLyrics-compatible engine) and playback overlay controls. Repo: `https://github.com/WatashiAD/ncs-visualiser`.
+
+## Files
+- `index.js` — the ENTIRE app. A single pre-bundled/minified webpack-style IIFE (~1,332 lines) containing React components, the WebGL2 particle-sphere renderer, all SpicyLyrics-compatible lyrics code, and the playback overlay.
+- `style.css` — all styling (~832 lines), including lyrics animation classes.
+- `manifest.json` — Spicetify manifest (localized name, SVG icon, `subfiles: []`).
+- `README.md` — user-facing docs/install; `resources/` has preview screenshots.
+
+## No build step
+There is **no `package.json`, no node_modules, no bundler**. You edit `index.js`/`style.css` directly, then run `spicetify apply`. App entry point is the last line of `index.js`: `let render = () => visualizer.default();` which mounts the `we` (Visualizer) component.
+
+## Runtime model
+- Relies entirely on Spicetify global APIs at runtime (no npm deps): `Spicetify.React`, `Spicetify.ReactDOM`, `Spicetify.ReactComponent`, `Spicetify.SVGIcons`, `Spicetify.Player`, `Spicetify.CosmosAsync`, `Spicetify.Color`, `Spicetify.LocalStorage`, `Spicetify.Platform`, `Spicetify.showNotification`. Requires Spicetify **v2.43+** and WebGL2 (`EXT_color_buffer_float`).
+- External runtime fetches: Google Fonts (Mochiy Pop One, Rubik Spray Paint, Sniglet, Material Icons/Symbols), and the SpicyLyrics API at `https://api.spicylyrics.org/query`.
+
+## Renderer
+- `Se` registry holds one renderer, `id: "ncs"` — a WebGL2 particle sphere (`#version 300 es`). Its amplitude is driven by Spotify's audio-analysis from `spclient.wg.spotify.com/audio-attributes/v1/audio-analysis/{id}?format=json` (loudness segments); falls back to a simulated sine curve when no analysis data exists.
+- Theme color is extracted from album art via Spotify's metadata protobuf service (`colorLight`), exposed as CSS var `--theme-color`.
+- The many "analysis graph layer" renderers (Beats, Bars, Timbre, etc.) in the `de` module are **dead code** — only the `ncs` renderer is registered.
+
+## Lyrics engine (SpicyLyrics-compatible)
+- Fetch priority: in-memory `Map` cache (30-min TTL) → POST `https://api.spicylyrics.org/query` (with `SpicyLyrics-Version` / `SpicyLyrics-WebAuth` headers; token from `sp://oauth/v2/token`; uses `window.parent.fetch` to dodge iframe CSP, fallback `CosmosAsync.post`; up to 3 retries w/ backoff on 503, null on 404) → SpicyLyrics extension CacheStorage → IndexedDB → global `_spicy_lyrics` state.
+- Sync: a `requestAnimationFrame` loop with precise position sync via `Spicetify.Platform.PlayerAPI._contextPlayer.getPositionState({})` / `_state.positionAsOfTimestamp`; drift smoothed with EMA (`normalizeProgress`); applies `SL:settings.playbackOffset` + fixed `+100ms`.
+- Rendering: splits lines into grapheme clusters → `span.vis-word > span.vis-letter`, per-letter time-based scaling/color/glow; supports lead + Background vocal lines, romanization toggle (`SL:uiState.romanization` in LocalStorage), and interlude music-note glyphs for gaps ≥ 5s.
+- State: `showLyrics`, `hasNoLyrics`, `isRomanized`, `lyricsLine`, refs to `#vis-lyrics-words` and `#vis-lyrics-bg-words` containers.
+- No self-update mechanism exists in the app — updates come via `git pull` + `spicetify apply`.
+
+## Working-tree conventions / gotchas
+- The working tree sometimes has uncommitted local changes (lyrics tweaks); `git diff --ignore-all-space` hides CRLF↔LF noise in `.gitignore`/`style.css`. Don't assume local edits are bugs.
+- No tests, no lint, no typecheck. Verify by eyeballing in Spotify after `spicetify apply`. Don't offer `npm test` etc.
+- Do NOT add comments unless asked (repo style is minified/no comments).
+- Vars often follow minified single/double-letter webpack-style names in `index.js`; keep edits surgical.
+
+## Current Tasks & Solved Issues
+- **Popup window error (`_injectFonts is not defined`)**:
+  - *Problem*: `_injectFonts` was declared inside the massive `useEffect` closure (line ~387) and was inaccessible from the popup button's `onClick` handler (line ~1316), throwing `ReferenceError: _injectFonts is not defined`.
+  - *Fix*: Hoisted `_injectFonts` to component/module scope so both the effect and popup handler can call it, with graceful window/PiP error handling.
+- **Upper content layout jitter during lyrics line transitions**:
+  - *Problem*: `.visualizer-overlay` used `top: 50%; transform: translateY(-50%)` on the entire container including `.visualizer-overlay__lyrics`. When lyrics changed between 1 and 2 lines or spawned transition ghosts, the container's height changed, causing the entire upper content (track title, artist, seek bar, controls) to jump up and down.
+  - *Fix*: Decoupled lyrics from the overlay flow. `.visualizer-overlay` height is determined strictly by the upper content (`visualizer-overlay__upper`), and `.visualizer-overlay__lyrics` is anchored below with an invisible separation (`position: absolute; top: calc(100% + clamp(...)); width: 100%`), keeping upper controls 100% rock solid.
+- **Continuous overlapping line transitions (Spicy Lyrics style)**:
+  - *Problem*: The previous enter and exit animations felt sequential and disjointed rather than overlapping continuously.
+  - *Fix*: Implemented SpicyLyrics/Apple Music-style overlapping cross-fade transitions (`0.52s cubic-bezier(0.25, 1, 0.5, 1)`): outgoing line floats up (`translateY(-18px)`), fades out, and softens with `filter: blur(5px)`; incoming line enters from below (`translateY(18px)`), unblurs, and fades in, sharing the same vertical space during cross-fade.
+- **Continuous word-by-word gradient fill with subtle large-radius glow & theme color harmony**:
+  - *Problem*: Discrete letter illumination felt choppy instead of continuous, text color (pure white) clashed with the upper content (which uses `--theme-color`), and the glow was too tight/harsh.
+  - *Fix*:
+    - Grouped letters into words with exact word-level start and end timestamps.
+    - Implemented real-time continuous word-by-word gradient fill (`--word-fill`) that sweeps smoothly across each word from left to right as sung.
+    - Replaced tight/harsh glow with dual large-radius soft diffuse glows (`drop-shadow: 0 0 18px var(--vis-glow-color) drop-shadow(0 0 36px var(--vis-glow-outer))`).
+    - Harmonized lyrics colors with the upper content by dynamically deriving `--vis-sung-color`, `--vis-unsung-color`, and glow colors from `--theme-color` (using `color-mix`), creating total visual consistency with the track title, artist name, and visualizer sphere.
+- **Dynamic fisheye / bulge effect (SpicyLyrics / Apple Music Sing style)**:
+  - *Problem*: User requested active word letters to bulge outward with a fisheye effect centered on the singing progress, where slower-sung words produce a larger bulge effect.
+  - *Fix*: Calculated word singing speed via average character duration (`dur / numLetters`), derived dynamic `speedFactor` and `maxBulge`, and scaled adjacent letters quadratically around the active playback position.
+- **"Something went wrong" component crash**:
+  - *Problem*: Leftover undeclared variable references (`_bgLetterSpans`, `_letterSpans`, `_nonSpaceChars`, `_bgNonSpaceChars`) inside `_tick()` in strict mode triggered an uncaught `ReferenceError` during initial mount/songchange, causing Spotify's React ErrorBoundary to catch the failure and display "Something went wrong". Additionally, `_lyricsMemCache` was declared within the effect closure, causing `handleRefreshLyrics` to fail on click.
+  - *Fix*: Replaced all leftover variable references with `_wordSpans`, `_lineWords`, `_bgWordSpans`, `_bgLineWords`. Hoisted `_lyricsMemCache`, `_cachedTrackId`, `_cachedLyrics`, and `_fetching` to outer module scope. Wrapped `_tick()` in a defensive `try/catch` block and added null guards for letter elements.
+- **"No lyrics" regression after hoisting cache vars to module scope**:
+  - *Problem*: Moving `_cachedTrackId`, `_cachedLyrics`, `_fetching` to module scope (to fix `handleRefreshLyrics` access) caused them to persist across `useEffect` re-runs. When the effect re-ran (due to `refreshTrigger`, URI, or `isRomanized` changes), these vars kept stale values from the previous run — `_cachedTrackId` matched the current track so `_tick()` skipped refetching, and `_cachedLyrics` could be stuck as `null` from a prior 404. The `_songChangeHandler` also had a broken guard (`_cachedLyrics !== undefined && _cachedLyrics !== null`) that prevented prefetching for new tracks when old lyrics were still cached.
+  - *Fix*: Added `_cachedTrackId = ""; _cachedLyrics = undefined; _fetching = false;` at the top of the lyrics `useEffect` callback so every effect run starts with a clean slate and forces a fresh fetch. Fixed `_songChangeHandler` guard to `tid === _cachedTrackId && _cachedLyrics !== undefined` (only skip if same track already has lyrics or is loading). Added `console.error` to `_tick()` catch block to prevent silent error swallowing.
+- **Top bar controls for lyrics toggle and romanization**:
+  - *Problem*: User requested moving the romanization and lyrics on/off toggles out of the track title row to the top bar alongside fullscreen, PiP, and update buttons.
+  - *Fix*: Moved both buttons to `.visualizer-top-bar`, added `.visualizer-top-btn--active` highlighting with filled Material Symbols, and wrapped in `Spicetify.ReactComponent.TooltipWrapper`.
+- **Standalone lyrics fallbacks (Spotify native color-lyrics + LRCLIB)**:
+  - *Problem*: Songs not in SpicyLyrics' database (or when SpicyLyrics wasn't opened first) showed "No lyrics available" because the app only queried `api.spicylyrics.org/query` and SpicyLyrics' browser caches.
+  - *Fix*: Implemented `_fetchFromSpotify` using `https://spclient.wg.spotify.com/color-lyrics/v2/track/{id}` (via `Spicetify.CosmosAsync.get`) and `_fetchFromLRCLIB` (via `lrclib.net`) as automatic fallbacks in `_fetchLyrics`. Lyrics now load immediately for all Spotify songs without needing to open the SpicyLyrics app/tab first. Linted with `oxlint`.
+- **Liked track detection & accidental unlike fix**:
+  - *Problem*: `isLiked` state initialized to `false` and relied on async `LibraryAPI.contains([uri])` which failed or was delayed in recent Spotify desktop versions. Because the visualizer showed an empty heart for songs already liked, clicking the heart called `Spicetify.Player.toggleHeart()`, which inspected Spotify's internal state (where it WAS liked) and inverted it, unintentionally unliking the song from the user's library.
+  - *Fix*: Initialized `isLiked` synchronously using `Spicetify.Player.getHeart()` and track metadata `collection.in_collection === "true"`. Continuously synced liked status on every tick and on `songchange`. Replaced blind toggle with `handleToggleLike` which explicitly checks current state, sets `Spicetify.Player.setHeart(nextLiked)` with explicit boolean intent, and resyncs after 350ms.
+- **Invisible lyrics bug (CSS background-clip: text + inline-block children)**:
+  - *Problem*: `.vis-word` had `-webkit-background-clip: text; color: transparent; -webkit-text-fill-color: transparent;`. Inside it, `.vis-letter` was `display: inline-block; will-change: transform;`. In Blink/Chromium (Spotify CEF), an `inline-block` child establishes an independent atomic inline box and is not clipped by the parent's `background-clip: text`, but still inherits `color: transparent`. Result: all letters rendered completely invisible.
+  - *Fix*: Removed `background-clip: text` and `color: transparent` from `.vis-word`. Assigned direct, robust color styling to `.vis-letter`: unsung letters display in `--vis-unsung-color` with 0.40 opacity; active/sung letters dynamically illuminate to `--vis-sung-color` with dynamic fisheye bulge, lift, and soft glow (`--vis-glow-color`); settled sung letters remain illuminated in `--vis-sung-color`. All text is guaranteed visible in all states.
+- **Standalone Spotify color-lyrics authentication & LRCLIB search fallback**:
+  - *Problem*: Spotify's `https://spclient.wg.spotify.com/color-lyrics/v2/track/{id}` endpoint rejects requests without `app-platform: WebPlayer` and `Authorization: Bearer <token>` headers, causing it to fail unless SpicyLyrics was opened first (which cached the lyrics in CacheStorage). LRCLIB's `/api/get` also failed when duration differed slightly or titles included remaster/feat metadata.
+  - *Fix*: Updated `_fetchFromSpotify` to retrieve the session token via `_getSpotifyToken()` and pass required `app-platform` and `Authorization` headers to `CosmosAsync.get` and fetch fallback. Added search query fallback (`/api/search?q=...`) to `_fetchFromLRCLIB`.
+- **Accent color filling for icons**:
+  - *Problem*: `--theme-color` was only set on `.visualizer-overlay`. The `.visualizer-top-bar` was an outer sibling and fell back to `#1db954` instead of the track's album accent color. Active icons also lacked rich accent fills and glows.
+  - *Fix*: Moved `--theme-color` definition to the root `.visualizer-container`. Styled `.visualizer-top-btn--active` with filled Material Symbols glyphs (`'FILL' 1, 'wght' 600`), accent-tinted background, border, and glow. Updated overlay control buttons (liked heart, shuffle, repeat) to fill and glow with `--theme-color`.
+- **Centered lyrics scale & smooth Gaussian animation**:
+  - *Problem*: Letters were lifting upwards during the singing wave (`translateY(-2.5px)` with `transform-origin: center bottom`), causing letters to jump up. CSS `transition: transform` also fought with the rAF loop at 60fps, creating micro-stutter. Hard-clipped quadratic bulge caused abrupt starts/stops.
+  - *Fix*: Centered `transform-origin: 50% 50%` on `.vis-letter` and `.vis-word` and eliminated all upward `translateY` lifts. Removed CSS `transition: transform` conflict to let rAF directly control positioning without fighting the browser transitions. Implemented an infinitely differentiable Gaussian bell curve (`exp(-0.5 * (dist/sigma)^2)`) for the bulge wave and smooth exponential decay (`Math.exp(-elapsed * 7)`) for settling, providing ultra-smooth, centered fluid animation. Line enter/exit cross-fades now breathe centered in place without vertical shifting.
+- **Current word animation restoration**:
+  - *Problem*: Word-level scaling had been attenuated down to 1.018 and the CSS transition was omitted, making the current active word appear static with no visible word animation.
+  - *Fix*: Restored active word scaling (`scale(1.12)` for lead, `scale(1.06)` for background vocals) with a smooth easing transition on `.vis-word` (`transition: transform 0.32s cubic-bezier(0.25, 1, 0.5, 1)` centered at `50% 50%`). Active words smoothly swell and ease back to `scale(1)` upon completion while letters inside render the smooth Gaussian wave.
+- **Line transition animation restoration**:
+  - *Problem*: Line enter and exit keyframe animations were previously reduced to in-place `scale(0.96) -> scale(1)` and `scale(1) -> scale(1.02)`, which appeared completely static with no visible transition between lines. Existing `transition: transform` on `.visualizer-overlay__lyrics-text` also conflicted with the keyframe animations.
+  - *Fix*: Restored the fluid overlapping vertical glide transition: incoming lines glide up from `translateY(16px)` with `blur(6px)` to `translateY(0)` with `blur(0px)`, while outgoing ghost lines float up from `translateY(0)` to `translateY(-16px)` with `blur(6px)` (`0.50s cubic-bezier(0.25, 1, 0.5, 1)`). Added `transition: none !important;` to `.visualizer-overlay__lyrics-enter` and `.visualizer-overlay__lyrics-ghost` to prevent CSS transition conflicts. Robustly assigned ghost classes in `_spawnExitGhost`.
+- **RTX 3050 performance optimization**:
+  - *Problem*: Heavy frame drops and stuttering occurred during visualizer playback, even on an RTX 3050. The culprit was software SVG filter rasterization (`filter: url(#watercolor-warp)`) on 4 large animated DOM elements (`.visualizer-backdrop__img` and three 70vw `.visualizer-backdrop__blob`s), which forces Chromium CEF into continuous CPU software rendering. In addition, WebGL particle instancing ran 103,684 particles (`l = 322`) every frame with unconstrained FBO resolution.
+  - *Fix*: Replaced the SVG displacement filter with GPU-accelerated CSS blur (`filter: blur(50px)` / `blur(80px)` with `translate3d(0, 0, 0)`), moving backdrop compositing 100% to the GPU. Optimized WebGL particle grid `l` from 322 to 240 (57,600 particles, a 45% reduction in vertex/fragment draw overhead while preserving visual density). Clamped FBO ping-pong gaussian blur resolution to 1440px to prevent 4K fill-rate saturation. Removed perf query allocations from the frame loop.
+- **Top bar button circle removal & icon illumination**:
+  - *Problem*: User requested removing the circular wrappers around top bar buttons, scaling the icons up to the size of the removed circle, and illuminating the icons directly.
+  - *Fix*: Removed background circles, borders, and wrappers from `.visualizer-top-btn`. Scaled the icon font size to `32px` (matching the ~34px dimension of the previous circle). Icons now illuminate directly with soft ambient theme glows (`drop-shadow`) on hover, active state, and update notifications.
+- **Progressive continuous word fill synchronization**:
+  - *Problem*: Words filled instantly with sung color as soon as the playback position entered the word instead of getting filled progressively as the song was sung. This occurred because a spatial Gaussian weight threshold (`weight > 0.15` and `weight > 0.05`) prematurely marked 3 to 5 future letters as fully sung at the word start. Furthermore, `.vis-letter` had a CSS transition (`transition: color 0.14s`) that delayed rAF updates and had no sub-letter continuous fill mechanism.
+  - *Fix*: Decoupled Gaussian bulge scaling from letter fill color. Upcoming letters (`ps < chStart`) strictly remain in `--vis-unsung-color` with 0.40 opacity. The actively sung letter (`chStart <= ps <= chEnd`) fills continuously from left to right using dynamic `linear-gradient` with `-webkit-background-clip: text` and `-webkit-text-fill-color: transparent` timed to exact character duration (`(ps - chStart) / chDur`). Already sung letters (`ps > chEnd`) settle in `--vis-sung-color`. Added `transition: none !important;` to `.vis-letter` to let rAF update frame-accurately at 60/144 fps. Words now smoothly and continuously fill with the song.
+- **Like button rapid blinking fix**:
+  - *Problem*: The 100ms interval loop was calling `setIsLiked(instantLiked)` on every tick using `Spicetify.Player.getHeart()`. In newer Spotify desktop versions, track item metadata often lacks `collection.in_collection`, causing `getHeart()` to return `false`. Meanwhile, asynchronous `LibraryAPI.contains()` was returning `true`. The two repeatedly overwrote each other every 100ms/2s, causing the heart icon to rapidly flicker/blink between filled and empty.
+  - *Fix*: Removed `setIsLiked` from the 100ms interval loop and removed the conflicting `setTimeout` in `handleToggleLike`. Syncing `isLiked` now happens strictly when the track URI changes and upon user interaction.
+- **Top bar icon glow softening**:
+  - *Problem*: Top bar icons had compound multi-layered drop-shadows with high opacity (up to 80% and 22px-24px radii), creating harsh, blinding glare.
+  - *Fix*: Replaced compound drop-shadows with refined, subtle single-layer ambient glows (`drop-shadow(0 0 6px ...)` on hover and `drop-shadow(0 0 8px ...)` on active state). Removed duplicate drop-shadows on child icon glyphs and attenuated update pulse glow.

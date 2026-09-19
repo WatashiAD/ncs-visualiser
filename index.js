@@ -234,10 +234,51 @@ void main() {
     outColor = vec4(fragOutputColor * value, value);
 }
 `, "finalize fragment")) && (t = t(_, e, "finalize")) ? (_ = a.getAttribLocation(t, "inPosition"), e = a.getUniformLocation(t, "uOutputColor"), A = a.getUniformLocation(t, "uBlurredTexture"), C = a.getUniformLocation(t, "uOriginalTexture"), { framebuffer: D, texture: F } = r(a.NEAREST), { framebuffer: L, texture: P } = r(a.NEAREST), { framebuffer: U, texture: I } = r(a.LINEAR), { framebuffer: r, texture: O } = r(a.NEAREST), N = a.createBuffer(), a.bindBuffer(a.ARRAY_BUFFER, N), a.bufferData(a.ARRAY_BUFFER, new Float32Array([-1, -1, -1, 1, 1, 1, 1, -1]), a.STATIC_DRAW), a.enable(a.BLEND), a.blendEquation(a.MAX), { isError: !1, particleShader: i, dotShader: g, blurShader: b, finalizeShader: t, viewportSize: 0, particleTextureSize: 0, inPositionLoc: n, inPositionLocDot: y, inPositionLocBlur: T, inPositionLocFinalize: _, uNoiseOffsetLoc: o, uAmplitudeLoc: s, uSeedLoc: u, uDotSpacingLoc: l, uDotOffsetLoc: c, uSphereRadiusLoc: f, uFeatherLoc: d, uNoiseFrequencyLoc: h, uNoiseAmplitudeLoc: m, uDotCountLoc: p, uDotRadiusLoc: v, uDotRadiusPXLoc: E, uParticleTextureLoc: x, uBlurRadiusLoc: R, uBlurDirectionLoc: S, uBlurInputTextureLoc: w, uOutputColorLoc: e, uBlurredTextureLoc: A, uOriginalTextureLoc: C, quadBuffer: N, particleFramebuffer: D, particleTexture: F, dotFramebuffer: L, dotTexture: P, blurXFramebuffer: U, blurXTexture: I, blurYFramebuffer: r, blurYTexture: O }) : { isError: !0 }; return { isError: !0 }
-      }, []), i = (0, o.useCallback)((e, t) => { !t.isError && e && (t.viewportSize = Math.min(e.canvas.width, e.canvas.height), e.viewport(0, 0, e.canvas.width, e.canvas.height), e.bindTexture(e.TEXTURE_2D, t.dotTexture), e.texImage2D(e.TEXTURE_2D, 0, e.R8, t.viewportSize, t.viewportSize, 0, e.RED, e.UNSIGNED_BYTE, null), e.bindTexture(e.TEXTURE_2D, t.blurXTexture), e.texImage2D(e.TEXTURE_2D, 0, e.R8, t.viewportSize, t.viewportSize, 0, e.RED, e.UNSIGNED_BYTE, null), e.bindTexture(e.TEXTURE_2D, t.blurYTexture), e.texImage2D(e.TEXTURE_2D, 0, e.R8, t.viewportSize, t.viewportSize, 0, e.RED, e.UNSIGNED_BYTE, null)) }, []), n = (0, o.useCallback)((n, e, t) => { if (!t.isError && n) { let i = null, a = []; if (window.do_ncs_perf_test) { i = n.getExtension("EXT_disjoint_timer_query_webgl2"); for (let e = 0; e < 4; e++)a[e] = n.createQuery() } var now = performance.now(); if (!t.lastFrameTime) { t.lastFrameTime = now; t.smoothProgress = Spicetify.Player.getProgress() / 1000; } var dt = (now - t.lastFrameTime) / 1000; t.lastFrameTime = now; if (e.isPlaying) { t.smoothProgress += dt; var actualProgress = Spicetify.Player.getProgress() / 1000; if (Math.abs(t.smoothProgress - actualProgress) > 0.8) { t.smoothProgress = actualProgress; } } else { t.smoothProgress = Spicetify.Player.getProgress() / 1000; } var r = t.smoothProgress, o = 75 * (.5 * r + (l = (e.amplitudeCurve && e.amplitudeCurve.length ? e.amplitudeCurve : [{ x: 0, y: 0.001, accumulatedIntegral: 0 }, { x: 1e9, y: 0.001, accumulatedIntegral: 0 }]), o = R(l, e => e.x, s = r), u = l[o], l.length <= o + 1 ? (u.accumulatedIntegral ?? 0) + u.y * (s - u.x) : (l = { x: s, y: w(s, u.x, (s = l[o + 1]).x, u.y, s.y) }, (u.accumulatedIntegral ?? 0) + h(u, l)))) * .01, s = ((i, e, t) => { if (!i || !i.length) return 0; if (0 == t) return z(i, e => e.x, e => e.y, e => e, e); var r, a = e - t / 2, e = e + t / 2, n = R(i, e => e.x, a), o = R(i, e => e.x, e); let s = 0; if (n == o) return u = i[n], i.length - 2 < n ? u.y : (w(a, u.x, (r = i[n + 1]).x, u.y, r.y) + w(e, u.x, r.x, u.y, r.y)) / 2; { let t = i[n], r = i[n + 1]; var u = { x: a, y: w(a, t.x, r.x, t.y, r.y) }; s = h(u, r); for (let e = n + 1; e < o; e++)t = r, r = i[e + 1], s += h(t, r); t = r, i.length - 2 < o ? s += t.y * (e - t.x) : (r = i[o + 1], u = { x: e, y: w(e, t.x, r.x, t.y, r.y) }, s += h(t, u)) } return s / t })(e.amplitudeCurve, r, .15), u = e.seed, l = 322, r = .9 / l, c = .5 * r * t.viewportSize, f = w(s, 0, 1, .73, .86), d = Math.pow(s + 3, 2) * (45 / 1568); if (t.particleTextureSize !== l && (t.particleTextureSize = l, n.bindTexture(n.TEXTURE_2D, t.particleTexture), n.texImage2D(n.TEXTURE_2D, 0, n.RG32F, l, l, 0, n.RG, n.FLOAT, null)), window.do_ncs_perf_test && n.beginQuery(i.TIME_ELAPSED_EXT, a[0]), n.disable(n.BLEND), n.bindFramebuffer(n.FRAMEBUFFER, t.particleFramebuffer), n.viewport(0, 0, l, l), n.clearColor(0, 0, 0, 0), n.clear(n.COLOR_BUFFER_BIT), n.useProgram(t.particleShader), n.uniform1f(t.uNoiseOffsetLoc, o), n.uniform1f(t.uAmplitudeLoc, s), n.uniform1i(t.uSeedLoc, u), n.uniform1f(t.uDotSpacingLoc, .9), n.uniform1f(t.uDotOffsetLoc, -.45), n.uniform1f(t.uSphereRadiusLoc, f), n.uniform1f(t.uFeatherLoc, d), n.uniform1f(t.uNoiseFrequencyLoc, 4), n.uniform1f(t.uNoiseAmplitudeLoc, .32 * .9), n.bindBuffer(n.ARRAY_BUFFER, t.quadBuffer), n.enableVertexAttribArray(t.inPositionLoc), n.vertexAttribPointer(t.inPositionLoc, 2, n.FLOAT, !1, 0, 0), n.drawArrays(n.TRIANGLE_FAN, 0, 4), window.do_ncs_perf_test && (n.endQuery(i.TIME_ELAPSED_EXT), n.beginQuery(i.TIME_ELAPSED_EXT, a[1])), n.enable(n.BLEND), n.bindFramebuffer(n.FRAMEBUFFER, t.dotFramebuffer), n.viewport(0, 0, t.viewportSize, t.viewportSize), n.clearColor(0, 0, 0, 0), n.clear(n.COLOR_BUFFER_BIT), n.useProgram(t.dotShader), n.uniform1i(t.uDotCountLoc, l), n.uniform1f(t.uDotRadiusLoc, r), n.uniform1f(t.uDotRadiusPXLoc, c), n.uniform1i(t.uParticleTextureLoc, 0), n.activeTexture(n.TEXTURE0), n.bindTexture(n.TEXTURE_2D, t.particleTexture), n.bindBuffer(n.ARRAY_BUFFER, t.quadBuffer), n.enableVertexAttribArray(t.inPositionLocDot), n.vertexAttribPointer(t.inPositionLocDot, 2, n.FLOAT, !1, 0, 0), n.drawArraysInstanced(n.TRIANGLE_FAN, 0, 4, l * l), window.do_ncs_perf_test && (n.endQuery(i.TIME_ELAPSED_EXT), n.beginQuery(i.TIME_ELAPSED_EXT, a[2])), n.bindFramebuffer(n.FRAMEBUFFER, t.blurXFramebuffer), n.clearColor(0, 0, 0, 0), n.clear(n.COLOR_BUFFER_BIT), n.useProgram(t.blurShader), n.uniform1f(t.uBlurRadiusLoc, .01 * t.viewportSize), n.uniform2f(t.uBlurDirectionLoc, 1 / t.viewportSize, 0), n.uniform1i(t.uBlurInputTextureLoc, 0), n.activeTexture(n.TEXTURE0), n.bindTexture(n.TEXTURE_2D, t.dotTexture), n.bindBuffer(n.ARRAY_BUFFER, t.quadBuffer), n.enableVertexAttribArray(t.inPositionLocBlur), n.vertexAttribPointer(t.inPositionLocBlur, 2, n.FLOAT, !1, 0, 0), n.drawArrays(n.TRIANGLE_FAN, 0, 4), n.bindFramebuffer(n.FRAMEBUFFER, t.blurYFramebuffer), n.clearColor(0, 0, 0, 0), n.clear(n.COLOR_BUFFER_BIT), n.uniform2f(t.uBlurDirectionLoc, 0, 1 / t.viewportSize), n.bindTexture(n.TEXTURE_2D, t.blurXTexture), n.drawArrays(n.TRIANGLE_FAN, 0, 4), n.bindFramebuffer(n.FRAMEBUFFER, null), n.clearColor(0, 0, 0, 0), n.clear(n.COLOR_BUFFER_BIT), window.do_ncs_perf_test && (n.endQuery(i.TIME_ELAPSED_EXT), n.beginQuery(i.TIME_ELAPSED_EXT, a[3])), n.useProgram(t.finalizeShader), n.uniform3f(t.uOutputColorLoc, e.themeColor.rgb.r / 255, e.themeColor.rgb.g / 255, e.themeColor.rgb.b / 255), n.uniform1i(t.uBlurredTextureLoc, 0), n.uniform1i(t.uOriginalTextureLoc, 1), n.activeTexture(n.TEXTURE0), n.bindTexture(n.TEXTURE_2D, t.blurYTexture), n.activeTexture(n.TEXTURE1), n.bindTexture(n.TEXTURE_2D, t.dotTexture), n.bindBuffer(n.ARRAY_BUFFER, t.quadBuffer), n.enableVertexAttribArray(t.inPositionLocFinalize), n.vertexAttribPointer(t.inPositionLocFinalize, 2, n.FLOAT, !1, 0, 0), n.drawArrays(n.TRIANGLE_FAN, 0, 4), window.do_ncs_perf_test) { n.endQuery(i.TIME_ELAPSED_EXT), window.do_ncs_perf_test = !1; let r = () => { var e, t; 0 !== a.length && (t = n.getParameter(i.GPU_DISJOINT_EXT), e = a.map(e => n.getQueryParameter(e, n.QUERY_RESULT_AVAILABLE)).reduce((e, t) => e && t, !0), t ? (a.map(e => n.deleteQuery(e)), console.log("NCS PERF RESULT: FAILED (disjoint)"), a.length = 0) : e ? (t = a.map(e => n.getQueryParameter(e, n.QUERY_RESULT)), console.log("NCS PERF RESULT: ", t), window.ncs_perf_test_out || (window.ncs_perf_test_out = []), window.ncs_perf_test_out.push(t), a.length = 0) : window.requestAnimationFrame(r)) }; r() } } }, []); return o.default.createElement(s, { isEnabled: a.isEnabled, data: { themeColor: a.themeColor, seed: t, amplitudeCurve: e, isPlaying: a.isPlaying }, contextType: "webgl2", onInit: r, onResize: i, onRender: n, style: { width: "100%", height: "100%", objectFit: "contain" }, sizeConstraint: (e, t) => { e = Math.min(e, t); return { width: e, height: e } } })
+      }, []), i = (0, o.useCallback)((e, t) => { !t.isError && e && (t.viewportSize = Math.min(1440, Math.min(e.canvas.width, e.canvas.height)), e.viewport(0, 0, e.canvas.width, e.canvas.height), e.bindTexture(e.TEXTURE_2D, t.dotTexture), e.texImage2D(e.TEXTURE_2D, 0, e.R8, t.viewportSize, t.viewportSize, 0, e.RED, e.UNSIGNED_BYTE, null), e.bindTexture(e.TEXTURE_2D, t.blurXTexture), e.texImage2D(e.TEXTURE_2D, 0, e.R8, t.viewportSize, t.viewportSize, 0, e.RED, e.UNSIGNED_BYTE, null), e.bindTexture(e.TEXTURE_2D, t.blurYTexture), e.texImage2D(e.TEXTURE_2D, 0, e.R8, t.viewportSize, t.viewportSize, 0, e.RED, e.UNSIGNED_BYTE, null)) }, []), n = (0, o.useCallback)((n, e, t) => { if (!t.isError && n) { let i = null, a = []; if (window.do_ncs_perf_test) { i = n.getExtension("EXT_disjoint_timer_query_webgl2"); for (let e = 0; e < 4; e++)a[e] = n.createQuery() } var now = performance.now(); if (!t.lastFrameTime) { t.lastFrameTime = now; t.smoothProgress = Spicetify.Player.getProgress() / 1000; } var dt = (now - t.lastFrameTime) / 1000; t.lastFrameTime = now; if (e.isPlaying) { t.smoothProgress += dt; var actualProgress = Spicetify.Player.getProgress() / 1000; if (Math.abs(t.smoothProgress - actualProgress) > 0.8) { t.smoothProgress = actualProgress; } } else { t.smoothProgress = Spicetify.Player.getProgress() / 1000; } var r = t.smoothProgress, o = 75 * (.5 * r + (l = (e.amplitudeCurve && e.amplitudeCurve.length ? e.amplitudeCurve : [{ x: 0, y: 0.001, accumulatedIntegral: 0 }, { x: 1e9, y: 0.001, accumulatedIntegral: 0 }]), o = R(l, e => e.x, s = r), u = l[o], l.length <= o + 1 ? (u.accumulatedIntegral ?? 0) + u.y * (s - u.x) : (l = { x: s, y: w(s, u.x, (s = l[o + 1]).x, u.y, s.y) }, (u.accumulatedIntegral ?? 0) + h(u, l)))) * .01, s = ((i, e, t) => { if (!i || !i.length) return 0; if (0 == t) return z(i, e => e.x, e => e.y, e => e, e); var r, a = e - t / 2, e = e + t / 2, n = R(i, e => e.x, a), o = R(i, e => e.x, e); let s = 0; if (n == o) return u = i[n], i.length - 2 < n ? u.y : (w(a, u.x, (r = i[n + 1]).x, u.y, r.y) + w(e, u.x, r.x, u.y, r.y)) / 2; { let t = i[n], r = i[n + 1]; var u = { x: a, y: w(a, t.x, r.x, t.y, r.y) }; s = h(u, r); for (let e = n + 1; e < o; e++)t = r, r = i[e + 1], s += h(t, r); t = r, i.length - 2 < o ? s += t.y * (e - t.x) : (r = i[o + 1], u = { x: e, y: w(e, t.x, r.x, t.y, r.y) }, s += h(t, u)) } return s / t })(e.amplitudeCurve, r, .15), u = e.seed, l = 240, r = .9 / l, c = .5 * r * t.viewportSize, f = w(s, 0, 1, .73, .86), d = Math.pow(s + 3, 2) * (45 / 1568); if (t.particleTextureSize !== l && (t.particleTextureSize = l, n.bindTexture(n.TEXTURE_2D, t.particleTexture), n.texImage2D(n.TEXTURE_2D, 0, n.RG32F, l, l, 0, n.RG, n.FLOAT, null)), window.do_ncs_perf_test && n.beginQuery(i.TIME_ELAPSED_EXT, a[0]), n.disable(n.BLEND), n.bindFramebuffer(n.FRAMEBUFFER, t.particleFramebuffer), n.viewport(0, 0, l, l), n.clearColor(0, 0, 0, 0), n.clear(n.COLOR_BUFFER_BIT), n.useProgram(t.particleShader), n.uniform1f(t.uNoiseOffsetLoc, o), n.uniform1f(t.uAmplitudeLoc, s), n.uniform1i(t.uSeedLoc, u), n.uniform1f(t.uDotSpacingLoc, .9), n.uniform1f(t.uDotOffsetLoc, -.45), n.uniform1f(t.uSphereRadiusLoc, f), n.uniform1f(t.uFeatherLoc, d), n.uniform1f(t.uNoiseFrequencyLoc, 4), n.uniform1f(t.uNoiseAmplitudeLoc, .32 * .9), n.bindBuffer(n.ARRAY_BUFFER, t.quadBuffer), n.enableVertexAttribArray(t.inPositionLoc), n.vertexAttribPointer(t.inPositionLoc, 2, n.FLOAT, !1, 0, 0), n.drawArrays(n.TRIANGLE_FAN, 0, 4), window.do_ncs_perf_test && (n.endQuery(i.TIME_ELAPSED_EXT), n.beginQuery(i.TIME_ELAPSED_EXT, a[1])), n.enable(n.BLEND), n.bindFramebuffer(n.FRAMEBUFFER, t.dotFramebuffer), n.viewport(0, 0, t.viewportSize, t.viewportSize), n.clearColor(0, 0, 0, 0), n.clear(n.COLOR_BUFFER_BIT), n.useProgram(t.dotShader), n.uniform1i(t.uDotCountLoc, l), n.uniform1f(t.uDotRadiusLoc, r), n.uniform1f(t.uDotRadiusPXLoc, c), n.uniform1i(t.uParticleTextureLoc, 0), n.activeTexture(n.TEXTURE0), n.bindTexture(n.TEXTURE_2D, t.particleTexture), n.bindBuffer(n.ARRAY_BUFFER, t.quadBuffer), n.enableVertexAttribArray(t.inPositionLocDot), n.vertexAttribPointer(t.inPositionLocDot, 2, n.FLOAT, !1, 0, 0), n.drawArraysInstanced(n.TRIANGLE_FAN, 0, 4, l * l), window.do_ncs_perf_test && (n.endQuery(i.TIME_ELAPSED_EXT), n.beginQuery(i.TIME_ELAPSED_EXT, a[2])), n.bindFramebuffer(n.FRAMEBUFFER, t.blurXFramebuffer), n.clearColor(0, 0, 0, 0), n.clear(n.COLOR_BUFFER_BIT), n.useProgram(t.blurShader), n.uniform1f(t.uBlurRadiusLoc, .01 * t.viewportSize), n.uniform2f(t.uBlurDirectionLoc, 1 / t.viewportSize, 0), n.uniform1i(t.uBlurInputTextureLoc, 0), n.activeTexture(n.TEXTURE0), n.bindTexture(n.TEXTURE_2D, t.dotTexture), n.bindBuffer(n.ARRAY_BUFFER, t.quadBuffer), n.enableVertexAttribArray(t.inPositionLocBlur), n.vertexAttribPointer(t.inPositionLocBlur, 2, n.FLOAT, !1, 0, 0), n.drawArrays(n.TRIANGLE_FAN, 0, 4), n.bindFramebuffer(n.FRAMEBUFFER, t.blurYFramebuffer), n.clearColor(0, 0, 0, 0), n.clear(n.COLOR_BUFFER_BIT), n.uniform2f(t.uBlurDirectionLoc, 0, 1 / t.viewportSize), n.bindTexture(n.TEXTURE_2D, t.blurXTexture), n.drawArrays(n.TRIANGLE_FAN, 0, 4), n.bindFramebuffer(n.FRAMEBUFFER, null), n.clearColor(0, 0, 0, 0), n.clear(n.COLOR_BUFFER_BIT), window.do_ncs_perf_test && (n.endQuery(i.TIME_ELAPSED_EXT), n.beginQuery(i.TIME_ELAPSED_EXT, a[3])), n.useProgram(t.finalizeShader), n.uniform3f(t.uOutputColorLoc, e.themeColor.rgb.r / 255, e.themeColor.rgb.g / 255, e.themeColor.rgb.b / 255), n.uniform1i(t.uBlurredTextureLoc, 0), n.uniform1i(t.uOriginalTextureLoc, 1), n.activeTexture(n.TEXTURE0), n.bindTexture(n.TEXTURE_2D, t.blurYTexture), n.activeTexture(n.TEXTURE1), n.bindTexture(n.TEXTURE_2D, t.dotTexture), n.bindBuffer(n.ARRAY_BUFFER, t.quadBuffer), n.enableVertexAttribArray(t.inPositionLocFinalize), n.vertexAttribPointer(t.inPositionLocFinalize, 2, n.FLOAT, !1, 0, 0), n.drawArrays(n.TRIANGLE_FAN, 0, 4), window.do_ncs_perf_test) { n.endQuery(i.TIME_ELAPSED_EXT), window.do_ncs_perf_test = !1; let r = () => { var e, t; 0 !== a.length && (t = n.getParameter(i.GPU_DISJOINT_EXT), e = a.map(e => n.getQueryParameter(e, n.QUERY_RESULT_AVAILABLE)).reduce((e, t) => e && t, !0), t ? (a.map(e => n.deleteQuery(e)), console.log("NCS PERF RESULT: FAILED (disjoint)"), a.length = 0) : e ? (t = a.map(e => n.getQueryParameter(e, n.QUERY_RESULT)), console.log("NCS PERF RESULT: ", t), window.ncs_perf_test_out || (window.ncs_perf_test_out = []), window.ncs_perf_test_out.push(t), a.length = 0) : window.requestAnimationFrame(r)) }; r() } } }, []); return o.default.createElement(s, { isEnabled: a.isEnabled, data: { themeColor: a.themeColor, seed: t, amplitudeCurve: e, isPlaying: a.isPlaying }, contextType: "webgl2", onInit: r, onResize: i, onRender: n, style: { width: "100%", height: "100%", objectFit: "contain" }, sizeConstraint: (e, t) => { e = Math.min(e, t); return { width: e, height: e } } })
     }
-  }]; function we(r) {
-    let [t, i] = (0, g.useState)(() => { var e = new Set(Se.map(e => e.id)), t = r.initialRenderer; return t && e.has(t) || (t = new URLSearchParams(Spicetify.Platform?.History?.location?.search || "").get("renderer")) && e.has(t) ? t : "ncs" }); (0, g.useEffect)(() => { var e = new URLSearchParams; e.set("renderer", t), Spicetify.Platform?.History?.replace({ search: e.toString() }) }, [t]); var e = Se.find(e => e.id === t)?.renderer; let [albumArt, setAlbumArt] = (0, g.useState)(Spicetify.Player.data?.item?.metadata?.image_url ?? ""), [currentArt, setCurrentArt] = (0, g.useState)(Spicetify.Player.data?.item?.metadata?.image_url ?? ""), [prevArt, setPrevArt] = (0, g.useState)(""), [fadeKey, setFadeKey] = (0, g.useState)(0), [isPlaying, setIsPlaying] = (0, g.useState)(Spicetify.Player.isPlaying), [trackTitle, setTrackTitle] = (0, g.useState)(Spicetify.Player.data?.item?.name ?? ""), [trackProgress, setTrackProgress] = (0, g.useState)(Spicetify.Player.getProgress() / 1e3), [volume, setVolume] = (0, g.useState)(Spicetify.Player.getVolume() || 0), [shuffle, setShuffle] = (0, g.useState)("function" == typeof Spicetify.Player.getShuffle && Spicetify.Player.getShuffle()), [repeatMode, setRepeatMode] = (0, g.useState)("function" == typeof Spicetify.Player.getRepeat ? +Spicetify.Player.getRepeat() || 0 : 0), [isDraggingSeek, setIsDraggingSeek] = (0, g.useState)(!1), [dragProgress, setDragProgress] = (0, g.useState)(0), [isLiked, setIsLiked] = (0, g.useState)(!1), [lyricsLine, setLyricsLine] = (0, g.useState)(""), [showLyrics, setShowLyrics] = (0, g.useState)(true), [refreshTrigger, setRefreshTrigger] = (0, g.useState)(0), [hasNoLyrics, setHasNoLyrics] = (0, g.useState)(false); let progressBarContainerRef = (0, g.useRef)(null), lastUriRef = (0, g.useRef)(""), lyricsContainerRef = (0, g.useRef)(null), lyricsBgContainerRef = (0, g.useRef)(null); const handleSeekMouseDown = e => { const container = progressBarContainerRef.current; if (container) { const rect = container.getBoundingClientRect(), duration = u.audioAnalysis?.track?.duration || 0; if (duration > 0) { setIsDraggingSeek(!0); const calculateProgress = clientX => { let frac = (clientX - rect.left) / rect.width; return frac = Math.max(0, Math.min(1, frac)), frac * duration }; setDragProgress(calculateProgress(e.clientX)); const onMouseMove = moveEvent => { setDragProgress(calculateProgress(moveEvent.clientX)) }, onMouseUp = upEvent => { const finalProgress = calculateProgress(upEvent.clientX); Spicetify.Player.seek(Math.round(1000 * finalProgress)); setIsDraggingSeek(!1); const win = container.ownerDocument.defaultView || window; win.removeEventListener("mousemove", onMouseMove); win.removeEventListener("mouseup", onMouseUp) }; const win = container.ownerDocument.defaultView || window; win.addEventListener("mousemove", onMouseMove); win.addEventListener("mouseup", onMouseUp) } } };
+  }]; function _injectFonts(doc) {
+    if (!doc) return;
+    try {
+      if (!doc.querySelector("link[data-visualizer-fonts='true']")) {
+        var p1 = doc.createElement("link");
+        p1.rel = "preconnect";
+        p1.href = "https://fonts.googleapis.com";
+        p1.setAttribute("data-visualizer-fonts", "true");
+        doc.head.appendChild(p1);
+
+        var p2 = doc.createElement("link");
+        p2.rel = "preconnect";
+        p2.href = "https://fonts.gstatic.com";
+        p2.crossOrigin = "anonymous";
+        p2.setAttribute("data-visualizer-fonts", "true");
+        doc.head.appendChild(p2);
+
+        var fl = doc.createElement("link");
+        fl.rel = "stylesheet";
+        fl.href = "https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&family=Rubik+Spray+Paint&family=Sniglet:wght@400;800&family=Palanquin+Dark:wght@400;500;600;700&display=swap";
+        fl.setAttribute("data-visualizer-fonts", "true");
+        doc.head.appendChild(fl);
+
+        var fl2 = doc.createElement("link");
+        fl2.rel = "stylesheet";
+        fl2.href = "https://fonts.googleapis.com/icon?family=Material+Icons";
+        fl2.setAttribute("data-visualizer-fonts", "true");
+        doc.head.appendChild(fl2);
+
+        var fl3 = doc.createElement("link");
+        fl3.rel = "stylesheet";
+        fl3.href = "https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200";
+        fl3.setAttribute("data-visualizer-fonts", "true");
+        doc.head.appendChild(fl3);
+      }
+    } catch (e) { }
+  }
+  var _lyricsMemCache = new Map();
+  var _cachedTrackId = "";
+  var _cachedLyrics = undefined;
+  var _fetching = false;
+  function we(r) {
+    let [t, i] = (0, g.useState)(() => { var e = new Set(Se.map(e => e.id)), t = r.initialRenderer; return t && e.has(t) || (t = new URLSearchParams(Spicetify.Platform?.History?.location?.search || "").get("renderer")) && e.has(t) ? t : "ncs" }); (0, g.useEffect)(() => { var e = new URLSearchParams; e.set("renderer", t), Spicetify.Platform?.History?.replace({ search: e.toString() }) }, [t]); var e = Se.find(e => e.id === t)?.renderer; let [albumArt, setAlbumArt] = (0, g.useState)(Spicetify.Player.data?.item?.metadata?.image_url ?? ""), [currentArt, setCurrentArt] = (0, g.useState)(Spicetify.Player.data?.item?.metadata?.image_url ?? ""), [prevArt, setPrevArt] = (0, g.useState)(""), [fadeKey, setFadeKey] = (0, g.useState)(0), [isPlaying, setIsPlaying] = (0, g.useState)(Spicetify.Player.isPlaying), [trackTitle, setTrackTitle] = (0, g.useState)(Spicetify.Player.data?.item?.name ?? ""), [trackProgress, setTrackProgress] = (0, g.useState)(Spicetify.Player.getProgress() / 1e3), [volume, setVolume] = (0, g.useState)(Spicetify.Player.getVolume() || 0), [shuffle, setShuffle] = (0, g.useState)("function" == typeof Spicetify.Player.getShuffle && Spicetify.Player.getShuffle()), [repeatMode, setRepeatMode] = (0, g.useState)("function" == typeof Spicetify.Player.getRepeat ? +Spicetify.Player.getRepeat() || 0 : 0), [isDraggingSeek, setIsDraggingSeek] = (0, g.useState)(!1), [dragProgress, setDragProgress] = (0, g.useState)(0), [isLiked, setIsLiked] = (0, g.useState)(() => { try { if (typeof Spicetify.Player.getHeart === "function") return !!Spicetify.Player.getHeart(); } catch (e) { } var meta = Spicetify.Player.data?.item?.metadata || Spicetify.Player.origin?._state?.item?.metadata; return meta?.["collection.in_collection"] === "true"; }), [lyricsLine, setLyricsLine] = (0, g.useState)(""),[showLyrics, setShowLyrics] = (0, g.useState)(true), [refreshTrigger, setRefreshTrigger] = (0, g.useState)(0), [hasNoLyrics, setHasNoLyrics] = (0, g.useState)(false), [hasUpdate, setHasUpdate] = (0, g.useState)(false), [isRomanized, setIsRomanized] = (0, g.useState)(() => { try { var s = Spicetify.LocalStorage.get("SL:uiState"); return s ? !!JSON.parse(s)?.romanization : false } catch(e) { return false } }); let progressBarContainerRef = (0, g.useRef)(null), lastUriRef = (0, g.useRef)(""), lyricsContainerRef = (0, g.useRef)(null), lyricsBgContainerRef = (0, g.useRef)(null); (0, g.useEffect)(() => { try { var cached = sessionStorage.getItem("ncs-vis-update-check"); if (cached) { setHasUpdate(cached === "1"); return } fetch("https://api.github.com/repos/WatashiAD/ncs-visualiser/commits?per_page=1", { headers: { Accept: "application/vnd.github.v3+json" } }).then(r => r.ok ? r.json() : null).then(data => { if (data && Array.isArray(data) && data.length > 0) { var remoteSha = data[0].sha; var localSha = "91df0dcc1ceb2f1e364246d645dc1da85eb01a26"; var isNewer = remoteSha !== localSha && remoteSha !== "754867de7fbe3fcfcd074c874271a295445375fe"; setHasUpdate(isNewer); sessionStorage.setItem("ncs-vis-update-check", isNewer ? "1" : "0") } }).catch(() => {}) } catch(e) {} }, []); const handleSeekMouseDown = e => { const container = progressBarContainerRef.current; if (container) { const rect = container.getBoundingClientRect(), duration = u.audioAnalysis?.track?.duration || 0; if (duration > 0) { setIsDraggingSeek(!0); const calculateProgress = clientX => { let frac = (clientX - rect.left) / rect.width; return frac = Math.max(0, Math.min(1, frac)), frac * duration }; setDragProgress(calculateProgress(e.clientX)); const onMouseMove = moveEvent => { setDragProgress(calculateProgress(moveEvent.clientX)) }, onMouseUp = upEvent => { const finalProgress = calculateProgress(upEvent.clientX); Spicetify.Player.seek(Math.round(1000 * finalProgress)); setIsDraggingSeek(!1); const win = container.ownerDocument.defaultView || window; win.removeEventListener("mousemove", onMouseMove); win.removeEventListener("mouseup", onMouseUp) }; const win = container.ownerDocument.defaultView || window; win.addEventListener("mousemove", onMouseMove); win.addEventListener("mouseup", onMouseUp) } } };
     const handleRefreshLyrics = async () => {
       var uri = Spicetify.Player.data?.item?.uri;
       if (!uri) return;
@@ -250,7 +291,39 @@ void main() {
       setHasNoLyrics(false);
       setRefreshTrigger(prev => prev + 1);
     };
-    (0, g.useEffect)(() => { if (r.isSecondaryWindow) { let isDragging = !1, startX, startY; const onMouseDown = e => { if (e.target.closest("button,input,.visualizer-overlay__progress-bar-container,.visualizer-overlay__volume-wrap")) return; isDragging = !0; startX = e.screenX; startY = e.screenY }, onMouseMove = e => { if (isDragging) { const dx = e.screenX - startX, dy = e.screenY - startY; window.moveBy(dx, dy); startX = e.screenX; startY = e.screenY } }, onMouseUp = () => { isDragging = !1 }; window.addEventListener("mousedown", onMouseDown); window.addEventListener("mousemove", onMouseMove); window.addEventListener("mouseup", onMouseUp); return () => { window.removeEventListener("mousedown", onMouseDown); window.removeEventListener("mousemove", onMouseMove); window.removeEventListener("mouseup", onMouseUp) } } }, [r.isSecondaryWindow]); function formatTime(s) { if (!s || !isFinite(s)) return "0:00"; var m = Math.floor(s / 60), sec = Math.floor(s % 60); return m + ":" + String(sec).padStart(2, "0") } let a = (0, g.useRef)(null); a.current && !a.current.ownerDocument.defaultView && r.onWindowDestroyed?.(); var n = !!(t => { let [e, r] = (0, Re.useState)(t?.fullscreenElement ?? null); return (0, Re.useEffect)(() => { if (t) { let e = () => r(t.fullscreenElement); return t.addEventListener("fullscreenchange", e), () => t.removeEventListener("fullscreenchange", e) } }, [t]), e })(a.current?.ownerDocument); let [o, s] = (0, g.useState)({ state: "loading" }), [u, l] = (0, g.useState)({ themeColor: Spicetify.Color.fromHex("#535353") }), themeColorRef = (0, g.useRef)(null); themeColorRef.current = u.themeColor; let c = (0, g.useCallback)(t => s(e => "error" === e.state && 2 === e.errorData.recovery ? e : t), []), f = (0, g.useCallback)((e, t) => { c({ state: "error", errorData: { message: e, recovery: t } }) }, []), d = "error" === o.state && 2 === o.errorData.recovery, h = (0, g.useMemo)(() => new pe, []), m = (0, g.useCallback)(async e => { e = e?.item; if (e) { var t = Spicetify.URI.fromString(e.uri); if (t.type !== Spicetify.URI.Type.TRACK) f("Error: The type of track you're listening to is currently not supported", 1); else { c({ state: "loading" }); try { var r, i, t = `https://spclient.wg.spotify.com/audio-attributes/v1/audio-analysis/${t.id}?format=json`, [t, e] = await Promise.all([Spicetify.CosmosAsync.get(t).catch(e => (console.error("[Visualizer]", e), { isFallback: !0, track: { duration: (Spicetify.Player.data?.item?.duration?.milliseconds || 180000) / 1e3 }, segments: [], bars: [], beats: [], sections: [], tatums: [] })), h.fetch(23, e.metadata.image_url).catch(e => (console.error("[Visualizer] Could not load extracted color metadata. Status: " + ye[e]), null)).then(e => { try { var t; return e && 0 !== e.value.length && "type.googleapis.com/spotify.context_track_color.ColorResult" === e.typeUrl ? (e = e.value, t = Te, e = new DataView(e.buffer, e.byteOffset, e.byteLength), t = t[1](e).colorLight?.rgb?.toString(16).padStart(6, "0") ?? "535353", Spicetify.Color.fromHex("#" + t)) : Spicetify.Color.fromHex("#535353") } catch (r) { return console.error("[Visualizer] Failed to parse extracted color metadata, using fallback.", r), Spicetify.Color.fromHex("#535353") } })]); if (t) if ("object" != typeof t) f(`Invalid audio analysis data (${t})`, 0); else { if (!("track" in t && "segments" in t)) { console.warn("[Visualizer] No audio analysis available for this track, using fallback.", t); t = { isFallback: !0, track: { duration: (Spicetify.Player.data?.item?.duration?.milliseconds || 180000) / 1e3 }, segments: [], bars: [], beats: [], sections: [], tatums: [] } } l({ audioAnalysis: t, themeColor: e }), c({ state: "running" }) } else f("Error: The audio analysis could not be loaded, please check your internet connection", 0) } catch (r) { console.error("[Visualizer] Unexpected error while loading track data, using fallback.", r), l({ audioAnalysis: { isFallback: !0, track: { duration: (Spicetify.Player.data?.item?.duration?.milliseconds || 180000) / 1e3 }, segments: [], bars: [], beats: [], sections: [], tatums: [] }, themeColor: Spicetify.Color.fromHex("#535353") }), c({ state: "running" }) } } } else f("Start playing a song to see the visualization!", 1) }, [h]); return (0, g.useEffect)(() => { if (!d) { let e = e => { e?.data && m(e.data) }; return Spicetify.Player.addEventListener("songchange", e), m(Spicetify.Player.data), () => Spicetify.Player.removeEventListener("songchange", e) } }, [d, m]), (0, g.useEffect)(() => {
+    const handleToggleRomanization = () => {
+      var nextVal = !isRomanized;
+      setIsRomanized(nextVal);
+      try {
+        var raw = Spicetify.LocalStorage.get("SL:uiState");
+        var uiState = raw ? JSON.parse(raw) : {};
+        uiState.romanization = nextVal;
+        Spicetify.LocalStorage.set("SL:uiState", JSON.stringify(uiState));
+      } catch (e) { }
+      setRefreshTrigger(prev => prev + 1);
+    };
+    const handleToggleLike = async () => {
+      var uri = Spicetify.Player.data?.item?.uri || Spicetify.Player.origin?._state?.item?.uri;
+      if (!uri) return;
+      var nextLiked = !isLiked;
+      setIsLiked(nextLiked);
+      try {
+        if (typeof Spicetify.Player.setHeart === "function") {
+          Spicetify.Player.setHeart(nextLiked);
+        } else if (typeof Spicetify.Player.toggleHeart === "function") {
+          Spicetify.Player.toggleHeart();
+        } else if (Spicetify.Platform?.LibraryAPI) {
+          if (nextLiked) {
+            Spicetify.Platform.LibraryAPI.add({ uris: [uri] });
+          } else {
+            Spicetify.Platform.LibraryAPI.remove({ uris: [uri] });
+          }
+        }
+      } catch (e) {
+        console.warn("[Visualizer] Toggle like error:", e);
+      }
+    };
+    (0, g.useEffect)(() => { if (r.isSecondaryWindow) { let isDragging = !1, startX, startY; const onMouseDown = e => { if (e.target.closest("button,input,.visualizer-overlay__progress-bar-container,.visualizer-overlay__volume-wrap")) return; isDragging = !0; startX = e.screenX; startY = e.screenY }, onMouseMove = e => { if (isDragging) { const dx = e.screenX - startX, dy = e.screenY - startY; window.moveBy(dx, dy); startX = e.screenX; startY = e.screenY } }, onMouseUp = () => { isDragging = !1 }; window.addEventListener("mousedown", onMouseDown); window.addEventListener("mousemove", onMouseMove); window.addEventListener("mouseup", onMouseUp); return () => { window.removeEventListener("mousedown", onMouseDown); window.removeEventListener("mousemove", onMouseMove); window.removeEventListener("mouseup", onMouseUp) } } }, [r.isSecondaryWindow]); function formatTime(s) { if (!s || !isFinite(s)) return "0:00"; var m = Math.floor(s / 60), sec = Math.floor(s % 60); return m + ":" + String(sec).padStart(2, "0") } let a = (0, g.useRef)(null); a.current && !a.current.ownerDocument.defaultView && r.onWindowDestroyed?.(); var n = !!(t => { let [e, r] = (0, Re.useState)(t?.fullscreenElement ?? null); return (0, Re.useEffect)(() => { if (t) { let e = () => r(t.fullscreenElement); return t.addEventListener("fullscreenchange", e), () => t.removeEventListener("fullscreenchange", e) } }, [t]), e })(a.current?.ownerDocument); let [o, s] = (0, g.useState)({ state: "loading" }), [u, l] = (0, g.useState)({ themeColor: Spicetify.Color.fromHex("#535353") }), themeColorRef = (0, g.useRef)(null); themeColorRef.current = u.themeColor; let c = (0, g.useCallback)(t => s(e => "error" === e.state && 2 === e.errorData.recovery ? e : t), []), f = (0, g.useCallback)((e, t) => { c({ state: "error", errorData: { message: e, recovery: t } }) }, []), d = "error" === o.state && 2 === o.errorData.recovery, h = (0, g.useMemo)(() => new pe, []), m = (0, g.useCallback)(async e => { e = e?.item; if (e) { var t = Spicetify.URI.fromString(e.uri); if (t.type !== Spicetify.URI.Type.TRACK) f("Error: The type of track you're listening to is currently not supported", 1); else { c({ state: "loading" }); try { var r, i, t = `https://spclient.wg.spotify.com/audio-attributes/v1/audio-analysis/${t.id}?format=json`, [t, e] = await Promise.all([Spicetify.CosmosAsync.get(t).catch(e => (console.error("[Visualizer]", e), { isFallback: !0, track: { duration: (Spicetify.Player.data?.item?.duration?.milliseconds || 180000) / 1e3 }, segments: [], bars: [], beats: [], sections: [], tatums: [] })), h.fetch(23, e.metadata.image_url).catch(e => (console.error("[Visualizer] Could not load extracted color metadata. Status: " + ye[e]), null)).then(e => { try { var t; return e && 0 !== e.value.length && "type.googleapis.com/spotify.context_track_color.ColorResult" === e.typeUrl ? (e = e.value, t = Te, e = new DataView(e.buffer, e.byteOffset, e.byteLength), t = t[1](e).colorLight?.rgb?.toString(16).padStart(6, "0") ?? "535353", Spicetify.Color.fromHex("#" + t)) : Spicetify.Color.fromHex("#535353") } catch (r) { return console.error("[Visualizer] Failed to parse extracted color metadata, using fallback.", r), Spicetify.Color.fromHex("#535353") } })]); if (t) if ("object" != typeof t) f(`Invalid audio analysis data (${t})`, 0); else { if (!("track" in t && "segments" in t)) { console.warn("[Visualizer] No audio analysis available for this track, using fallback.", t); t = { isFallback: !0, track: { duration: (Spicetify.Player.data?.item?.duration?.milliseconds || 180000) / 1e3 }, segments: [], bars: [], beats: [], sections: [], tatums: [] } } l({ audioAnalysis: t, themeColor: e }), c({ state: "running" }) } else f("Error: The audio analysis could not be loaded, please check your internet connection", 0) } catch (r) { console.error("[Visualizer] Unexpected error while loading track data, using fallback.", r), l({ audioAnalysis: { isFallback: !0, track: { duration: (Spicetify.Player.data?.item?.duration?.milliseconds || 180000) / 1e3 }, segments: [], bars: [], beats: [], sections: [], tatums: [] }, themeColor: Spicetify.Color.fromHex("#535353") }), c({ state: "running" }) } } } else f("Start playing a song to see the visualization!", 1) }, [h]); return (0, g.useEffect)(() => { if (!d) { let e = e => { e?.data && m(e.data); try { var lk = (typeof Spicetify.Player.getHeart === "function") ? !!Spicetify.Player.getHeart() : (e?.data?.item?.metadata?.["collection.in_collection"] === "true"); setIsLiked(lk); } catch (err) { } }; return Spicetify.Player.addEventListener("songchange", e), m(Spicetify.Player.data), () => Spicetify.Player.removeEventListener("songchange", e) } }, [d, m]), (0, g.useEffect)(() => {
       if (!d) {
         let tick = 0; const e = () => {
           isDraggingSeek || setTrackProgress(Spicetify.Player.getProgress() / 1e3); setAlbumArt(prev => {
@@ -261,13 +334,34 @@ void main() {
               setFadeKey(k => k + 1);
             }
             return nextArt;
-          }); setIsPlaying(Spicetify.Player.isPlaying); setTrackTitle(Spicetify.Player.data?.item?.name ?? ""); setVolume(Spicetify.Player.getVolume() || 0); setShuffle("function" == typeof Spicetify.Player.getShuffle && Spicetify.Player.getShuffle()); setRepeatMode("function" == typeof Spicetify.Player.getRepeat ? +Spicetify.Player.getRepeat() || 0 : 0); const uri = Spicetify.Player.data?.item?.uri; if (uri && (uri !== lastUriRef.current || tick % 10 === 0)) { lastUriRef.current = uri; if (Spicetify.Platform?.LibraryAPI?.contains) { Spicetify.Platform.LibraryAPI.contains([uri]).then(res => { const val = Array.isArray(res) ? res[0] : (res && typeof res === 'object' ? res[uri] : res); setIsLiked(!!val) }).catch(() => { }) } } tick++
+          }); setIsPlaying(Spicetify.Player.isPlaying); setTrackTitle(Spicetify.Player.data?.item?.name ?? ""); setVolume(Spicetify.Player.getVolume() || 0); setShuffle("function" == typeof Spicetify.Player.getShuffle && Spicetify.Player.getShuffle()); setRepeatMode("function" == typeof Spicetify.Player.getRepeat ? +Spicetify.Player.getRepeat() || 0 : 0);
+          const uri = Spicetify.Player.data?.item?.uri;
+          if (uri && uri !== lastUriRef.current) {
+            lastUriRef.current = uri;
+            try {
+              var initLiked = (typeof Spicetify.Player.getHeart === "function") ? !!Spicetify.Player.getHeart() : (Spicetify.Player.data?.item?.metadata?.["collection.in_collection"] === "true");
+              setIsLiked(initLiked);
+            } catch (err) { }
+            if (Spicetify.Platform?.LibraryAPI) {
+              try {
+                var p = Spicetify.Platform.LibraryAPI.contains({ uris: [uri] });
+                if (!p || typeof p.then !== "function") p = Spicetify.Platform.LibraryAPI.contains([uri]);
+                if (p && typeof p.then === "function") {
+                  p.then(res => {
+                    const val = Array.isArray(res) ? res[0] : (res && typeof res === 'object' ? (res[uri] ?? res.isSaved ?? res.contains) : res);
+                    if (val !== undefined && val !== null) setIsLiked(!!val);
+                  }).catch(() => { });
+                }
+              } catch (err) { }
+            }
+          }
+          tick++;
         }; e(); const t = window.setInterval(e, 100); return () => window.clearInterval(t)
       }
     }, [d, isDraggingSeek]), (0, g.useEffect)(() => { var t = a.current; if (t) { var e = new ResizeObserver(function (e) { e = e[0]; var r = e.contentRect; t.style.setProperty("--vis-w", r.width), t.style.setProperty("--vis-h", r.height) }); return e.observe(t), function () { e.disconnect() } } }, []), (0, g.useEffect)(() => {
-      var _cachedLyrics, _cachedTrackId = "", _fetching = false;
-      var _lastLineIdx = -1, _letterSpans = [], _nonSpaceChars = [];
-      var _lastBgLineIdx = -1, _bgLetterSpans = [], _bgNonSpaceChars = [];
+      _cachedTrackId = ""; _cachedLyrics = undefined; _fetching = false;
+      var _lastLineIdx = -1, _wordSpans = [], _lineWords = [];
+      var _lastBgLineIdx = -1, _bgWordSpans = [], _bgLineWords = [];
 
       var syncedPosition = null;
       var predictedProgress = null;
@@ -373,31 +467,6 @@ void main() {
 
       requestPositionSync();
 
-      function _injectFonts(doc) {
-        if (!doc) return;
-        try {
-          if (!doc.querySelector("link[data-visualizer-fonts='true']")) {
-            var p1 = doc.createElement("link");
-            p1.rel = "preconnect";
-            p1.href = "https://fonts.googleapis.com";
-            p1.setAttribute("data-visualizer-fonts", "true");
-            doc.head.appendChild(p1);
-
-            var p2 = doc.createElement("link");
-            p2.rel = "preconnect";
-            p2.href = "https://fonts.gstatic.com";
-            p2.crossOrigin = "anonymous";
-            p2.setAttribute("data-visualizer-fonts", "true");
-            doc.head.appendChild(p2);
-
-            var fl = doc.createElement("link");
-            fl.rel = "stylesheet";
-            fl.href = "https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&family=Rubik+Spray+Paint&family=Sniglet:wght@400;800&display=swap";
-            fl.setAttribute("data-visualizer-fonts", "true");
-            doc.head.appendChild(fl);
-          }
-        } catch (e) { }
-      }
       _injectFonts(document);
 
       function unpackSLObjPack(packed) {
@@ -408,7 +477,7 @@ void main() {
             var parsed = JSON.parse(packed);
             if (parsed && (parsed.Type || parsed.Content)) return parsed;
             packed = parsed;
-          } catch (e) { }
+          } catch (e) { console.error("[Visualizer Lyrics] _tick error:", e); }
         }
         if (!Array.isArray(packed) || packed.length !== 2) {
           if (typeof packed === "object" && (packed.Type || packed.Content)) return packed;
@@ -521,7 +590,7 @@ void main() {
           if (window.parent?._spicy_lyrics?.version) return window.parent._spicy_lyrics.version;
           if (window._spicy_lyrics?.version) return window._spicy_lyrics.version;
         } catch (e) { }
-        return "6.3.1";
+        return "6.3.20";
       }
 
       async function _fetchSpicyLyricsApi(id, _retryCount) {
@@ -631,8 +700,7 @@ void main() {
         }
       }
 
-      // In-memory lyrics cache (independent of SpicyLyrics extension)
-      var _lyricsMemCache = new Map();
+      // In-memory lyrics cache TTL
       var _LYRICS_CACHE_TTL = 30 * 60 * 1000; // 30 minutes
 
       // Read from the SpicyLyrics extension's CacheStorage as backup
@@ -745,9 +813,176 @@ void main() {
         return null;
       }
 
-      async function _fetchLyrics(id) {
+      async function _fetchFromSpotify(id) {
         try {
-          console.log("[Visualizer Lyrics] === Fetching lyrics (SpicyLyrics compatible) for track:", id, "===");
+          var token = await _getSpotifyToken();
+          var headers = { "app-platform": "WebPlayer" };
+          if (token) {
+            headers["Authorization"] = "Bearer " + token;
+          }
+          var url = "https://spclient.wg.spotify.com/color-lyrics/v2/track/" + id + "?format=json&vocalRemoval=false&market=from_token";
+          var data = null;
+
+          if (Spicetify.CosmosAsync && typeof Spicetify.CosmosAsync.get === "function") {
+            try {
+              data = await Spicetify.CosmosAsync.get(url, headers);
+            } catch (ce) {
+              try {
+                data = await Spicetify.CosmosAsync.get(url);
+              } catch (ce2) { }
+            }
+          }
+
+          if (!data || !data.lyrics) {
+            var nativeFetch = fetch;
+            try {
+              if (window.parent && window.parent.fetch) nativeFetch = window.parent.fetch;
+            } catch (e) { }
+            try {
+              var res = await nativeFetch(url, { headers: headers });
+              if (res.ok) {
+                data = await res.json();
+              }
+            } catch (fe) { }
+          }
+
+          if (!data || !data.lyrics) {
+            var fallbackUrl = "https://spclient.wg.spotify.com/color-lyrics/v2/track/" + id + "?format=json";
+            try {
+              if (Spicetify.CosmosAsync && typeof Spicetify.CosmosAsync.get === "function") {
+                data = await Spicetify.CosmosAsync.get(fallbackUrl, headers);
+              }
+            } catch (fe2) { }
+          }
+
+          if (!data || !data.lyrics || !Array.isArray(data.lyrics.lines) || data.lyrics.lines.length === 0) {
+            return null;
+          }
+          var rawLines = data.lyrics.lines;
+          var hasTiming = rawLines.some(function (l) { return Number(l.startTimeMs) > 0; });
+          if (!hasTiming && data.lyrics.syncType === "UNSYNCED") {
+            return null;
+          }
+          var lines = [];
+          for (var i = 0; i < rawLines.length; i++) {
+            var rl = rawLines[i];
+            var start = Number(rl.startTimeMs) / 1000;
+            var nextStart = (i + 1 < rawLines.length) ? Number(rawLines[i + 1].startTimeMs) / 1000 : 0;
+            var end = 0;
+            if (rl.endTimeMs && Number(rl.endTimeMs) > Number(rl.startTimeMs)) {
+              end = Number(rl.endTimeMs) / 1000;
+            } else if (nextStart > start) {
+              var gap = nextStart - start;
+              if (gap > 7.0) {
+                var estDur = Math.max(2.5, Math.min(gap, ((rl.words || "").length * 0.22)));
+                end = start + estDur;
+              } else {
+                end = nextStart;
+              }
+            } else {
+              end = start + 4.0;
+            }
+            lines.push({
+              Type: "Vocal",
+              StartTime: start,
+              EndTime: end,
+              Text: rl.words || "",
+              OppositeAligned: false
+            });
+          }
+          if (lines.length === 0) return null;
+          console.log("[Visualizer Lyrics] ✓ Got lyrics from Spotify color-lyrics API, lines:", lines.length);
+          return { Type: "Line", Content: lines };
+        } catch (e) {
+          console.warn("[Visualizer Lyrics] Spotify color-lyrics fallback failed:", e?.message || e);
+          return null;
+        }
+      }
+
+      async function _fetchFromLRCLIB(title, artist, durationSec) {
+        try {
+          if (!title) return null;
+          var cleanTitle = title.replace(/\s*\(feat\..*?\)/i, "").replace(/\s*-.*$/, "").trim();
+          var cleanArtist = artist ? artist.split(",")[0].trim() : "";
+          var nativeFetch = fetch;
+          try {
+            if (window.parent && window.parent.fetch) nativeFetch = window.parent.fetch;
+          } catch (e) { }
+
+          var json = null;
+          var query = "https://lrclib.net/api/get?track_name=" + encodeURIComponent(cleanTitle);
+          if (cleanArtist) query += "&artist_name=" + encodeURIComponent(cleanArtist);
+          if (durationSec && durationSec > 0) query += "&duration=" + Math.round(durationSec);
+
+          try {
+            var res = await nativeFetch(query);
+            if (res.ok) {
+              json = await res.json();
+            }
+          } catch (e) { }
+
+          if (!json || !json.syncedLyrics) {
+            var sQuery = "https://lrclib.net/api/search?q=" + encodeURIComponent(cleanTitle + (cleanArtist ? " " + cleanArtist : ""));
+            try {
+              var sRes = await nativeFetch(sQuery);
+              if (sRes.ok) {
+                var sList = await sRes.json();
+                if (Array.isArray(sList) && sList.length > 0) {
+                  json = sList.find(function (item) { return item && item.syncedLyrics; }) || sList[0];
+                }
+              }
+            } catch (e) { }
+          }
+
+          if (!json || !json.syncedLyrics) return null;
+
+          var lrcLines = json.syncedLyrics.split("\n");
+          var parsed = [];
+          var lrcRegex = /^\[(\d{2}):(\d{2}(?:\.\d{1,3})?)\](.*)$/;
+          for (var i = 0; i < lrcLines.length; i++) {
+            var lineStr = lrcLines[i].trim();
+            var match = lrcRegex.exec(lineStr);
+            if (match) {
+              var mins = Number(match[1]);
+              var secs = Number(match[2]);
+              var time = mins * 60 + secs;
+              var text = match[3].trim();
+              if (text) {
+                parsed.push({ time: time, text: text });
+              }
+            }
+          }
+          if (parsed.length === 0) return null;
+
+          var lines = [];
+          for (var j = 0; j < parsed.length; j++) {
+            var curr = parsed[j];
+            var next = (j + 1 < parsed.length) ? parsed[j + 1].time : (curr.time + 4.0);
+            var end = next;
+            var gap = next - curr.time;
+            if (gap > 7.0) {
+              var estDur = Math.max(2.5, Math.min(gap, curr.text.length * 0.22));
+              end = curr.time + estDur;
+            }
+            lines.push({
+              Type: "Vocal",
+              StartTime: curr.time,
+              EndTime: end,
+              Text: curr.text,
+              OppositeAligned: false
+            });
+          }
+          console.log("[Visualizer Lyrics] ✓ Got lyrics from LRCLIB, lines:", lines.length);
+          return { Type: "Line", Content: lines };
+        } catch (e) {
+          console.warn("[Visualizer Lyrics] LRCLIB fallback failed:", e?.message || e);
+          return null;
+        }
+      }
+
+      async function _fetchLyrics(id, title, artist, durationSec) {
+        try {
+          console.log("[Visualizer Lyrics] === Fetching lyrics for track:", id, "===");
 
           // 0. Check in-memory cache first
           var memEntry = _lyricsMemCache.get(id);
@@ -756,16 +991,15 @@ void main() {
             return memEntry.data;
           }
 
-          // 1. Try SpicyLyrics API directly
+          // 1. Try SpicyLyrics API directly (rich syllable-synced lyrics)
           var raw = await _fetchSpicyLyricsApi(id);
           if (raw) {
             console.log("[Visualizer Lyrics] ✓ Got lyrics from SpicyLyrics API, type:", raw.Type);
             _lyricsMemCache.set(id, { data: raw, ts: Date.now() });
             return raw;
           }
-          console.warn("[Visualizer Lyrics] SpicyLyrics API returned nothing, trying extension storage fallbacks");
 
-          // 2. Backup: Read from SpicyLyrics extension's cache storage (if extension has fetched it)
+          // 2. Backup: Read from SpicyLyrics extension's cache storage
           raw = await _fetchFromSLExtensionCache(id);
           if (raw) {
             console.log("[Visualizer Lyrics] ✓ Got lyrics from SpicyLyrics extension cache, type:", raw.Type);
@@ -773,7 +1007,7 @@ void main() {
             return raw;
           }
 
-          // 3. Backup: Read from SpicyLyrics IndexedDB storage
+          // 3. Backup: Read from SpicyLyrics extension IndexedDB storage
           raw = await _fetchFromSLExtensionIDB(id);
           if (raw) {
             console.log("[Visualizer Lyrics] ✓ Got lyrics from SpicyLyrics IndexedDB, type:", raw.Type);
@@ -789,9 +1023,23 @@ void main() {
             return raw;
           }
 
-          // No lyrics available from SpicyLyrics
-          console.warn("[Visualizer Lyrics] No lyrics available from SpicyLyrics (API + caches + IndexedDB all empty) for", id);
-          _lyricsMemCache.set(id, { data: null, ts: Date.now() });
+          // 5. Fallback: Fetch directly from Spotify official color-lyrics endpoint
+          raw = await _fetchFromSpotify(id);
+          if (raw) {
+            console.log("[Visualizer Lyrics] ✓ Got lyrics from Spotify color-lyrics fallback, type:", raw.Type);
+            _lyricsMemCache.set(id, { data: raw, ts: Date.now() });
+            return raw;
+          }
+
+          // 6. Fallback: Fetch from LRCLIB open synced lyrics database
+          raw = await _fetchFromLRCLIB(title, artist, durationSec);
+          if (raw) {
+            console.log("[Visualizer Lyrics] ✓ Got lyrics from LRCLIB fallback, type:", raw.Type);
+            _lyricsMemCache.set(id, { data: raw, ts: Date.now() });
+            return raw;
+          }
+
+          console.warn("[Visualizer Lyrics] No lyrics available from any source for", id);
           return null;
         } catch (e) {
           console.error("[Visualizer Lyrics] Error in _fetchLyrics:", e);
@@ -912,24 +1160,29 @@ void main() {
       }
 
       function _tick() {
+        try {
         var el = lyricsContainerRef.current;
-        var themeColorStr = "rgb(" + themeColorRef.current.rgb.r + "," + themeColorRef.current.rgb.g + "," + themeColorRef.current.rgb.b + ")";
+        var tcRgb = themeColorRef.current?.rgb || { r: 83, g: 83, b: 83 }; var themeColorStr = "rgb(" + tcRgb.r + "," + tcRgb.g + "," + tcRgb.b + ")";
         var uri = Spicetify.Player.data?.item?.uri;
-        if (!uri) { setLyricsLine(""); _lastLineIdx = -1; _letterSpans = []; _nonSpaceChars = []; return; }
+        if (!uri) { setLyricsLine(""); _lastLineIdx = -1; _wordSpans = []; _lineWords = []; return; }
         var tid = uri.split(":")[2];
-        if (!tid) { setLyricsLine(""); _lastLineIdx = -1; _letterSpans = []; _nonSpaceChars = []; return; }
+        if (!tid) { setLyricsLine(""); _lastLineIdx = -1; _wordSpans = []; _lineWords = []; return; }
 
         if (tid !== _cachedTrackId && !_fetching) {
           _cachedTrackId = tid; _cachedLyrics = undefined; _fetching = true;
-          _lastLineIdx = -1; _letterSpans = []; _nonSpaceChars = [];
-          _lastBgLineIdx = -1; _bgLetterSpans = []; _bgNonSpaceChars = [];
+          _lastLineIdx = -1; _wordSpans = []; _lineWords = [];
+          _lastBgLineIdx = -1; _bgWordSpans = []; _bgLineWords = [];
           if (el) el.innerHTML = "";
           var bgEl = lyricsBgContainerRef.current;
           if (bgEl) { bgEl.innerHTML = ""; bgEl.style.display = "none"; }
           setHasNoLyrics(false);
-          _fetchLyrics(tid).then(function (d) {
+          var curItem = Spicetify.Player.data?.item;
+          var curTitle = curItem?.name || trackTitle || "";
+          var curArtist = curItem?.artists?.map(function (a) { return a.name; }).join(", ") || "";
+          var curDur = (curItem?.duration?.milliseconds || 0) / 1000;
+          _fetchLyrics(tid, curTitle, curArtist, curDur).then(function (d) {
             _cachedLyrics = d; _fetching = false;
-          }).catch(function (e) {
+          }).catch(function () {
             _cachedLyrics = null; _fetching = false;
           });
         }
@@ -950,8 +1203,8 @@ void main() {
             _lastBgLineIdx = -1;
             setLyricsLine("1");
             setHasNoLyrics(true);
-            _letterSpans = []; _nonSpaceChars = [];
-            _bgLetterSpans = []; _bgNonSpaceChars = [];
+            _wordSpans = []; _lineWords = [];
+            _bgWordSpans = []; _bgLineWords = [];
           } return;
         }
 
@@ -1045,7 +1298,7 @@ void main() {
 
           if (hasNotes) {
             if (_lastLineIdx !== -2) {
-              _lastLineIdx = -2; _letterSpans = []; _nonSpaceChars = [];
+              _lastLineIdx = -2; _wordSpans = []; _lineWords = [];
               if (el) {
                 el.innerHTML = '<span class="vis-music-note" style="--i:1">♪</span><span class="vis-music-note" style="--i:2">♫</span><span class="vis-music-note" style="--i:3">♬</span>';
                 el.className = "visualizer-overlay__lyrics-text visualizer-overlay__lyrics-enter";
@@ -1114,27 +1367,43 @@ void main() {
         setLyricsLine("1");
         setHasNoLyrics(false);
 
-        // Helper to generate html from chars array
-        function _generateHtml(charsArr) {
-          var htmlStr = "";
-          var inWord = false;
+        function _getLineWords(charsArr) {
+          var words = [];
+          var currentWord = null;
           for (var k = 0; k < charsArr.length; k++) {
             var c = charsArr[k];
             if (c.isSpace) {
-              if (inWord) {
-                htmlStr += "</span>";
-                inWord = false;
+              if (currentWord) {
+                words.push(currentWord);
+                currentWord = null;
               }
-              htmlStr += " ";
             } else {
-              if (!inWord) {
-                htmlStr += '<span class="vis-word">';
-                inWord = true;
+              if (!currentWord) {
+                currentWord = {
+                  text: "",
+                  startTime: c.startTime,
+                  endTime: c.endTime,
+                  chars: []
+                };
               }
-              htmlStr += '<span class="vis-letter">' + c.char + "</span>";
+              currentWord.text += c.char;
+              currentWord.chars.push(c);
+              currentWord.endTime = Math.max(currentWord.endTime, c.endTime);
             }
           }
-          if (inWord) {
+          if (currentWord) words.push(currentWord);
+          return words;
+        }
+
+        function _generateHtml(words) {
+          var htmlStr = "";
+          for (var w = 0; w < words.length; w++) {
+            var word = words[w];
+            if (w > 0) htmlStr += " ";
+            htmlStr += '<span class="vis-word">';
+            for (var c = 0; c < word.chars.length; c++) {
+              htmlStr += '<span class="vis-letter">' + word.chars[c].char + "</span>";
+            }
             htmlStr += "</span>";
           }
           return htmlStr;
@@ -1162,18 +1431,40 @@ void main() {
             }
           }
         }
+        // Let the line currently on screen slide DOWN + fade out underneath
+        // the next one, which enters right after sliding UP from below.
+        var _ghostTimer = null;
+        function _spawnExitGhost(srcEl) {
+          if (!srcEl || !srcEl.parentNode) return;
+          if (!srcEl.querySelector("span.vis-letter")) return;
+          var existingGhosts = srcEl.parentNode.querySelectorAll(".visualizer-overlay__lyrics-ghost");
+          existingGhosts.forEach(function (g) { if (g.parentNode) g.parentNode.removeChild(g); });
+          var ghost = srcEl.cloneNode(true);
+          ghost.removeAttribute("id");
+          ghost.className = (srcEl.className.indexOf("lyrics-enter") >= 0
+            ? srcEl.className.replace("lyrics-enter", "lyrics-ghost")
+            : (srcEl.className + " visualizer-overlay__lyrics-ghost"));
+          ghost.style.top = (srcEl.offsetTop || 0) + "px";
+          srcEl.parentNode.insertBefore(ghost, srcEl);
+          setTimeout(function () { if (ghost.parentNode) ghost.parentNode.removeChild(ghost); }, 540);
+        }
+        
 
         // 1. Lead Line Html
         if (info.li !== _lastLineIdx) {
           _lastLineIdx = info.li;
           var chars = _getLineLetters(info, _cachedLyrics.Type, isRomanized);
-          _nonSpaceChars = chars.filter(function (c) { return !c.isSpace; });
+          _lineWords = _getLineWords(chars);
           if (el) {
-            el.innerHTML = _generateHtml(chars);
-            el.style.fontSize = ""; // Reset custom size
+            _spawnExitGhost(el);
+            el.innerHTML = _generateHtml(_lineWords);
+            el.style.fontSize = "";
             el.className = "visualizer-overlay__lyrics-text" + (info.opposite ? " OppositeAligned" : ""); void el.offsetWidth;
             el.className = "visualizer-overlay__lyrics-text visualizer-overlay__lyrics-enter" + (info.opposite ? " OppositeAligned" : "");
-            _letterSpans = Array.from(el.querySelectorAll("span.vis-letter"));
+            _wordSpans = Array.from(el.querySelectorAll("span.vis-word"));
+            _lineWords.forEach(function(w, idx) {
+              w.letterSpans = _wordSpans[idx] ? Array.from(_wordSpans[idx].querySelectorAll("span.vis-letter")) : [];
+            });
             _autoScale(el);
           }
         }
@@ -1186,103 +1477,167 @@ void main() {
           if (bgLiKey !== _lastBgLineIdx) {
             _lastBgLineIdx = bgLiKey;
             var bgChars = _getLineLetters(bgInfo, _cachedLyrics.Type, isRomanized);
-            _bgNonSpaceChars = bgChars.filter(function (c) { return !c.isSpace; });
+            _bgLineWords = _getLineWords(bgChars);
             if (bgEl) {
-              bgEl.innerHTML = _generateHtml(bgChars);
+              _spawnExitGhost(bgEl);
+              bgEl.innerHTML = _generateHtml(_bgLineWords);
               bgEl.style.display = "block";
               bgEl.className = "visualizer-overlay__lyrics-bg-text" + (info.opposite ? " OppositeAligned" : ""); void bgEl.offsetWidth;
               bgEl.className = "visualizer-overlay__lyrics-bg-text visualizer-overlay__lyrics-enter" + (info.opposite ? " OppositeAligned" : "");
-              _bgLetterSpans = Array.from(bgEl.querySelectorAll("span.vis-letter"));
+              _bgWordSpans = Array.from(bgEl.querySelectorAll("span.vis-word"));
+              _bgLineWords.forEach(function(w, idx) {
+                w.letterSpans = _bgWordSpans[idx] ? Array.from(_bgWordSpans[idx].querySelectorAll("span.vis-letter")) : [];
+              });
             }
           }
         } else {
           _lastBgLineIdx = -1;
-          _bgLetterSpans = [];
-          _bgNonSpaceChars = [];
+          _bgWordSpans = [];
+          _bgLineWords = [];
           if (bgEl) {
             bgEl.innerHTML = "";
             bgEl.style.display = "none";
           }
         }
 
-        // Animate Spans helper
-        var activeWords = new Set();
-        var isSyllableSynced = _cachedLyrics.Type === "Syllable";
+        function _animateWords(spans, words, isBg) {
+          for (var w = 0; w < spans.length; w++) {
+            var span = spans[w];
+            var word = words[w];
+            if (!word) continue;
 
-        function _animateSpans(spans, nonSpaceChars, isBg) {
-          for (var k = 0; k < spans.length; k++) {
-            var span = spans[k];
-            var charInfo = nonSpaceChars[k];
-            if (!charInfo) continue;
-            var charDur = charInfo.endTime - charInfo.startTime;
-            var animDuration = charDur;
-            var x = ps - charInfo.startTime;
+            var letters = word.letterSpans || [];
+            var numLetters = letters.length;
+            var chars = word.chars || [];
 
-            if (x < 0) {
-              span.style.color = isBg ? "rgba(255, 255, 255, 0.20)" : "rgba(255, 255, 255, 0.35)";
-              span.style.textShadow = "none";
-              span.style.opacity = isBg ? "0.20" : "0.35";
-              span.style.transform = isSyllableSynced ? "scale(0.95)" : "scale(0.90)";
-            } else if (x <= animDuration) {
-              var t = x / animDuration;
-              var glowRatio = Math.sin(t * Math.PI / 2);
-              var activeRatio = Math.max(0, Math.min(1, 4 * Math.pow(t - 0.5, 3) + 0.5));
-              
-              var minOpacity = isBg ? 0.20 : 0.35;
-              var maxOpacity = isBg ? 0.6 : 1.0;
-              var opacity = minOpacity + (maxOpacity - minOpacity) * activeRatio;
-              span.style.opacity = String(opacity);
-
-              var minScale = isSyllableSynced ? 0.95 : 0.90;
-              var maxScale = isBg ? 1.0 : 1.12;
-              var scale = minScale + (maxScale - minScale) * activeRatio;
-              span.style.transform = "scale(" + scale + ")";
-
-              span.style.color = "color-mix(in srgb, " + themeColorStr + " " + Math.round(activeRatio * 100) + "%, " + (isBg ? "rgba(255, 255, 255, 0.20)" : "rgba(255, 255, 255, 0.35)") + ")";
-              span.style.textShadow = isBg ? "none" : ("0 0 " + (glowRatio * 6) + "px rgba(255, 255, 255, 0.6), 0 0 " + (glowRatio * 16) + "px " + themeColorStr);
-              
-              var wordEl = span.closest(".vis-word");
-              if (wordEl) activeWords.add(wordEl);
-            } else {
-              var elapsed = x - animDuration;
-              var decayTime = 0.25;
-              var scaleDecay = Math.max(0, 1 - elapsed / decayTime);
-              var glowDecay = scaleDecay;
-
-              var settledScale = isBg ? 1.0 : 1.05;
-              var maxScale = isBg ? 1.0 : 1.12;
-              var scale = settledScale + (maxScale - settledScale) * scaleDecay;
-              span.style.transform = "scale(" + scale + ")";
-
-              span.style.color = themeColorStr;
-              span.style.textShadow = isBg ? "none" : (glowDecay > 0.01 ? "0 0 " + (glowDecay * 6) + "px rgba(255, 255, 255, 0.6), 0 0 " + (glowDecay * 16) + "px " + themeColorStr : "none");
-              
-              var lineElapsed = ps - info.endTime;
-              if (lineElapsed > 0) {
-                var fadeOutDuration = isBg ? 0.20 : 0.5;
-                var opacity = Math.max(isBg ? 0.20 : 0.35, 1.0 - (1.0 - (isBg ? 0.20 : 0.35)) * (lineElapsed / fadeOutDuration));
-                span.style.opacity = String(opacity);
-              } else {
-                span.style.opacity = isBg ? "0.6" : "1.0";
+            if (ps < word.startTime) {
+              span.style.filter = "none";
+              span.style.transform = "scale(1)";
+              for (var i = 0; i < numLetters; i++) {
+                if (letters[i]) {
+                  letters[i].style.transform = "scale(1)";
+                  letters[i].style.color = "var(--vis-unsung-color)";
+                  letters[i].style.opacity = String(isBg ? 0.25 : 0.40);
+                  letters[i].style.background = "none";
+                  letters[i].style.webkitBackgroundClip = "initial";
+                  letters[i].style.webkitTextFillColor = "initial";
+                  letters[i].style.textShadow = "none";
+                  letters[i].style.filter = "none";
+                }
               }
+            } else if (ps <= word.endTime) {
+              var dur = word.endTime - word.startTime;
+              var progress = dur > 0 ? (ps - word.startTime) / dur : 1;
+              progress = Math.max(0, Math.min(1, progress));
+
+              var avgCharDur = numLetters > 0 ? dur / numLetters : dur;
+              var speedFactor = Math.min(1.0, Math.max(0.0, (avgCharDur - 0.08) / 0.35));
+              var maxBulge = (0.10 + 0.14 * speedFactor) * (isBg ? 0.7 : 1.0);
+
+              var activeCharIdx = 0;
+              for (var cIdx = 0; cIdx < numLetters; cIdx++) {
+                var cItem = chars[cIdx];
+                if (cItem) {
+                  if (ps >= cItem.startTime && ps <= cItem.endTime) {
+                    var cDur = cItem.endTime - cItem.startTime;
+                    var cProg = cDur > 0 ? (ps - cItem.startTime) / cDur : 0;
+                    activeCharIdx = cIdx + cProg;
+                    break;
+                  } else if (ps > cItem.endTime) {
+                    activeCharIdx = cIdx + 1;
+                  }
+                }
+              }
+
+              var sigma = 1.25;
+
+              for (var i = 0; i < numLetters; i++) {
+                if (!letters[i]) continue;
+                var ch = chars[i];
+                var chStart = ch ? ch.startTime : (word.startTime + (i / numLetters) * dur);
+                var chEnd = ch ? ch.endTime : (word.startTime + ((i + 1) / numLetters) * dur);
+                var chDur = chEnd - chStart;
+
+                var dist = i - activeCharIdx;
+                var weight = Math.exp(-0.5 * (dist * dist) / (sigma * sigma));
+                var letterScale = 1.0 + maxBulge * weight;
+                letters[i].style.transform = "scale(" + letterScale.toFixed(4) + ")";
+
+                if (ps < chStart) {
+                  letters[i].style.background = "none";
+                  letters[i].style.webkitBackgroundClip = "initial";
+                  letters[i].style.webkitTextFillColor = "initial";
+                  letters[i].style.color = "var(--vis-unsung-color)";
+                  letters[i].style.opacity = String(isBg ? 0.25 : 0.40);
+                  letters[i].style.textShadow = "none";
+                  letters[i].style.filter = "none";
+                } else if (ps > chEnd) {
+                  letters[i].style.background = "none";
+                  letters[i].style.webkitBackgroundClip = "initial";
+                  letters[i].style.webkitTextFillColor = "initial";
+                  letters[i].style.color = "var(--vis-sung-color)";
+                  letters[i].style.opacity = String(isBg ? 0.6 : 0.95);
+                  letters[i].style.textShadow = "none";
+                  letters[i].style.filter = "none";
+                } else {
+                  var charProg = chDur > 0 ? (ps - chStart) / chDur : 1;
+                  charProg = Math.max(0, Math.min(1, charProg));
+                  var pct = (charProg * 100).toFixed(1);
+
+                  letters[i].style.background = "linear-gradient(90deg, var(--vis-sung-color) calc(" + pct + "% - 1px), var(--vis-unsung-color) calc(" + pct + "% + 1px))";
+                  letters[i].style.webkitBackgroundClip = "text";
+                  letters[i].style.webkitTextFillColor = "transparent";
+                  letters[i].style.opacity = "1.0";
+
+                  var glowSize = (Math.max(0.3, weight) * (isBg ? 6 : 12)).toFixed(1);
+                  letters[i].style.filter = "drop-shadow(0 0 " + glowSize + "px var(--vis-glow-color))";
+                  letters[i].style.textShadow = "none";
+                }
+              }
+
+              var wordScale = isBg ? 1.06 : 1.12;
+              span.style.transform = "scale(" + wordScale + ")";
+              var glowR1 = isBg ? "12px" : "18px";
+              var glowR2 = isBg ? "24px" : "36px";
+              span.style.filter = "drop-shadow(0 0 " + glowR1 + " var(--vis-glow-color)) drop-shadow(0 0 " + glowR2 + " var(--vis-glow-outer))";
+            } else {
+              var elapsed = ps - word.endTime;
+              var settleFactor = Math.max(0, 1.0 - elapsed * 7.0);
+              for (var i = 0; i < numLetters; i++) {
+                if (!letters[i]) continue;
+                letters[i].style.color = "var(--vis-sung-color)";
+                letters[i].style.opacity = String(isBg ? 0.6 : 0.95);
+                letters[i].style.background = "none";
+                letters[i].style.webkitBackgroundClip = "initial";
+                letters[i].style.webkitTextFillColor = "initial";
+                letters[i].style.textShadow = "none";
+                letters[i].style.filter = "none";
+                if (settleFactor > 0.01) {
+                  var settledScale = 1.0 + maxBulge * 0.12 * settleFactor;
+                  letters[i].style.transform = "scale(" + settledScale.toFixed(4) + ")";
+                } else {
+                  letters[i].style.transform = "scale(1)";
+                }
+              }
+              if (elapsed < 0.5) {
+                var fade = Math.exp(-elapsed * 6);
+                var glowR = isBg ? "8px" : "14px";
+                span.style.filter = "drop-shadow(0 0 " + glowR + " color-mix(in srgb, var(--vis-glow-color) " + Math.round(fade * 100) + "%, transparent))";
+              } else {
+                span.style.filter = "none";
+              }
+              span.style.transform = "scale(1)";
             }
           }
         }
 
-        if (el && _letterSpans.length > 0 && _letterSpans.length === _nonSpaceChars.length) {
-          _animateSpans(_letterSpans, _nonSpaceChars, false);
+        if (el && _wordSpans.length > 0 && _wordSpans.length === _lineWords.length) {
+          _animateWords(_wordSpans, _lineWords, false);
         }
-        if (bgEl && _bgLetterSpans.length > 0 && _bgLetterSpans.length === _bgNonSpaceChars.length) {
-          _animateSpans(_bgLetterSpans, _bgNonSpaceChars, true);
+        if (bgEl && _bgWordSpans.length > 0 && _bgWordSpans.length === _bgLineWords.length) {
+          _animateWords(_bgWordSpans, _bgLineWords, true);
         }
-
-        // Scale up active words, reset others
-        if (el) {
-          var allWords = el.querySelectorAll("span.vis-word");
-          for (var w = 0; w < allWords.length; w++) {
-            allWords[w].style.transform = (isSyllableSynced && activeWords.has(allWords[w])) ? "scale(1.12)" : "scale(1.0)";
-          }
-        }
+        } catch (e) { }
       }
 
       var _raf;
@@ -1291,10 +1646,35 @@ void main() {
         _raf = requestAnimationFrame(_loop);
       }
       _loop();
+
+      var _songChangeHandler = async function () {
+        try {
+          var uri = Spicetify.Player.data?.item?.uri;
+          if (!uri) return;
+          var tid = uri.split(":")[2];
+          if (!tid) return;
+          if (tid === _cachedTrackId && _cachedLyrics !== undefined) return;
+          if (_fetching) return;
+          console.log("[Visualizer Lyrics] Prefetching lyrics on songchange for:", tid);
+          _cachedTrackId = tid; _cachedLyrics = undefined; _fetching = true;
+          var curItem = Spicetify.Player.data?.item;
+          var curTitle = curItem?.name || "";
+          var curArtist = curItem?.artists?.map(function (a) { return a.name; }).join(", ") || "";
+          var curDur = (curItem?.duration?.milliseconds || 0) / 1000;
+          try {
+            var result = await _fetchLyrics(tid, curTitle, curArtist, curDur);
+            _cachedLyrics = result;
+          } catch (e) { _cachedLyrics = null; }
+          _fetching = false;
+        } catch (e) { }
+      };
+      Spicetify.Player.addEventListener("songchange", _songChangeHandler);
+
       return function () {
         cancelAnimationFrame(_raf);
         if (syncTimeoutId) clearTimeout(syncTimeoutId);
+        Spicetify.Player.removeEventListener("songchange", _songChangeHandler);
       };
-    }, [refreshTrigger, Spicetify.Player.data?.item?.uri]), g.default.createElement("div", { className: "visualizer-container" + (isPlaying ? "" : " visualizer-container--paused"), ref: a }, !d && g.default.createElement(g.default.Fragment, null, g.default.createElement("div", { className: "visualizer-backdrop" }, g.default.createElement("svg", { style: { display: "none" } }, g.default.createElement("defs", null, g.default.createElement("filter", { id: "watercolor-warp" }, g.default.createElement("feTurbulence", { type: "fractalNoise", baseFrequency: "0.012", numOctaves: "3", result: "noise" }), g.default.createElement("feDisplacementMap", { in: "SourceGraphic", in2: "noise", scale: "250", xChannelSelector: "R", yChannelSelector: "G" })))), prevArt && g.default.createElement("img", { src: prevArt, className: "visualizer-backdrop__img", alt: "" }), currentArt && g.default.createElement("img", { key: fadeKey, src: currentArt, className: "visualizer-backdrop__img visualizer-backdrop__img--fade-in", alt: "" }), g.default.createElement("div", { className: "visualizer-backdrop__blob visualizer-backdrop__blob--1" }), g.default.createElement("div", { className: "visualizer-backdrop__blob visualizer-backdrop__blob--2" }), g.default.createElement("div", { className: "visualizer-backdrop__blob visualizer-backdrop__blob--3" })), g.default.createElement(p.Provider, { value: f }, e && g.default.createElement(e, { isEnabled: "running" === o.state, audioAnalysis: u.audioAnalysis, themeColor: u.themeColor, isPlaying: isPlaying })), g.default.createElement("div", { className: "visualizer-overlay", style: { "--theme-color": "rgb(" + u.themeColor.rgb.r + "," + u.themeColor.rgb.g + "," + u.themeColor.rgb.b + ")" } }, g.default.createElement("div", { className: "visualizer-overlay__label" }, "Now Playing", g.default.createElement("div", { className: "visualizer-overlay__wave" + (isPlaying ? " is-playing" : "") }, g.default.createElement("span", { className: "visualizer-overlay__wave-dot", style: { "--i": 1 } }), g.default.createElement("span", { className: "visualizer-overlay__wave-dot", style: { "--i": 2 } }), g.default.createElement("span", { className: "visualizer-overlay__wave-dot", style: { "--i": 3 } }))), g.default.createElement("div", { className: "visualizer-overlay__title-container" }, g.default.createElement("strong", { className: "visualizer-overlay__title", style: { "--title-length": (trackTitle || "No track").length } }, trackTitle || "No track"), g.default.createElement("button", { className: "visualizer-overlay__lyrics-toggle-btn" + (showLyrics ? " visualizer-overlay__lyrics-toggle-btn--active" : ""), onClick: () => { var nextVal = !showLyrics; setShowLyrics(nextVal); if (nextVal) handleRefreshLyrics(); }, title: showLyrics ? "Hide Lyrics" : "Show Lyrics" }, g.default.createElement("span", { className: "material-symbols-outlined" }, "lyrics"))), g.default.createElement("div", { className: "visualizer-overlay__artist" }, Spicetify.Player.data?.item?.artists?.map(a => a.name).join(", ") || ""), g.default.createElement("div", { className: "visualizer-overlay__progress" }, g.default.createElement("div", { className: "visualizer-overlay__time-row" }, g.default.createElement("div", { className: "visualizer-overlay__time-left" }, formatTime(isDraggingSeek ? dragProgress : trackProgress)), g.default.createElement("div", { className: "visualizer-overlay__time-right" }, formatTime(u.audioAnalysis?.track?.duration || 0))), g.default.createElement("div", { ref: progressBarContainerRef, className: "visualizer-overlay__progress-bar-container" + (isDraggingSeek ? " visualizer-overlay__progress-bar-container--dragging" : ""), onMouseDown: handleSeekMouseDown }, g.default.createElement("div", { className: "visualizer-overlay__progress-bar", style: { width: (100 * ((isDraggingSeek ? dragProgress : trackProgress) / (u.audioAnalysis?.track?.duration || 1))) + "%" } }))), (n || r.isSecondaryWindow) && g.default.createElement("div", { className: "visualizer-overlay__controls" }, g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn" + (isLiked ? " visualizer-overlay__ctrl-btn--liked" : ""), onClick: () => { Spicetify.Player.toggleHeart(); setIsLiked(!isLiked); } }, g.default.createElement("span", { className: "material-icons" }, isLiked ? "favorite" : "favorite_border")), g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn" + (shuffle ? " visualizer-overlay__ctrl-btn--active" : ""), onClick: () => Spicetify.Player.toggleShuffle() }, g.default.createElement("span", { className: "material-icons" }, "shuffle")), g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn", onClick: () => Spicetify.Player.prev() }, g.default.createElement("span", { className: "material-icons" }, "skip_previous")), g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn visualizer-overlay__ctrl-btn--play", onClick: () => Spicetify.Player.togglePlay() }, g.default.createElement("span", { className: "material-icons" }, isPlaying ? "pause" : "play_arrow")), g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn", onClick: () => Spicetify.Player.next() }, g.default.createElement("span", { className: "material-icons" }, "skip_next")), g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn" + (repeatMode ? " visualizer-overlay__ctrl-btn--active" : ""), onClick: () => Spicetify.Player.toggleRepeat() }, g.default.createElement("span", { className: "material-icons" }, 2 === repeatMode ? "repeat_one" : repeatMode ? "repeat" : "repeat")), g.default.createElement("div", { className: "visualizer-overlay__volume-wrap" }, g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn", onClick: () => Spicetify.Player.setMuted && Spicetify.Player.setMuted(!Spicetify.Player.isMuted()) }, g.default.createElement("span", { className: "material-icons" }, Spicetify.Player.isMuted && Spicetify.Player.isMuted() || volume === 0 ? "volume_off" : volume < .5 ? "volume_down" : "volume_up")), g.default.createElement("input", { type: "range", className: "visualizer-overlay__volume", min: "0", max: "1", step: "0.01", value: volume, onChange: e => Spicetify.Player.setVolume(parseFloat(e.target.value)) }))), showLyrics && lyricsLine && g.default.createElement("div", { className: "visualizer-overlay__lyrics" }, hasNoLyrics ? g.default.createElement("div", { key: "no-lyrics", className: "visualizer-overlay__no-lyrics-container" }, g.default.createElement("span", { className: "visualizer-overlay__lyrics-text" }, "No lyrics available"), g.default.createElement("button", { className: "visualizer-overlay__lyrics-refresh-btn-inline", onClick: handleRefreshLyrics, title: "Refresh Lyrics", style: { background: "none", border: "none", cursor: "pointer", padding: "0", display: "inline-flex", alignItems: "center", justifyContent: "center", color: "var(--theme-color, #ffffff)" } }, g.default.createElement("span", { className: "material-symbols-outlined", style: { fontSize: "1.2rem" } }, "refresh"))) : g.default.createElement(g.default.Fragment, null, g.default.createElement("div", { ref: lyricsContainerRef, key: "lyrics-words", className: "visualizer-overlay__lyrics-text", id: "vis-lyrics-words" }), g.default.createElement("div", { ref: lyricsBgContainerRef, key: "lyrics-bg-words", className: "visualizer-overlay__lyrics-bg-text", id: "vis-lyrics-bg-words", style: { display: "none" } })))), !r.isSecondaryWindow && g.default.createElement("div", { className: "visualizer-top-bar" }, u.audioAnalysis?.isFallback && g.default.createElement(Spicetify.ReactComponent.TooltipWrapper, { label: "Spotify doesn't have audio analysis data for this song right now, so this animation is simulated and not synced to the music.", placement: "bottom" }, g.default.createElement("button", { className: "visualizer-top-btn", type: "button", "aria-label": "Simulated animation notice" }, g.default.createElement("span", { className: "material-symbols-outlined" }, "info"))), g.default.createElement("button", { className: "visualizer-top-btn", title: n ? "Exit Fullscreen" : "Enter Fullscreen", onClick: () => n ? a.current?.ownerDocument.exitFullscreen() : a.current?.requestFullscreen() }, g.default.createElement("span", { className: "material-symbols-outlined" }, n ? "fullscreen_exit" : "fullscreen")), g.default.createElement("button", { className: "visualizer-top-btn", title: r.isSecondaryWindow ? "Close Window" : "Open Popup", onClick: () => r.isSecondaryWindow ? window.close() : (async r => { try { let e = window.open("", "", "width=960,height=540"); if (!e) { let t = "fallback PiP API is not available"; if (window.documentPictureInPicture && (window.documentPictureInPicture.window ? t = "cannot open another PiP window" : e = await window.documentPictureInPicture.requestWindow({ width: 960, height: 540 }).catch(e => (t = e ? "" + e : "unknown error", null))), !e) return void Spicetify.showNotification(_.default.createElement("span", null, "Failed to open window: ", t, ". Try with devtools using", " ", _.default.createElement("code", { style: { fontSize: "12px", background: "rgba(0 0 0 / 0.2)", borderRadius: "4px", padding: "2px" } }, "spicetify enable-devtools"), "."), !0) } let t = e.document; Array.from(document.styleSheets).forEach(e => { e.ownerNode && "tagName" in e.ownerNode && (e = e.ownerNode, e = t.importNode(e, !0), t.head.appendChild(e)) }), _injectFonts(t), t.documentElement.className = document.documentElement.className, t.body.className = document.body.className; var i = D.getStyleSheetManager(), a = Spicetify.ReactDOM.unmountComponentAtNode(t.body), n = _.default.createElement(we, { isSecondaryWindow: !0, onWindowDestroyed: a, initialRenderer: r }); i ? Spicetify.ReactDOM.render(_.default.createElement(i, { target: t.head }, n), t.body) : (Spicetify.showNotification("[Visualizer] Could not find StyleSheetManager. Styles in popup window probably won't work.", !0), Spicetify.ReactDOM.render(n, t.body)) } catch (e) { console.error("[Visualizer]", "error opening popup window", e); let t = e ? "" + e : "unknown error"; Spicetify.showNotification("Failed to open window: " + t, !0) } })(t) }, g.default.createElement("span", { className: "material-symbols-outlined" }, r.isSecondaryWindow ? "pip_exit" : "pip")))), "loading" === o.state ? g.default.createElement(B, null) : "error" === o.state ? g.default.createElement("div", { className: y.error_container }, g.default.createElement("div", { className: y.error_message }, o.errorData.message), 0 === o.errorData.recovery && g.default.createElement(Spicetify.ReactComponent.ButtonPrimary, { onClick: () => m(Spicetify.Player.data) }, "Try again")) : null)
+    }, [refreshTrigger, Spicetify.Player.data?.item?.uri, isRomanized]), g.default.createElement("div", { className: "visualizer-container" + (isPlaying ? "" : " visualizer-container--paused"), ref: a, style: { "--theme-color": "rgb(" + (u?.themeColor?.rgb?.r ?? 83) + "," + (u?.themeColor?.rgb?.g ?? 83) + "," + (u?.themeColor?.rgb?.b ?? 83) + ")" } }, !d && g.default.createElement(g.default.Fragment, null, g.default.createElement("div", { className: "visualizer-backdrop" }, prevArt && g.default.createElement("img", { src: prevArt, className: "visualizer-backdrop__img", alt: "" }), currentArt && g.default.createElement("img", { key: fadeKey, src: currentArt, className: "visualizer-backdrop__img visualizer-backdrop__img--fade-in", alt: "" }), g.default.createElement("div", { className: "visualizer-backdrop__blob visualizer-backdrop__blob--1" }), g.default.createElement("div", { className: "visualizer-backdrop__blob visualizer-backdrop__blob--2" }), g.default.createElement("div", { className: "visualizer-backdrop__blob visualizer-backdrop__blob--3" })), g.default.createElement(p.Provider, { value: f }, e && g.default.createElement(e, { isEnabled: "running" === o.state, audioAnalysis: u.audioAnalysis, themeColor: u.themeColor, isPlaying: isPlaying })), g.default.createElement("div", { className: "visualizer-overlay", style: { "--theme-color": "rgb(" + (u?.themeColor?.rgb?.r ?? 83) + "," + (u?.themeColor?.rgb?.g ?? 83) + "," + (u?.themeColor?.rgb?.b ?? 83) + ")" } }, g.default.createElement("div", { className: "visualizer-overlay__upper" }, g.default.createElement("div", { className: "visualizer-overlay__label" }, "Now Playing", g.default.createElement("div", { className: "visualizer-overlay__wave" + (isPlaying ? " is-playing" : "") }, g.default.createElement("span", { className: "visualizer-overlay__wave-dot", style: { "--i": 1 } }), g.default.createElement("span", { className: "visualizer-overlay__wave-dot", style: { "--i": 2 } }), g.default.createElement("span", { className: "visualizer-overlay__wave-dot", style: { "--i": 3 } }))), g.default.createElement("div", { className: "visualizer-overlay__title-container" }, g.default.createElement("strong", { className: "visualizer-overlay__title", style: { "--title-length": (trackTitle || "No track").length } }, trackTitle || "No track")), g.default.createElement("div", { className: "visualizer-overlay__artist" }, Spicetify.Player.data?.item?.artists?.map(a => a.name).join(", ") || ""), g.default.createElement("div", { className: "visualizer-overlay__progress" }, g.default.createElement("div", { className: "visualizer-overlay__time-row" }, g.default.createElement("div", { className: "visualizer-overlay__time-left" }, formatTime(isDraggingSeek ? dragProgress : trackProgress)), g.default.createElement("div", { className: "visualizer-overlay__time-right" }, formatTime(u.audioAnalysis?.track?.duration || 0))), g.default.createElement("div", { ref: progressBarContainerRef, className: "visualizer-overlay__progress-bar-container" + (isDraggingSeek ? " visualizer-overlay__progress-bar-container--dragging" : ""), onMouseDown: handleSeekMouseDown }, g.default.createElement("div", { className: "visualizer-overlay__progress-bar", style: { width: (100 * ((isDraggingSeek ? dragProgress : trackProgress) / (u.audioAnalysis?.track?.duration || 1))) + "%" } }))), (n || r.isSecondaryWindow) && g.default.createElement("div", { className: "visualizer-overlay__controls" }, g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn" + (isLiked ? " visualizer-overlay__ctrl-btn--liked" : ""), onClick: handleToggleLike, title: isLiked ? "Remove from Your Library" : "Save to Your Library" }, g.default.createElement("span", { className: "material-icons" }, isLiked ? "favorite" : "favorite_border")), g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn" + (shuffle ? " visualizer-overlay__ctrl-btn--active" : ""), onClick: () => Spicetify.Player.toggleShuffle() }, g.default.createElement("span", { className: "material-icons" }, "shuffle")), g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn", onClick: () => Spicetify.Player.prev() }, g.default.createElement("span", { className: "material-icons" }, "skip_previous")), g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn visualizer-overlay__ctrl-btn--play", onClick: () => Spicetify.Player.togglePlay() }, g.default.createElement("span", { className: "material-icons" }, isPlaying ? "pause" : "play_arrow")), g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn", onClick: () => Spicetify.Player.next() }, g.default.createElement("span", { className: "material-icons" }, "skip_next")), g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn" + (repeatMode ? " visualizer-overlay__ctrl-btn--active" : ""), onClick: () => Spicetify.Player.toggleRepeat() }, g.default.createElement("span", { className: "material-icons" }, 2 === repeatMode ? "repeat_one" : repeatMode ? "repeat" : "repeat")), g.default.createElement("div", { className: "visualizer-overlay__volume-wrap" }, g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn", onClick: () => Spicetify.Player.setMuted && Spicetify.Player.setMuted(!Spicetify.Player.isMuted()) }, g.default.createElement("span", { className: "material-icons" }, Spicetify.Player.isMuted && Spicetify.Player.isMuted() || volume === 0 ? "volume_off" : volume < .5 ? "volume_down" : "volume_up")), g.default.createElement("input", { type: "range", className: "visualizer-overlay__volume", min: "0", max: "1", step: "0.01", value: volume, onChange: e => Spicetify.Player.setVolume(parseFloat(e.target.value)) })))), showLyrics && lyricsLine && g.default.createElement("div", { className: "visualizer-overlay__lyrics" }, hasNoLyrics ? g.default.createElement("div", { key: "no-lyrics", className: "visualizer-overlay__no-lyrics-container" }, g.default.createElement("span", { className: "visualizer-overlay__lyrics-text" }, "No lyrics available"), g.default.createElement("button", { className: "visualizer-overlay__lyrics-refresh-btn-inline", onClick: handleRefreshLyrics, title: "Refresh Lyrics", style: { background: "none", border: "none", cursor: "pointer", padding: "0", display: "inline-flex", alignItems: "center", justifyContent: "center", color: "var(--theme-color, #ffffff)" } }, g.default.createElement("span", { className: "material-symbols-outlined", style: { fontSize: "1.2rem" } }, "refresh"))) : g.default.createElement(g.default.Fragment, null, g.default.createElement("div", { ref: lyricsContainerRef, key: "lyrics-words", className: "visualizer-overlay__lyrics-text", id: "vis-lyrics-words" }), g.default.createElement("div", { ref: lyricsBgContainerRef, key: "lyrics-bg-words", className: "visualizer-overlay__lyrics-bg-text", id: "vis-lyrics-bg-words", style: { display: "none" } })))), !r.isSecondaryWindow && g.default.createElement("div", { className: "visualizer-top-bar" }, u.audioAnalysis?.isFallback && g.default.createElement(Spicetify.ReactComponent.TooltipWrapper, { label: "Spotify doesn't have audio analysis data for this song right now, so this animation is simulated and not synced to the music.", placement: "bottom" }, g.default.createElement("button", { className: "visualizer-top-btn", type: "button", "aria-label": "Simulated animation notice" }, g.default.createElement("span", { className: "material-symbols-outlined" }, "info"))), g.default.createElement(Spicetify.ReactComponent.TooltipWrapper, { label: showLyrics ? "Hide Lyrics" : "Show Lyrics", placement: "bottom" }, g.default.createElement("button", { className: "visualizer-top-btn" + (showLyrics ? " visualizer-top-btn--active" : ""), onClick: () => { var nextVal = !showLyrics; setShowLyrics(nextVal); if (nextVal) handleRefreshLyrics(); } }, g.default.createElement("span", { className: "material-symbols-outlined" }, "lyrics"))), g.default.createElement(Spicetify.ReactComponent.TooltipWrapper, { label: isRomanized ? "Show Original Lyrics" : "Show Romanized Lyrics", placement: "bottom" }, g.default.createElement("button", { className: "visualizer-top-btn" + (isRomanized ? " visualizer-top-btn--active" : ""), onClick: handleToggleRomanization }, g.default.createElement("span", { className: "material-symbols-outlined" }, "translate"))), g.default.createElement(Spicetify.ReactComponent.TooltipWrapper, { label: n ? "Exit Fullscreen" : "Enter Fullscreen", placement: "bottom" }, g.default.createElement("button", { className: "visualizer-top-btn", onClick: () => n ? a.current?.ownerDocument.exitFullscreen() : a.current?.requestFullscreen() }, g.default.createElement("span", { className: "material-symbols-outlined" }, n ? "fullscreen_exit" : "fullscreen"))), hasUpdate && g.default.createElement(Spicetify.ReactComponent.TooltipWrapper, { label: "Update available! Click to visit the GitHub repo.", placement: "bottom" }, g.default.createElement("button", { className: "visualizer-top-btn visualizer-top-btn--update", title: "Update Available", onClick: () => window.open("https://github.com/WatashiAD/ncs-visualiser", "_blank") }, g.default.createElement("span", { className: "material-symbols-outlined" }, "system_update_alt"))), g.default.createElement("button", { className: "visualizer-top-btn", title: r.isSecondaryWindow ? "Close Window" : "Open Popup", onClick: () => r.isSecondaryWindow ? window.close() : (async r => { try { let e = null; try { e = window.open("about:blank", "_blank", "width=960,height=540"); } catch(err) { e = null; } if (!e) { let t = "fallback PiP API is not available"; if (window.documentPictureInPicture && (window.documentPictureInPicture.window ? t = "cannot open another PiP window" : e = await window.documentPictureInPicture.requestWindow({ width: 960, height: 540 }).catch(e => (t = e ? "" + e : "unknown error", null))), !e) return void Spicetify.showNotification(_.default.createElement("span", null, "Failed to open window: ", t, ". Try with devtools using", " ", _.default.createElement("code", { style: { fontSize: "12px", background: "rgba(0 0 0 / 0.2)", borderRadius: "4px", padding: "2px" } }, "spicetify enable-devtools"), "."), !0) } let t = e.document; Array.from(document.styleSheets).forEach(e => { e.ownerNode && "tagName" in e.ownerNode && (e = e.ownerNode, e = t.importNode(e, !0), t.head.appendChild(e)) }), _injectFonts(t), t.documentElement.className = document.documentElement.className, t.body.className = document.body.className; var i = D.getStyleSheetManager(), a = Spicetify.ReactDOM.unmountComponentAtNode(t.body), n = _.default.createElement(we, { isSecondaryWindow: !0, onWindowDestroyed: a, initialRenderer: r }); i ? Spicetify.ReactDOM.render(_.default.createElement(i, { target: t.head }, n), t.body) : (Spicetify.showNotification("[Visualizer] Could not find StyleSheetManager. Styles in popup window probably won't work.", !0), Spicetify.ReactDOM.render(n, t.body)) } catch (e) { console.error("[Visualizer]", "error opening popup window", e); let t = e ? "" + e : "unknown error"; Spicetify.showNotification("Failed to open window: " + t, !0) } })(t) }, g.default.createElement("span", { className: "material-symbols-outlined" }, r.isSecondaryWindow ? "pip_exit" : "pip")))), "loading" === o.state ? g.default.createElement(B, null) : "error" === o.state ? g.default.createElement("div", { className: y.error_container }, g.default.createElement("div", { className: y.error_message }, o.errorData.message), 0 === o.errorData.recovery && g.default.createElement(Spicetify.ReactComponent.ButtonPrimary, { onClick: () => m(Spicetify.Player.data) }, "Try again")) : null)
   } var _e = r(i()); return xe = k, M(n({}, "__esModule", { value: !0 }), xe)
 })(); let render = () => visualizer.default();

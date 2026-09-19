@@ -278,6 +278,215 @@ void main() {
   var _cachedLyrics = undefined;
   var _fetching = false;
 
+  // ---- Auto-update (download + spicetify apply) & lyrics romanization pipeline ----
+  var _LOCAL_SHA = "433fcd8651b74cacef7ec989805c270bf53eca5f";
+    var _UPDATE_REPO = "WatashiAD/ncs-visualiser";
+    var _UPDATE_BRANCH = "main";
+    var _UPDATE_FILES = ["index.js", "style.css", "manifest.json"];
+
+    // ---- Lyrics romanization (SpicyLyrics-compatible client pipeline) ----
+    var _JS_TEXT_TEST = /[ぁ-んァ-ン]/;
+    var _ZH_TEXT_TEST = /[一-鿿]/;
+    var _KR_TEXT_TEST = /[가-힯]|[ᄀ-ᇿ]|[㄰-㆏]|[ꥠ-꥿]|[ힰ-퟿]/;
+    var _CYR_TEXT_TEST = /[Ѐ-ӿԀ-ԯⷠ-ⷿꙀ-ꚟ]/;
+    var _GRK_TEXT_TEST = /[Ͱ-Ͽἀ-῿]/;
+
+    var _CYR_MAP = { "а":"a","б":"b","в":"v","г":"g","д":"d","е":"e","ё":"e","ж":"zh","з":"z","и":"i","й":"y","к":"k","л":"l","м":"m","н":"n","о":"o","п":"p","р":"r","с":"s","т":"t","у":"u","ф":"f","х":"h","ц":"ts","ч":"ch","ш":"sh","щ":"shch","ъ":"","ы":"y","ь":"","э":"e","ю":"yu","я":"ya","А":"A","Б":"B","В":"V","Г":"G","Д":"D","Е":"E","Ё":"E","Ж":"Zh","З":"Z","И":"I","Й":"Y","К":"K","Л":"L","М":"M","Н":"N","О":"O","П":"P","Р":"R","С":"S","Т":"T","У":"U","Ф":"F","Х":"Kh","Ц":"Ts","Ч":"Ch","Ш":"Sh","Щ":"Shch","Ъ":"","Ы":"Y","Ь":"","Э":"E","Ю":"Yu","Я":"Ya" };
+
+    var _GRK_MAP = { "ά":"a","έ":"e","ή":"i","ί":"i","ό":"o","ύ":"y","ώ":"o","Ά":"A","Έ":"E","Ή":"I","Ί":"I","Ό":"O","Ύ":"Y","Ώ":"O","ϊ":"i","ΐ":"i","ϋ":"y","ΰ":"y","ϐ":"v","ϑ":"th","ϕ":"f","ϖ":"p","ϒ":"Y","ϓ":"Y","ϔ":"Y", "α":"a","Α":"A","β":"v","Β":"V","γ":"g","Γ":"G","δ":"d","Δ":"D","ε":"e","Ε":"E","ζ":"z","Ζ":"Z","η":"i","Η":"I","θ":"th","Θ":"Th","ι":"i","Ι":"I","κ":"k","Κ":"K","λ":"l","Λ":"L","μ":"m","Μ":"M","ν":"n","Ν":"N","ξ":"x","Ξ":"X","ο":"o","Ο":"O","π":"p","Π":"P","ρ":"r","Ρ":"R","σ":"s","ς":"s","τ":"t","Τ":"T","υ":"y","Υ":"Y","φ":"f","Φ":"F","χ":"ch","Χ":"Ch","ψ":"ps","Ψ":"Ps","ω":"o","Ω":"O" };
+
+    var _KANA = { "あ":"a","い":"i","う":"u","え":"e","お":"o","か":"ka","き":"ki","く":"ku","け":"ke","こ":"ko","さ":"sa","し":"shi","す":"su","せ":"se","そ":"so","た":"ta","ち":"chi","つ":"tsu","て":"te","と":"to","な":"na","に":"ni","ぬ":"nu","ね":"ne","の":"no","は":"ha","ひ":"hi","ふ":"fu","へ":"he","ほ":"ho","ま":"ma","み":"mi","む":"mu","め":"me","も":"mo","や":"ya","ゆ":"yu","よ":"yo","ら":"ra","り":"ri","る":"ru","れ":"re","ろ":"ro","わ":"wa","を":"o","ん":"n","が":"ga","ぎ":"gi","ぐ":"gu","げ":"ge","ご":"go","ざ":"za","じ":"ji","ず":"zu","ぜ":"ze","ぞ":"zo","だ":"da","ぢ":"ji","づ":"zu","で":"de","ど":"do","ば":"ba","び":"bi","ぶ":"bu","べ":"be","ぼ":"bo","ぱ":"pa","ぴ":"pi","ぷ":"pu","ぺ":"pe","ぽ":"po","ぁ":"a","ぃ":"i","ぅ":"u","ぇ":"e","ぉ":"o","ゔ":"vu","ア":"a","イ":"i","ウ":"u","エ":"e","オ":"o","カ":"ka","キ":"ki","ク":"ku","ケ":"ke","コ":"ko","サ":"sa","シ":"shi","ス":"su","セ":"se","ソ":"so","タ":"ta","チ":"chi","ツ":"tsu","テ":"te","ト":"to","ナ":"na","ニ":"ni","ヌ":"nu","ネ":"ne","ノ":"no","ハ":"ha","ヒ":"hi","フ":"fu","ヘ":"he","ホ":"ho","マ":"ma","ミ":"mi","ム":"mu","メ":"me","モ":"mo","ヤ":"ya","ユ":"yu","ヨ":"yo","ラ":"ra","リ":"ri","ル":"ru","レ":"re","ロ":"ro","ワ":"wa","ヲ":"o","ン":"n","ガ":"ga","ギ":"gi","グ":"gu","ゲ":"ge","ゴ":"go","ザ":"za","ジ":"ji","ズ":"zu","ゼ":"ze","ゾ":"zo","ダ":"da","ヂ":"ji","ヅ":"zu","デ":"de","ド":"do","バ":"ba","ビ":"bi","ブ":"bu","ベ":"be","ボ":"bo","パ":"pa","ピ":"pi","プ":"pu","ペ":"pe","ポ":"po","ァ":"a","ィ":"i","ゥ":"u","ェ":"e","ォ":"o","ヴ":"vu","キャ":"kya","キュ":"kyu","キョ":"kyo","シャ":"sha","シュ":"shu","ショ":"sho","チャ":"cha","チュ":"chu","チョ":"cho","ニャ":"nya","ニュ":"nyu","ニョ":"nyo","ヒャ":"hya","ヒュ":"hyu","ヒョ":"hyo","ミャ":"mya","ミュ":"myu","ミョ":"myo","リャ":"rya","リュ":"ryu","リョ":"ryo","ギャ":"gya","ギュ":"gyu","ギョ":"gyo","ジャ":"ja","ジュ":"ju","ジョ":"jo","ヂャ":"ja","ヂュ":"ju","ヂョ":"jo","ビャ":"bya","ビュ":"byu","ビョ":"byo","ピャ":"pya","ピュ":"pyu","ピョ":"pyo","きゃ":"kya","きゅ":"kyu","きょ":"kyo","しゃ":"sha","しゅ":"shu","しょ":"sho","ちゃ":"cha","ちゅ":"chu","ちょ":"cho","にゃ":"nya","にゅ":"nyu","にょ":"nyo","ひゃ":"hya","ひゅ":"hyu","ひょ":"hyo","みゃ":"mya","みゅ":"myu","みょ":"myo","りゃ":"rya","りゅ":"ryu","りょ":"ryo","ぎゃ":"gya","ぎゅ":"gyu","ぎょ":"gyo","じゃ":"ja","じゅ":"ju","じょ":"jo","びゃ":"bya","びゅ":"byu","びょ":"byo","ぴゃ":"pya","ぴゅ":"pyu","ぴょ":"pyo" };
+    var _KANA_SMALL_TA = "っッ";
+    var _KANA_LONG = "ー";
+    var _KANA_KOMBINE = { "し":"sh","ち":"ch","じ":"j","ぢ":"j","き":"k","ぎ":"g","に":"n","ひ":"h","び":"b","ぴ":"p","み":"m","り":"r","シ":"sh","チ":"ch","ジ":"j","ヂ":"j","キ":"k","ギ":"g","ニ":"n","ヒ":"h","ビ":"b","ピ":"p","ミ":"m","リ":"r" };
+    var _KANA_SMALL = { "ゃ":"ya","ゅ":"yu","ょ":"yo","ャ":"ya","ュ":"yu","ョ":"yo" };
+
+    function _kanaToRomaji(txt) {
+      var out = "", pendingTsu = false;
+      for (var i = 0; i < txt.length; i++) {
+        var ch = txt[i];
+        if (_KANA_SMALL_TA.indexOf(ch) >= 0) { pendingTsu = true; continue; }
+        if (_KANA[ch]) {
+          var r;
+          if (ch in _KANA_KOMBINE && i + 1 < txt.length && _KANA_SMALL[txt[i + 1]]) {
+            r = _KANA_KOMBINE[ch] + _KANA_SMALL[txt[i + 1]];
+            i++;
+          } else {
+            r = _KANA[ch];
+          }
+          if (pendingTsu) { r = _geminateTsu(r); pendingTsu = false; }
+          out += r;
+        } else if (_KANA_LONG.indexOf(ch) >= 0) {
+          var last = out[out.length - 1];
+          if (last && "aeiou".indexOf(last) >= 0) out += last;
+        } else {
+          out += ch;
+        }
+      }
+      return out;
+    }
+    function _geminateTsu(r) {
+      if (r.slice(0, 2) === "ts") return "tt" + r.slice(2);
+      if (r.slice(0, 2) === "ch") return "tch" + r.slice(2);
+      if (r.slice(0, 2) === "sh") return "ss" + r.slice(2);
+      if (r.slice(0, 1) === "j") return "jj" + r.slice(1);
+      if ("kgsztdbpfh".indexOf(r[0]) >= 0) return r[0] + r;
+      return r;
+    }
+
+    var _HCHO = ["g","kk","n","d","tt","r","m","b","pp","s","ss","","j","jj","ch","k","t","p","h"];
+    var _HJOONG = ["a","ae","ya","yae","eo","e","yeo","ye","o","wa","wae","oe","yo","u","wo","we","wi","yu","eu","ui","i"];
+    var _HJONG = ["","k","k","ks","n","nj","nh","t","l","lk","lm","lb","ls","lt","lp","lh","m","p","ps","t","tt","ng","t","ch","k","t","p","h"];
+
+    function _hangulToRomaji(txt) {
+      var out = "";
+      var re = /[\uac00-\ud7a3]/g;
+      var last = 0, m;
+      while ((m = re.exec(txt))) {
+        out += txt.slice(last, m.index);
+        var c = txt.charCodeAt(m.index) - 0xac00;
+        var cho = Math.floor(c / (21 * 28));
+        var jung = Math.floor(c / 28) % 21;
+        var jong = c % 28;
+        out += _HCHO[cho] + _HJOONG[jung];
+        if (jong > 0) out += _HJONG[jong];
+        last = m.index + 1;
+      }
+      out += txt.slice(last);
+      return out;
+    }
+
+    function _cyrillicToLatin(txt) {
+      var out = "";
+      for (var i = 0; i < txt.length; i++) out += _CYR_MAP[txt[i]] !== undefined ? _CYR_MAP[txt[i]] : txt[i];
+      return out;
+    }
+
+    function _greekToLatin(txt) {
+      var out = "";
+      for (var i = 0; i < txt.length; i++) out += _GRK_MAP[txt[i]] !== undefined ? _GRK_MAP[txt[i]] : txt[i];
+      return out;
+    }
+
+    var _convPromises = {};
+    function _loadConv(name) {
+      if (_convPromises[name]) return _convPromises[name];
+      var pr;
+      if (name === "kuroshiro") {
+        pr = (async function () {
+          var Kuroshiro = (await import(/* webpackIgnore: true */ "https://esm.sh/kuroshiro@1.2.0")).default;
+          var KuromojiAnalyzer = (await import(/* webpackIgnore: true */ "https://esm.sh/kuroshiro-analyzer-kuromoji@1.1.0")).default;
+          var k = new Kuroshiro();
+          await k.init(new KuromojiAnalyzer());
+          return { conv: function (t) { return k.convert(t, { to: "romaji", mode: "spaced" }); } };
+        })();
+      } else if (name === "pinyin") {
+        pr = (async function () {
+          var mod = await import(/* webpackIgnore: true */ "https://pkgs.spikerko.org/pinyin/pinyin@4.0.0.mjs");
+          var fn = (mod && (mod.default || {}).pinyin) || (mod && mod.pinyin);
+          return { conv: function (t) { return fn ? fn(t, { segment: false, group: true }).join("-") : null; } };
+        })();
+      } else if (name === "aromanize") {
+        pr = (async function () {
+          var mod = await import(/* webpackIgnore: true */ "https://pkgs.spikerko.org/aromanize/aromanize@1.0.0.js");
+          var fn = mod && ((mod.default && mod.default.default) || mod.default || mod);
+          return { conv: function (t) { return typeof fn === "function" ? fn(t, "RevisedRomanizationTransliteration") : null; } };
+        })();
+      } else {
+        pr = Promise.resolve(null);
+      }
+      _convPromises[name] = pr;
+      if (pr && pr.catch) pr.catch(function () { delete _convPromises[name]; });
+      return pr;
+    }
+
+    function _chooseScript(text) {
+      if (_JS_TEXT_TEST.test(text)) return "japanese";
+      if (_ZH_TEXT_TEST.test(text)) return "chinese";
+      if (_KR_TEXT_TEST.test(text)) return "korean";
+      if (_CYR_TEXT_TEST.test(text)) return "cyrillic";
+      if (_GRK_TEXT_TEST.test(text)) return "greek";
+      return null;
+    }
+
+    function _romanizeSimple(txt, script) {
+      if (txt === undefined || txt === null) return null;
+      var out = txt;
+      if (script === "cyrillic") out = _cyrillicToLatin(out);
+      else if (script === "greek") out = _greekToLatin(out);
+      else if (script === "korean") out = _hangulToRomaji(out);
+      else if (script === "japanese") out = _kanaToRomaji(out);
+      else return null;
+      return out !== txt ? out : null;
+    }
+
+    function _setTranslit(target, line, value) {
+      if (!value || value === "" || typeof value !== "string" || target.TransliteratedText !== undefined) return false;
+      target.TransliteratedText = value;
+      if (line) line.HasTransliterations = true;
+      return true;
+    }
+
+    async function _romanizeLyrics(lyrics) {
+      if (!lyrics || !lyrics.Content || !Array.isArray(lyrics.Content) || (lyrics.Type !== "Line" && lyrics.Type !== "Syllable")) return lyrics;
+      try {
+        var probe = "";
+        for (var q = 0; q < lyrics.Content.length; q++) {
+          var item = lyrics.Content[q];
+          if (!item) continue;
+          if (lyrics.Type === "Syllable") {
+            if (item.Lead) { var ls = item.Lead.Syllables || []; for (var u = 0; u < ls.length; u++) probe += (ls[u].Text || "") + "\n"; }
+            if (item.Background) for (var v = 0; v < item.Background.length; v++) { var bg = item.Background[v] || {}; var bs = bg.Syllables || []; for (var w = 0; w < bs.length; w++) probe += (bs[w].Text || "") + "\n"; }
+          } else if (item.Type === "Vocal" && item.Text) probe += item.Text + "\n";
+        }
+        var script = _chooseScript(probe);
+        if (!script) return lyrics;
+        var jp = script === "japanese", cn = script === "chinese", kor = script === "korean";
+        var jpConv = null;
+        if (jp) { try { var m1 = await _loadConv("kuroshiro"); jpConv = m1 ? m1.conv : null; } catch (e) { jpConv = null; } }
+        var cnConv = null;
+        if (cn) { try { var m2 = await _loadConv("pinyin"); cnConv = m2 ? m2.conv : null; } catch (e2) { cnConv = null; } }
+        var korConv = null;
+        if (kor) { try { var m3 = await _loadConv("aromanize"); korConv = m3 ? m3.conv : null; } catch (e3) { korConv = null; } }
+
+        var any = false;
+        for (var i = 0; i < lyrics.Content.length; i++) {
+          var it = lyrics.Content[i];
+          if (!it) continue;
+          if (lyrics.Type === "Syllable") {
+            var groups = [];
+            if (it.Lead && it.Lead.Syllables) groups.push({ line: it, syl: it.Lead.Syllables });
+            if (it.Background) for (var b = 0; b < it.Background.length; b++) if (it.Background[b] && it.Background[b].Syllables) groups.push({ line: it, syl: it.Background[b].Syllables });
+            for (var g = 0; g < groups.length; g++) {
+              for (var s = 0; s < groups[g].syl.length; s++) {
+                var sy = groups[g].syl[s];
+                if (!sy || !sy.Text || sy.TransliteratedText) continue;
+                var v = null;
+                if (jp) { if (jpConv) { try { v = await jpConv(sy.Text); } catch (e4) { v = null; } } if (!v) v = _romanizeSimple(sy.Text, "japanese"); }
+                else if (cn && cnConv) { try { v = cnConv(sy.Text); } catch (e5) { v = null; } }
+                else if (kor) { if (korConv) { try { v = korConv(sy.Text); } catch (e6) { v = null; } } if (!v) v = _romanizeSimple(sy.Text, "korean"); }
+                else if (script === "cyrillic" || script === "greek") v = _romanizeSimple(sy.Text, script);
+                if (_setTranslit(sy, groups[g].line, v)) any = true;
+              }
+            }
+          } else if (it.Type === "Vocal" && it.Text) {
+            if (it.TransliteratedText) continue;
+            var val = null;
+            if (jp) { if (jpConv) { try { val = await jpConv(it.Text); } catch (e7) { val = null; } } if (!val) val = _romanizeSimple(it.Text, "japanese"); }
+            else if (cn && cnConv) { try { val = cnConv(it.Text); } catch (e8) { val = null; } }
+            else if (kor) { if (korConv) { try { val = korConv(it.Text); } catch (e9) { val = null; } } if (!val) val = _romanizeSimple(it.Text, "korean"); }
+            else if (script === "cyrillic" || script === "greek") val = _romanizeSimple(it.Text, script);
+            if (_setTranslit(it, it, val)) any = true;
+          }
+        }
+        if (any) lyrics.HasTransliterations = true;
+      } catch (e) {
+        console.warn("[Visualizer] Romanization pipeline error:", e && e.message ? e.message : e);
+      }
+return lyrics;
+  }
+
+
   const _KW_BLUR_SIZE = 128;
   const _KW_VS = `attribute vec2 a_pos;attribute vec2 a_uv;varying vec2 v_uv;void main(){gl_Position=vec4(a_pos,0.,1.);v_uv=a_uv;}`;
   const _KW_BLUR_FS = `precision highp float;uniform sampler2D u_tex;uniform vec2 u_res;uniform float u_off;varying vec2 v_uv;void main(){vec2 ts=1./u_res;vec4 c=vec4(0.);c+=texture2D(u_tex,v_uv+vec2(-u_off,-u_off)*ts);c+=texture2D(u_tex,v_uv+vec2(u_off,-u_off)*ts);c+=texture2D(u_tex,v_uv+vec2(-u_off,u_off)*ts);c+=texture2D(u_tex,v_uv+vec2(u_off,u_off)*ts);gl_FragColor=c*.25;}`;
@@ -682,7 +891,7 @@ void main() {
   var _bgAnimController = new BackgroundAnimationController();
 
   function we(r) {
-    let [t, i] = (0, g.useState)(() => { var e = new Set(Se.map(e => e.id)), t = r.initialRenderer; return t && e.has(t) || (t = new URLSearchParams(Spicetify.Platform?.History?.location?.search || "").get("renderer")) && e.has(t) ? t : "ncs" }); (0, g.useEffect)(() => { var e = new URLSearchParams; e.set("renderer", t), Spicetify.Platform?.History?.replace({ search: e.toString() }) }, [t]); var e = Se.find(e => e.id === t)?.renderer; let [albumArt, setAlbumArt] = (0, g.useState)(Spicetify.Player.data?.item?.metadata?.image_url ?? ""), [currentArt, setCurrentArt] = (0, g.useState)(Spicetify.Player.data?.item?.metadata?.image_url ?? ""), [prevArt, setPrevArt] = (0, g.useState)(""), [fadeKey, setFadeKey] = (0, g.useState)(0), [isPlaying, setIsPlaying] = (0, g.useState)(Spicetify.Player.isPlaying), [trackTitle, setTrackTitle] = (0, g.useState)(Spicetify.Player.data?.item?.name ?? ""), [trackProgress, setTrackProgress] = (0, g.useState)(Spicetify.Player.getProgress() / 1e3), [volume, setVolume] = (0, g.useState)(Spicetify.Player.getVolume() || 0), [shuffle, setShuffle] = (0, g.useState)("function" == typeof Spicetify.Player.getShuffle && Spicetify.Player.getShuffle()), [repeatMode, setRepeatMode] = (0, g.useState)("function" == typeof Spicetify.Player.getRepeat ? +Spicetify.Player.getRepeat() || 0 : 0), [isDraggingSeek, setIsDraggingSeek] = (0, g.useState)(!1), [dragProgress, setDragProgress] = (0, g.useState)(0), [isLiked, setIsLiked] = (0, g.useState)(() => { try { if (typeof Spicetify.Player.getHeart === "function") return !!Spicetify.Player.getHeart(); } catch (e) { } var meta = Spicetify.Player.data?.item?.metadata || Spicetify.Player.origin?._state?.item?.metadata; return meta?.["collection.in_collection"] === "true"; }), [lyricsLine, setLyricsLine] = (0, g.useState)(""),[showLyrics, setShowLyrics] = (0, g.useState)(true), [refreshTrigger, setRefreshTrigger] = (0, g.useState)(0), [hasNoLyrics, setHasNoLyrics] = (0, g.useState)(false), [hasUpdate, setHasUpdate] = (0, g.useState)(false), [isRomanized, setIsRomanized] = (0, g.useState)(() => { try { var s = Spicetify.LocalStorage.get("SL:uiState"); return s ? !!JSON.parse(s)?.romanization : false } catch(e) { return false } }); let progressBarContainerRef = (0, g.useRef)(null), lastUriRef = (0, g.useRef)(""), lyricsContainerRef = (0, g.useRef)(null), lyricsBgContainerRef = (0, g.useRef)(null), kawarpCanvasRef = (0, g.useRef)(null), kawarpInstanceRef = (0, g.useRef)(null);
+    let [t, i] = (0, g.useState)(() => { var e = new Set(Se.map(e => e.id)), t = r.initialRenderer; return t && e.has(t) || (t = new URLSearchParams(Spicetify.Platform?.History?.location?.search || "").get("renderer")) && e.has(t) ? t : "ncs" }); (0, g.useEffect)(() => { var e = new URLSearchParams; e.set("renderer", t), Spicetify.Platform?.History?.replace({ search: e.toString() }) }, [t]); var e = Se.find(e => e.id === t)?.renderer; let [albumArt, setAlbumArt] = (0, g.useState)(Spicetify.Player.data?.item?.metadata?.image_url ?? ""), [currentArt, setCurrentArt] = (0, g.useState)(Spicetify.Player.data?.item?.metadata?.image_url ?? ""), [prevArt, setPrevArt] = (0, g.useState)(""), [fadeKey, setFadeKey] = (0, g.useState)(0), [isPlaying, setIsPlaying] = (0, g.useState)(Spicetify.Player.isPlaying), [trackTitle, setTrackTitle] = (0, g.useState)(Spicetify.Player.data?.item?.name ?? ""), [trackProgress, setTrackProgress] = (0, g.useState)(Spicetify.Player.getProgress() / 1e3), [volume, setVolume] = (0, g.useState)(Spicetify.Player.getVolume() || 0), [shuffle, setShuffle] = (0, g.useState)("function" == typeof Spicetify.Player.getShuffle && Spicetify.Player.getShuffle()), [repeatMode, setRepeatMode] = (0, g.useState)("function" == typeof Spicetify.Player.getRepeat ? +Spicetify.Player.getRepeat() || 0 : 0), [isDraggingSeek, setIsDraggingSeek] = (0, g.useState)(!1), [dragProgress, setDragProgress] = (0, g.useState)(0), [isLiked, setIsLiked] = (0, g.useState)(() => { try { if (typeof Spicetify.Player.getHeart === "function") return !!Spicetify.Player.getHeart(); } catch (e) { } var meta = Spicetify.Player.data?.item?.metadata || Spicetify.Player.origin?._state?.item?.metadata; return meta?.["collection.in_collection"] === "true"; }), [lyricsLine, setLyricsLine] = (0, g.useState)(""),[showLyrics, setShowLyrics] = (0, g.useState)(true), [refreshTrigger, setRefreshTrigger] = (0, g.useState)(0), [hasNoLyrics, setHasNoLyrics] = (0, g.useState)(false), [hasUpdate, setHasUpdate] = (0, g.useState)(false), [isDownloadingUpdate, setIsDownloadingUpdate] = (0, g.useState)(false), [updateDownloaded, setUpdateDownloaded] = (0, g.useState)(() => { try { return sessionStorage.getItem("ncs-vis-update-downloaded") === "1"; } catch (e) { return false; } }), [isRomanized, setIsRomanized] = (0, g.useState)(() => { try { var s = Spicetify.LocalStorage.get("SL:uiState"); return s ? !!JSON.parse(s)?.romanization : false } catch(e) { return false } }); let progressBarContainerRef = (0, g.useRef)(null), lastUriRef = (0, g.useRef)(""), lyricsContainerRef = (0, g.useRef)(null), lyricsBgContainerRef = (0, g.useRef)(null), kawarpCanvasRef = (0, g.useRef)(null), kawarpInstanceRef = (0, g.useRef)(null);
     (0, g.useEffect)(() => {
       var canvas = kawarpCanvasRef.current;
       if (canvas && !kawarpInstanceRef.current) {
@@ -722,7 +931,7 @@ void main() {
         });
       }
     }, [isPlaying]);
-    (0, g.useEffect)(() => { try { var cached = sessionStorage.getItem("ncs-vis-update-check"); if (cached) { setHasUpdate(cached === "1"); return } fetch("https://api.github.com/repos/WatashiAD/ncs-visualiser/commits?per_page=1", { headers: { Accept: "application/vnd.github.v3+json" } }).then(r => r.ok ? r.json() : null).then(data => { if (data && Array.isArray(data) && data.length > 0) { var remoteSha = data[0].sha; var localSha = "91df0dcc1ceb2f1e364246d645dc1da85eb01a26"; var isNewer = remoteSha !== localSha && remoteSha !== "754867de7fbe3fcfcd074c874271a295445375fe"; setHasUpdate(isNewer); sessionStorage.setItem("ncs-vis-update-check", isNewer ? "1" : "0") } }).catch(() => {}) } catch(e) {} }, []); const handleSeekMouseDown = e => { const container = progressBarContainerRef.current; if (container) { const rect = container.getBoundingClientRect(), duration = u.audioAnalysis?.track?.duration || 0; if (duration > 0) { setIsDraggingSeek(!0); const calculateProgress = clientX => { let frac = (clientX - rect.left) / rect.width; return frac = Math.max(0, Math.min(1, frac)), frac * duration }; setDragProgress(calculateProgress(e.clientX)); const onMouseMove = moveEvent => { setDragProgress(calculateProgress(moveEvent.clientX)) }, onMouseUp = upEvent => { const finalProgress = calculateProgress(upEvent.clientX); Spicetify.Player.seek(Math.round(1000 * finalProgress)); setIsDraggingSeek(!1); const win = container.ownerDocument.defaultView || window; win.removeEventListener("mousemove", onMouseMove); win.removeEventListener("mouseup", onMouseUp) }; const win = container.ownerDocument.defaultView || window; win.addEventListener("mousemove", onMouseMove); win.addEventListener("mouseup", onMouseUp) } } };
+    (0, g.useEffect)(() => { var check = function () { try { var cached = null; try { cached = sessionStorage.getItem("ncs-vis-update-check"); } catch (e) { } if (cached) { try { var parsed = JSON.parse(cached); if (parsed && parsed.t && Date.now() - parsed.t < 3600e3) { setHasUpdate(!!parsed.up); return; } } catch (e) { } } fetch("https://api.github.com/repos/" + _UPDATE_REPO + "/commits?per_page=1", { headers: { Accept: "application/vnd.github.v3+json" } }).then(r => r.ok ? r.json() : null).then(data => { if (data && Array.isArray(data) && data.length > 0) { var isNewer = data[0].sha !== _LOCAL_SHA; setHasUpdate(isNewer); try { sessionStorage.setItem("ncs-vis-update-check", JSON.stringify({ t: Date.now(), up: isNewer })); } catch (e) { } } }).catch(() => { }) } catch (e) { } }; check(); }, []); const handleSeekMouseDown = e => { const container = progressBarContainerRef.current; if (container) { const rect = container.getBoundingClientRect(), duration = u.audioAnalysis?.track?.duration || 0; if (duration > 0) { setIsDraggingSeek(!0); const calculateProgress = clientX => { let frac = (clientX - rect.left) / rect.width; return frac = Math.max(0, Math.min(1, frac)), frac * duration }; setDragProgress(calculateProgress(e.clientX)); const onMouseMove = moveEvent => { setDragProgress(calculateProgress(moveEvent.clientX)) }, onMouseUp = upEvent => { const finalProgress = calculateProgress(upEvent.clientX); Spicetify.Player.seek(Math.round(1000 * finalProgress)); setIsDraggingSeek(!1); const win = container.ownerDocument.defaultView || window; win.removeEventListener("mousemove", onMouseMove); win.removeEventListener("mouseup", onMouseUp) }; const win = container.ownerDocument.defaultView || window; win.addEventListener("mousemove", onMouseMove); win.addEventListener("mouseup", onMouseUp) } } };
     const handleRefreshLyrics = async () => {
       var uri = Spicetify.Player.data?.item?.uri;
       if (!uri) return;
@@ -745,6 +954,42 @@ void main() {
         Spicetify.LocalStorage.set("SL:uiState", JSON.stringify(uiState));
       } catch (e) { }
       setRefreshTrigger(prev => prev + 1);
+    };
+    const handleUpdateDownload = async () => {
+      if (isDownloadingUpdate) return;
+      setIsDownloadingUpdate(true);
+      var saved = 0;
+      try {
+        var nativeFetch = fetch;
+        try { if (window.parent && window.parent.fetch) nativeFetch = window.parent.fetch; } catch (e) { }
+        for (var i = 0; i < _UPDATE_FILES.length; i++) {
+          try {
+            var f = _UPDATE_FILES[i];
+            var res = await nativeFetch("https://raw.githubusercontent.com/" + _UPDATE_REPO + "/" + _UPDATE_BRANCH + "/" + f);
+            if (!res.ok) continue;
+            var text = await res.text();
+            var type = f.indexOf(".css") > -1 ? "text/css" : (f.indexOf(".json") > -1 ? "application/json" : "application/javascript");
+            var objUrl = URL.createObjectURL(new Blob([text], { type: type }));
+            var a = document.createElement("a");
+            a.href = objUrl; a.download = f; a.rel = "noopener";
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(function () { URL.revokeObjectURL(objUrl); try { a.remove(); } catch (e) { } }, 4000);
+            saved++;
+          } catch (e2) { console.warn("[Visualizer] Update download failed for", f, e2); }
+        }
+        if (saved > 0) {
+          try { sessionStorage.setItem("ncs-vis-update-downloaded", "1"); } catch (e3) { }
+          setUpdateDownloaded(true);
+          Spicetify.showNotification("Update downloaded (" + saved + "/" + _UPDATE_FILES.length + ") - run: spicetify apply");
+        } else {
+          Spicetify.showNotification("Update download failed - check DevTools console");
+        }
+      } catch (e4) {
+        console.error("[Visualizer] Update download error:", e4);
+        Spicetify.showNotification("Update download failed - check DevTools console");
+      }
+      setIsDownloadingUpdate(false);
     };
     const handleToggleLike = async () => {
       var uri = Spicetify.Player.data?.item?.uri || Spicetify.Player.origin?._state?.item?.uri;
@@ -1424,6 +1669,13 @@ void main() {
         }
       }
 
+      async function _finalizeLyrics(id, raw) {
+        var out = raw;
+        try { out = await _romanizeLyrics(raw); } catch (e) { out = raw; }
+        _lyricsMemCache.set(id, { data: out, ts: Date.now() });
+        return out;
+      }
+
       async function _fetchLyrics(id, title, artist, durationSec) {
         try {
           console.log("[Visualizer Lyrics] === Fetching lyrics for track:", id, "===");
@@ -1439,48 +1691,42 @@ void main() {
           var raw = await _fetchSpicyLyricsApi(id);
           if (raw) {
             console.log("[Visualizer Lyrics] ✓ Got lyrics from SpicyLyrics API, type:", raw.Type);
-            _lyricsMemCache.set(id, { data: raw, ts: Date.now() });
-            return raw;
+            return await _finalizeLyrics(id, raw);
           }
 
           // 2. Backup: Read from SpicyLyrics extension's cache storage
           raw = await _fetchFromSLExtensionCache(id);
           if (raw) {
             console.log("[Visualizer Lyrics] ✓ Got lyrics from SpicyLyrics extension cache, type:", raw.Type);
-            _lyricsMemCache.set(id, { data: raw, ts: Date.now() });
-            return raw;
+            return await _finalizeLyrics(id, raw);
           }
 
           // 3. Backup: Read from SpicyLyrics extension IndexedDB storage
           raw = await _fetchFromSLExtensionIDB(id);
           if (raw) {
             console.log("[Visualizer Lyrics] ✓ Got lyrics from SpicyLyrics IndexedDB, type:", raw.Type);
-            _lyricsMemCache.set(id, { data: raw, ts: Date.now() });
-            return raw;
+            return await _finalizeLyrics(id, raw);
           }
 
           // 4. Backup: Check SpicyLyrics global exposed objects
           raw = _fetchFromSLGlobal(id);
           if (raw) {
             console.log("[Visualizer Lyrics] ✓ Got lyrics from SpicyLyrics global state, type:", raw.Type);
-            _lyricsMemCache.set(id, { data: raw, ts: Date.now() });
-            return raw;
+            return await _finalizeLyrics(id, raw);
           }
 
           // 5. Fallback: Fetch directly from Spotify official color-lyrics endpoint
           raw = await _fetchFromSpotify(id);
           if (raw) {
             console.log("[Visualizer Lyrics] ✓ Got lyrics from Spotify color-lyrics fallback, type:", raw.Type);
-            _lyricsMemCache.set(id, { data: raw, ts: Date.now() });
-            return raw;
+            return await _finalizeLyrics(id, raw);
           }
 
           // 6. Fallback: Fetch from LRCLIB open synced lyrics database
           raw = await _fetchFromLRCLIB(title, artist, durationSec);
           if (raw) {
             console.log("[Visualizer Lyrics] ✓ Got lyrics from LRCLIB fallback, type:", raw.Type);
-            _lyricsMemCache.set(id, { data: raw, ts: Date.now() });
-            return raw;
+            return await _finalizeLyrics(id, raw);
           }
 
           console.warn("[Visualizer Lyrics] No lyrics available from any source for", id);
@@ -2170,6 +2416,6 @@ void main() {
         if (syncTimeoutId) clearTimeout(syncTimeoutId);
         Spicetify.Player.removeEventListener("songchange", _songChangeHandler);
       };
-    }, [refreshTrigger, Spicetify.Player.data?.item?.uri, isRomanized]), g.default.createElement("div", { className: "visualizer-container" + (isPlaying ? "" : " visualizer-container--paused"), ref: a, style: { "--theme-color": "rgb(" + (u?.themeColor?.rgb?.r ?? 83) + "," + (u?.themeColor?.rgb?.g ?? 83) + "," + (u?.themeColor?.rgb?.b ?? 83) + ")" } }, !d && g.default.createElement(g.default.Fragment, null, g.default.createElement("div", { className: "visualizer-backdrop" }, g.default.createElement("canvas", { ref: kawarpCanvasRef, className: "visualizer-backdrop__canvas spicy-dynamic-bg" }), prevArt && g.default.createElement("img", { src: prevArt, className: "visualizer-backdrop__img", alt: "" }), currentArt && g.default.createElement("img", { key: fadeKey, src: currentArt, className: "visualizer-backdrop__img visualizer-backdrop__img--fade-in", alt: "" })), g.default.createElement(p.Provider, { value: f }, e && g.default.createElement(e, { isEnabled: "running" === o.state, audioAnalysis: u.audioAnalysis, themeColor: u.themeColor, isPlaying: isPlaying })), g.default.createElement("div", { className: "visualizer-overlay", style: { "--theme-color": "rgb(" + (u?.themeColor?.rgb?.r ?? 83) + "," + (u?.themeColor?.rgb?.g ?? 83) + "," + (u?.themeColor?.rgb?.b ?? 83) + ")" } }, g.default.createElement("div", { className: "visualizer-overlay__upper" }, g.default.createElement("div", { className: "visualizer-overlay__label" }, "Now Playing", g.default.createElement("div", { className: "visualizer-overlay__wave" + (isPlaying ? " is-playing" : "") }, g.default.createElement("span", { className: "visualizer-overlay__wave-dot", style: { "--i": 1 } }), g.default.createElement("span", { className: "visualizer-overlay__wave-dot", style: { "--i": 2 } }), g.default.createElement("span", { className: "visualizer-overlay__wave-dot", style: { "--i": 3 } }))), g.default.createElement("div", { className: "visualizer-overlay__title-container" }, g.default.createElement("strong", { className: "visualizer-overlay__title", style: { "--title-length": (trackTitle || "No track").length } }, trackTitle || "No track")), g.default.createElement("div", { className: "visualizer-overlay__artist" }, Spicetify.Player.data?.item?.artists?.map(a => a.name).join(", ") || ""), g.default.createElement("div", { className: "visualizer-overlay__progress" }, g.default.createElement("div", { className: "visualizer-overlay__time-row" }, g.default.createElement("div", { className: "visualizer-overlay__time-left" }, formatTime(isDraggingSeek ? dragProgress : trackProgress)), g.default.createElement("div", { className: "visualizer-overlay__time-right" }, formatTime(u.audioAnalysis?.track?.duration || 0))), g.default.createElement("div", { ref: progressBarContainerRef, className: "visualizer-overlay__progress-bar-container" + (isDraggingSeek ? " visualizer-overlay__progress-bar-container--dragging" : ""), onMouseDown: handleSeekMouseDown }, g.default.createElement("div", { className: "visualizer-overlay__progress-bar", style: { width: (100 * ((isDraggingSeek ? dragProgress : trackProgress) / (u.audioAnalysis?.track?.duration || 1))) + "%" } }))), (n || r.isSecondaryWindow) && g.default.createElement("div", { className: "visualizer-overlay__controls" }, g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn" + (isLiked ? " visualizer-overlay__ctrl-btn--liked" : ""), onClick: handleToggleLike, title: isLiked ? "Remove from Your Library" : "Save to Your Library" }, g.default.createElement("span", { className: "material-icons" }, isLiked ? "favorite" : "favorite_border")), g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn" + (shuffle ? " visualizer-overlay__ctrl-btn--active" : ""), onClick: () => Spicetify.Player.toggleShuffle() }, g.default.createElement("span", { className: "material-icons" }, "shuffle")), g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn", onClick: () => Spicetify.Player.prev() }, g.default.createElement("span", { className: "material-icons" }, "skip_previous")), g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn visualizer-overlay__ctrl-btn--play", onClick: () => Spicetify.Player.togglePlay() }, g.default.createElement("span", { className: "material-icons" }, isPlaying ? "pause" : "play_arrow")), g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn", onClick: () => Spicetify.Player.next() }, g.default.createElement("span", { className: "material-icons" }, "skip_next")), g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn" + (repeatMode ? " visualizer-overlay__ctrl-btn--active" : ""), onClick: () => Spicetify.Player.toggleRepeat() }, g.default.createElement("span", { className: "material-icons" }, 2 === repeatMode ? "repeat_one" : repeatMode ? "repeat" : "repeat")), g.default.createElement("div", { className: "visualizer-overlay__volume-wrap" }, g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn", onClick: () => Spicetify.Player.setMuted && Spicetify.Player.setMuted(!Spicetify.Player.isMuted()) }, g.default.createElement("span", { className: "material-icons" }, Spicetify.Player.isMuted && Spicetify.Player.isMuted() || volume === 0 ? "volume_off" : volume < .5 ? "volume_down" : "volume_up")), g.default.createElement("input", { type: "range", className: "visualizer-overlay__volume", min: "0", max: "1", step: "0.01", value: volume, onChange: e => Spicetify.Player.setVolume(parseFloat(e.target.value)) })))), showLyrics && lyricsLine && g.default.createElement("div", { className: "visualizer-overlay__lyrics" }, hasNoLyrics ? g.default.createElement("div", { key: "no-lyrics", className: "visualizer-overlay__no-lyrics-container" }, g.default.createElement("span", { className: "visualizer-overlay__lyrics-text" }, "No lyrics available"), g.default.createElement("button", { className: "visualizer-overlay__lyrics-refresh-btn-inline", onClick: handleRefreshLyrics, title: "Refresh Lyrics", style: { background: "none", border: "none", cursor: "pointer", padding: "0", display: "inline-flex", alignItems: "center", justifyContent: "center", color: "var(--theme-color, #ffffff)" } }, g.default.createElement("span", { className: "material-symbols-outlined", style: { fontSize: "1.2rem" } }, "refresh"))) : g.default.createElement(g.default.Fragment, null, g.default.createElement("div", { ref: lyricsContainerRef, key: "lyrics-words", className: "visualizer-overlay__lyrics-text", id: "vis-lyrics-words" }), g.default.createElement("div", { ref: lyricsBgContainerRef, key: "lyrics-bg-words", className: "visualizer-overlay__lyrics-bg-text", id: "vis-lyrics-bg-words", style: { display: "none" } })))), !r.isSecondaryWindow && g.default.createElement("div", { className: "visualizer-top-bar" }, u.audioAnalysis?.isFallback && g.default.createElement(Spicetify.ReactComponent.TooltipWrapper, { label: "Spotify doesn't have audio analysis data for this song right now, so this animation is simulated and not synced to the music.", placement: "bottom" }, g.default.createElement("button", { className: "visualizer-top-btn", type: "button", "aria-label": "Simulated animation notice" }, g.default.createElement("span", { className: "material-symbols-outlined" }, "info"))), g.default.createElement(Spicetify.ReactComponent.TooltipWrapper, { label: showLyrics ? "Hide Lyrics" : "Show Lyrics", placement: "bottom" }, g.default.createElement("button", { className: "visualizer-top-btn" + (showLyrics ? " visualizer-top-btn--active" : ""), onClick: () => { var nextVal = !showLyrics; setShowLyrics(nextVal); if (nextVal) handleRefreshLyrics(); } }, g.default.createElement("span", { className: "material-symbols-outlined" }, "lyrics"))), g.default.createElement(Spicetify.ReactComponent.TooltipWrapper, { label: isRomanized ? "Show Original Lyrics" : "Show Romanized Lyrics", placement: "bottom" }, g.default.createElement("button", { className: "visualizer-top-btn" + (isRomanized ? " visualizer-top-btn--active" : ""), onClick: handleToggleRomanization }, g.default.createElement("span", { className: "material-symbols-outlined" }, "translate"))), g.default.createElement(Spicetify.ReactComponent.TooltipWrapper, { label: n ? "Exit Fullscreen" : "Enter Fullscreen", placement: "bottom" }, g.default.createElement("button", { className: "visualizer-top-btn", onClick: () => n ? a.current?.ownerDocument.exitFullscreen() : a.current?.requestFullscreen() }, g.default.createElement("span", { className: "material-symbols-outlined" }, n ? "fullscreen_exit" : "fullscreen"))), hasUpdate && g.default.createElement(Spicetify.ReactComponent.TooltipWrapper, { label: "Update available! Click to visit the GitHub repo.", placement: "bottom" }, g.default.createElement("button", { className: "visualizer-top-btn visualizer-top-btn--update", title: "Update Available", onClick: () => window.open("https://github.com/WatashiAD/ncs-visualiser", "_blank") }, g.default.createElement("span", { className: "material-symbols-outlined" }, "system_update_alt"))), g.default.createElement("button", { className: "visualizer-top-btn", title: r.isSecondaryWindow ? "Close Window" : "Open Popup", onClick: () => r.isSecondaryWindow ? window.close() : (async r => { try { let e = null; try { e = window.open("about:blank", "_blank", "width=960,height=540"); } catch(err) { e = null; } if (!e) { let t = "fallback PiP API is not available"; if (window.documentPictureInPicture && (window.documentPictureInPicture.window ? t = "cannot open another PiP window" : e = await window.documentPictureInPicture.requestWindow({ width: 960, height: 540 }).catch(e => (t = e ? "" + e : "unknown error", null))), !e) return void Spicetify.showNotification(_.default.createElement("span", null, "Failed to open window: ", t, ". Try with devtools using", " ", _.default.createElement("code", { style: { fontSize: "12px", background: "rgba(0 0 0 / 0.2)", borderRadius: "4px", padding: "2px" } }, "spicetify enable-devtools"), "."), !0) } let t = e.document; Array.from(document.styleSheets).forEach(e => { e.ownerNode && "tagName" in e.ownerNode && (e = e.ownerNode, e = t.importNode(e, !0), t.head.appendChild(e)) }), _injectFonts(t), t.documentElement.className = document.documentElement.className, t.body.className = document.body.className; var i = D.getStyleSheetManager(), a = Spicetify.ReactDOM.unmountComponentAtNode(t.body), n = _.default.createElement(we, { isSecondaryWindow: !0, onWindowDestroyed: a, initialRenderer: r }); i ? Spicetify.ReactDOM.render(_.default.createElement(i, { target: t.head }, n), t.body) : (Spicetify.showNotification("[Visualizer] Could not find StyleSheetManager. Styles in popup window probably won't work.", !0), Spicetify.ReactDOM.render(n, t.body)) } catch (e) { console.error("[Visualizer]", "error opening popup window", e); let t = e ? "" + e : "unknown error"; Spicetify.showNotification("Failed to open window: " + t, !0) } })(t) }, g.default.createElement("span", { className: "material-symbols-outlined" }, r.isSecondaryWindow ? "pip_exit" : "pip")))), "loading" === o.state ? g.default.createElement(B, null) : "error" === o.state ? g.default.createElement("div", { className: y.error_container }, g.default.createElement("div", { className: y.error_message }, o.errorData.message), 0 === o.errorData.recovery && g.default.createElement(Spicetify.ReactComponent.ButtonPrimary, { onClick: () => m(Spicetify.Player.data) }, "Try again")) : null)
+    }, [refreshTrigger, Spicetify.Player.data?.item?.uri, isRomanized]), g.default.createElement("div", { className: "visualizer-container" + (isPlaying ? "" : " visualizer-container--paused"), ref: a, style: { "--theme-color": "rgb(" + (u?.themeColor?.rgb?.r ?? 83) + "," + (u?.themeColor?.rgb?.g ?? 83) + "," + (u?.themeColor?.rgb?.b ?? 83) + ")" } }, !d && g.default.createElement(g.default.Fragment, null, g.default.createElement("div", { className: "visualizer-backdrop" }, g.default.createElement("canvas", { ref: kawarpCanvasRef, className: "visualizer-backdrop__canvas spicy-dynamic-bg" }), prevArt && g.default.createElement("img", { src: prevArt, className: "visualizer-backdrop__img", alt: "" }), currentArt && g.default.createElement("img", { key: fadeKey, src: currentArt, className: "visualizer-backdrop__img visualizer-backdrop__img--fade-in", alt: "" })), g.default.createElement(p.Provider, { value: f }, e && g.default.createElement(e, { isEnabled: "running" === o.state, audioAnalysis: u.audioAnalysis, themeColor: u.themeColor, isPlaying: isPlaying })), g.default.createElement("div", { className: "visualizer-overlay", style: { "--theme-color": "rgb(" + (u?.themeColor?.rgb?.r ?? 83) + "," + (u?.themeColor?.rgb?.g ?? 83) + "," + (u?.themeColor?.rgb?.b ?? 83) + ")" } }, g.default.createElement("div", { className: "visualizer-overlay__upper" }, g.default.createElement("div", { className: "visualizer-overlay__label" }, "Now Playing", g.default.createElement("div", { className: "visualizer-overlay__wave" + (isPlaying ? " is-playing" : "") }, g.default.createElement("span", { className: "visualizer-overlay__wave-dot", style: { "--i": 1 } }), g.default.createElement("span", { className: "visualizer-overlay__wave-dot", style: { "--i": 2 } }), g.default.createElement("span", { className: "visualizer-overlay__wave-dot", style: { "--i": 3 } }))), g.default.createElement("div", { className: "visualizer-overlay__title-container" }, g.default.createElement("strong", { className: "visualizer-overlay__title", style: { "--title-length": (trackTitle || "No track").length } }, trackTitle || "No track")), g.default.createElement("div", { className: "visualizer-overlay__artist" }, Spicetify.Player.data?.item?.artists?.map(a => a.name).join(", ") || ""), g.default.createElement("div", { className: "visualizer-overlay__progress" }, g.default.createElement("div", { className: "visualizer-overlay__time-row" }, g.default.createElement("div", { className: "visualizer-overlay__time-left" }, formatTime(isDraggingSeek ? dragProgress : trackProgress)), g.default.createElement("div", { className: "visualizer-overlay__time-right" }, formatTime(u.audioAnalysis?.track?.duration || 0))), g.default.createElement("div", { ref: progressBarContainerRef, className: "visualizer-overlay__progress-bar-container" + (isDraggingSeek ? " visualizer-overlay__progress-bar-container--dragging" : ""), onMouseDown: handleSeekMouseDown }, g.default.createElement("div", { className: "visualizer-overlay__progress-bar", style: { width: (100 * ((isDraggingSeek ? dragProgress : trackProgress) / (u.audioAnalysis?.track?.duration || 1))) + "%" } }))), (n || r.isSecondaryWindow) && g.default.createElement("div", { className: "visualizer-overlay__controls" }, g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn" + (isLiked ? " visualizer-overlay__ctrl-btn--liked" : ""), onClick: handleToggleLike, title: isLiked ? "Remove from Your Library" : "Save to Your Library" }, g.default.createElement("span", { className: "material-icons" }, isLiked ? "favorite" : "favorite_border")), g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn" + (shuffle ? " visualizer-overlay__ctrl-btn--active" : ""), onClick: () => Spicetify.Player.toggleShuffle() }, g.default.createElement("span", { className: "material-icons" }, "shuffle")), g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn", onClick: () => Spicetify.Player.prev() }, g.default.createElement("span", { className: "material-icons" }, "skip_previous")), g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn visualizer-overlay__ctrl-btn--play", onClick: () => Spicetify.Player.togglePlay() }, g.default.createElement("span", { className: "material-icons" }, isPlaying ? "pause" : "play_arrow")), g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn", onClick: () => Spicetify.Player.next() }, g.default.createElement("span", { className: "material-icons" }, "skip_next")), g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn" + (repeatMode ? " visualizer-overlay__ctrl-btn--active" : ""), onClick: () => Spicetify.Player.toggleRepeat() }, g.default.createElement("span", { className: "material-icons" }, 2 === repeatMode ? "repeat_one" : repeatMode ? "repeat" : "repeat")), g.default.createElement("div", { className: "visualizer-overlay__volume-wrap" }, g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn", onClick: () => Spicetify.Player.setMuted && Spicetify.Player.setMuted(!Spicetify.Player.isMuted()) }, g.default.createElement("span", { className: "material-icons" }, Spicetify.Player.isMuted && Spicetify.Player.isMuted() || volume === 0 ? "volume_off" : volume < .5 ? "volume_down" : "volume_up")), g.default.createElement("input", { type: "range", className: "visualizer-overlay__volume", min: "0", max: "1", step: "0.01", value: volume, onChange: e => Spicetify.Player.setVolume(parseFloat(e.target.value)) })))), showLyrics && lyricsLine && g.default.createElement("div", { className: "visualizer-overlay__lyrics" }, hasNoLyrics ? g.default.createElement("div", { key: "no-lyrics", className: "visualizer-overlay__no-lyrics-container" }, g.default.createElement("span", { className: "visualizer-overlay__lyrics-text" }, "No lyrics available"), g.default.createElement("button", { className: "visualizer-overlay__lyrics-refresh-btn-inline", onClick: handleRefreshLyrics, title: "Refresh Lyrics", style: { background: "none", border: "none", cursor: "pointer", padding: "0", display: "inline-flex", alignItems: "center", justifyContent: "center", color: "var(--theme-color, #ffffff)" } }, g.default.createElement("span", { className: "material-symbols-outlined", style: { fontSize: "1.2rem" } }, "refresh"))) : g.default.createElement(g.default.Fragment, null, g.default.createElement("div", { ref: lyricsContainerRef, key: "lyrics-words", className: "visualizer-overlay__lyrics-text", id: "vis-lyrics-words" }), g.default.createElement("div", { ref: lyricsBgContainerRef, key: "lyrics-bg-words", className: "visualizer-overlay__lyrics-bg-text", id: "vis-lyrics-bg-words", style: { display: "none" } })))), !r.isSecondaryWindow && g.default.createElement("div", { className: "visualizer-top-bar" }, u.audioAnalysis?.isFallback && g.default.createElement(Spicetify.ReactComponent.TooltipWrapper, { label: "Spotify doesn't have audio analysis data for this song right now, so this animation is simulated and not synced to the music.", placement: "bottom" }, g.default.createElement("button", { className: "visualizer-top-btn", type: "button", "aria-label": "Simulated animation notice" }, g.default.createElement("span", { className: "material-symbols-outlined" }, "info"))), g.default.createElement(Spicetify.ReactComponent.TooltipWrapper, { label: showLyrics ? "Hide Lyrics" : "Show Lyrics", placement: "bottom" }, g.default.createElement("button", { className: "visualizer-top-btn" + (showLyrics ? " visualizer-top-btn--active" : ""), onClick: () => { var nextVal = !showLyrics; setShowLyrics(nextVal); if (nextVal) handleRefreshLyrics(); } }, g.default.createElement("span", { className: "material-symbols-outlined" }, "lyrics"))), g.default.createElement(Spicetify.ReactComponent.TooltipWrapper, { label: isRomanized ? "Show Original Lyrics" : "Show Romanized Lyrics", placement: "bottom" }, g.default.createElement("button", { className: "visualizer-top-btn" + (isRomanized ? " visualizer-top-btn--active" : ""), onClick: handleToggleRomanization }, g.default.createElement("span", { className: "material-symbols-outlined" }, "translate"))), g.default.createElement(Spicetify.ReactComponent.TooltipWrapper, { label: n ? "Exit Fullscreen" : "Enter Fullscreen", placement: "bottom" }, g.default.createElement("button", { className: "visualizer-top-btn", onClick: () => n ? a.current?.ownerDocument.exitFullscreen() : a.current?.requestFullscreen() }, g.default.createElement("span", { className: "material-symbols-outlined" }, n ? "fullscreen_exit" : "fullscreen"))), hasUpdate && g.default.createElement(Spicetify.ReactComponent.TooltipWrapper, { label: updateDownloaded ? "Update downloaded - run spicetify apply in your terminal" : (isDownloadingUpdate ? "Downloading update..." : "Update available - click to download"), placement: "bottom" }, g.default.createElement("button", { className: "visualizer-top-btn visualizer-top-btn--update" + (updateDownloaded ? " visualizer-top-btn--downloaded" : ""), title: updateDownloaded ? "Update downloaded - run spicetify apply in your terminal" : "Download update", disabled: isDownloadingUpdate, onClick: () => handleUpdateDownload() }, g.default.createElement("span", { className: "material-symbols-outlined" }, updateDownloaded ? "check_circle" : (isDownloadingUpdate ? "downloading" : "download")))), g.default.createElement("button", { className: "visualizer-top-btn", title: r.isSecondaryWindow ? "Close Window" : "Open Popup", onClick: () => r.isSecondaryWindow ? window.close() : (async r => { try { let e = null; try { e = window.open("about:blank", "_blank", "width=960,height=540"); } catch(err) { e = null; } if (!e) { let t = "fallback PiP API is not available"; if (window.documentPictureInPicture && (window.documentPictureInPicture.window ? t = "cannot open another PiP window" : e = await window.documentPictureInPicture.requestWindow({ width: 960, height: 540 }).catch(e => (t = e ? "" + e : "unknown error", null))), !e) return void Spicetify.showNotification(_.default.createElement("span", null, "Failed to open window: ", t, ". Try with devtools using", " ", _.default.createElement("code", { style: { fontSize: "12px", background: "rgba(0 0 0 / 0.2)", borderRadius: "4px", padding: "2px" } }, "spicetify enable-devtools"), "."), !0) } let t = e.document; Array.from(document.styleSheets).forEach(e => { e.ownerNode && "tagName" in e.ownerNode && (e = e.ownerNode, e = t.importNode(e, !0), t.head.appendChild(e)) }), _injectFonts(t), t.documentElement.className = document.documentElement.className, t.body.className = document.body.className; var i = D.getStyleSheetManager(), a = Spicetify.ReactDOM.unmountComponentAtNode(t.body), n = _.default.createElement(we, { isSecondaryWindow: !0, onWindowDestroyed: a, initialRenderer: r }); i ? Spicetify.ReactDOM.render(_.default.createElement(i, { target: t.head }, n), t.body) : (Spicetify.showNotification("[Visualizer] Could not find StyleSheetManager. Styles in popup window probably won't work.", !0), Spicetify.ReactDOM.render(n, t.body)) } catch (e) { console.error("[Visualizer]", "error opening popup window", e); let t = e ? "" + e : "unknown error"; Spicetify.showNotification("Failed to open window: " + t, !0) } })(t) }, g.default.createElement("span", { className: "material-symbols-outlined" }, r.isSecondaryWindow ? "pip_exit" : "pip")))), "loading" === o.state ? g.default.createElement(B, null) : "error" === o.state ? g.default.createElement("div", { className: y.error_container }, g.default.createElement("div", { className: y.error_message }, o.errorData.message), 0 === o.errorData.recovery && g.default.createElement(Spicetify.ReactComponent.ButtonPrimary, { onClick: () => m(Spicetify.Player.data) }, "Try again")) : null)
   } var _e = r(i()); return xe = k, M(n({}, "__esModule", { value: !0 }), xe)
 })(); let render = () => visualizer.default();

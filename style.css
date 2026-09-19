@@ -516,10 +516,10 @@
 }
 .visualizer-top-btn .material-icons,
 .visualizer-top-btn .material-symbols-outlined {
-  font-size: 32px !important;
-  width: 32px !important;
-  height: 32px !important;
-  line-height: 32px !important;
+  font-size: 22px !important;
+  width: 22px !important;
+  height: 22px !important;
+  line-height: 22px !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -855,27 +855,39 @@
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
-  color: #2ecc71 !important;
+  color: color-mix(in srgb, var(--theme-color, #1db954) 90%, #ffffff) !important;
   animation: updatePulse 2s ease-in-out infinite !important;
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--theme-color, #1db954) 45%, transparent)) !important;
 }
 .visualizer-top-btn--update:hover {
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
-  color: #2ecc71 !important;
+  color: color-mix(in srgb, var(--theme-color, #1db954) 90%, #ffffff) !important;
   animation: none !important;
   transform: scale(1.08) !important;
-  filter: drop-shadow(0 0 8px rgba(46, 204, 113, 0.6)) !important;
+  filter: drop-shadow(0 0 8px color-mix(in srgb, var(--theme-color, #1db954) 60%, transparent)) !important;
+}
+.visualizer-top-btn--downloaded {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: var(--theme-color, #1db954) !important;
+  animation: none !important;
+  filter: drop-shadow(0 0 8px color-mix(in srgb, var(--theme-color, #1db954) 60%, transparent)) !important;
+}
+.visualizer-top-btn--downloaded .material-symbols-outlined {
+  font-variation-settings: 'FILL' 1, 'wght' 600 !important;
 }
 @keyframes updatePulse {
   0%, 100% {
     opacity: 0.85;
-    filter: drop-shadow(0 0 4px rgba(46, 204, 113, 0.4));
+    filter: drop-shadow(0 0 4px color-mix(in srgb, var(--theme-color, #1db954) 35%, transparent));
     transform: scale(1);
   }
   50% {
     opacity: 1;
-    filter: drop-shadow(0 0 8px rgba(46, 204, 113, 0.7));
+    filter: drop-shadow(0 0 8px color-mix(in srgb, var(--theme-color, #1db954) 55%, transparent));
     transform: scale(1.05);
   }
 }

@@ -899,7 +899,7 @@ return lyrics;
   var _bgAnimController = new BackgroundAnimationController();
 
   function we(r) {
-    let [t, i] = (0, g.useState)(() => { var e = new Set(Se.map(e => e.id)), t = r.initialRenderer; return t && e.has(t) || (t = new URLSearchParams(Spicetify.Platform?.History?.location?.search || "").get("renderer")) && e.has(t) ? t : "ncs" }); (0, g.useEffect)(() => { var e = new URLSearchParams; e.set("renderer", t), Spicetify.Platform?.History?.replace({ search: e.toString() }) }, [t]); var e = Se.find(e => e.id === t)?.renderer; let [albumArt, setAlbumArt] = (0, g.useState)(Spicetify.Player.data?.item?.metadata?.image_url ?? ""), [currentArt, setCurrentArt] = (0, g.useState)(Spicetify.Player.data?.item?.metadata?.image_url ?? ""), [prevArt, setPrevArt] = (0, g.useState)(""), [fadeKey, setFadeKey] = (0, g.useState)(0), [isPlaying, setIsPlaying] = (0, g.useState)(Spicetify.Player.isPlaying), [trackTitle, setTrackTitle] = (0, g.useState)(Spicetify.Player.data?.item?.name ?? ""), [trackProgress, setTrackProgress] = (0, g.useState)(Spicetify.Player.getProgress() / 1e3), [volume, setVolume] = (0, g.useState)(Spicetify.Player.getVolume() || 0), [shuffle, setShuffle] = (0, g.useState)("function" == typeof Spicetify.Player.getShuffle && Spicetify.Player.getShuffle()), [repeatMode, setRepeatMode] = (0, g.useState)("function" == typeof Spicetify.Player.getRepeat ? +Spicetify.Player.getRepeat() || 0 : 0), [isDraggingSeek, setIsDraggingSeek] = (0, g.useState)(!1), [dragProgress, setDragProgress] = (0, g.useState)(0), [isLiked, setIsLiked] = (0, g.useState)(() => { try { if (typeof Spicetify.Player.getHeart === "function") return !!Spicetify.Player.getHeart(); } catch (e) { } var meta = Spicetify.Player.data?.item?.metadata || Spicetify.Player.origin?._state?.item?.metadata; return meta?.["collection.in_collection"] === "true"; }), [lyricsLine, setLyricsLine] = (0, g.useState)(""),[showLyrics, setShowLyrics] = (0, g.useState)(true), [refreshTrigger, setRefreshTrigger] = (0, g.useState)(0), [hasNoLyrics, setHasNoLyrics] = (0, g.useState)(false), [hasUpdate, setHasUpdate] = (0, g.useState)(false), [isDownloadingUpdate, setIsDownloadingUpdate] = (0, g.useState)(false), [updateDownloaded, setUpdateDownloaded] = (0, g.useState)(() => { try { return sessionStorage.getItem("ncs-vis-update-downloaded") === "1"; } catch (e) { return false; } }), [isRomanized, setIsRomanized] = (0, g.useState)(() => { try { var s = Spicetify.LocalStorage.get("SL:uiState"); return s ? !!JSON.parse(s)?.romanization : false } catch(e) { return false } }); let progressBarContainerRef = (0, g.useRef)(null), lastUriRef = (0, g.useRef)(""), lyricsContainerRef = (0, g.useRef)(null), lyricsBgContainerRef = (0, g.useRef)(null), kawarpCanvasRef = (0, g.useRef)(null), kawarpInstanceRef = (0, g.useRef)(null), backdropParallaxRef = (0, g.useRef)(null);
+    let [t, i] = (0, g.useState)(() => { var e = new Set(Se.map(e => e.id)), t = r.initialRenderer; return t && e.has(t) || (t = new URLSearchParams(Spicetify.Platform?.History?.location?.search || "").get("renderer")) && e.has(t) ? t : "ncs" }); (0, g.useEffect)(() => { var e = new URLSearchParams; e.set("renderer", t), Spicetify.Platform?.History?.replace({ search: e.toString() }) }, [t]); var e = Se.find(e => e.id === t)?.renderer; let [albumArt, setAlbumArt] = (0, g.useState)(Spicetify.Player.data?.item?.metadata?.image_url ?? ""), [currentArt, setCurrentArt] = (0, g.useState)(Spicetify.Player.data?.item?.metadata?.image_url ?? ""), [prevArt, setPrevArt] = (0, g.useState)(""), [fadeKey, setFadeKey] = (0, g.useState)(0), [isPlaying, setIsPlaying] = (0, g.useState)(Spicetify.Player.isPlaying), [trackTitle, setTrackTitle] = (0, g.useState)(Spicetify.Player.data?.item?.name ?? ""), [trackProgress, setTrackProgress] = (0, g.useState)(Spicetify.Player.getProgress() / 1e3), [volume, setVolume] = (0, g.useState)(Spicetify.Player.getVolume() || 0), [shuffle, setShuffle] = (0, g.useState)("function" == typeof Spicetify.Player.getShuffle && Spicetify.Player.getShuffle()), [repeatMode, setRepeatMode] = (0, g.useState)("function" == typeof Spicetify.Player.getRepeat ? +Spicetify.Player.getRepeat() || 0 : 0), [isDraggingSeek, setIsDraggingSeek] = (0, g.useState)(!1), [dragProgress, setDragProgress] = (0, g.useState)(0), [isLiked, setIsLiked] = (0, g.useState)(false), [lyricsLine, setLyricsLine] = (0, g.useState)(""),[showLyrics, setShowLyrics] = (0, g.useState)(true), [refreshTrigger, setRefreshTrigger] = (0, g.useState)(0), [hasNoLyrics, setHasNoLyrics] = (0, g.useState)(false), [hasUpdate, setHasUpdate] = (0, g.useState)(false), [isDownloadingUpdate, setIsDownloadingUpdate] = (0, g.useState)(false), [updateDownloaded, setUpdateDownloaded] = (0, g.useState)(() => { try { return sessionStorage.getItem("ncs-vis-update-downloaded") === "1"; } catch (e) { return false; } }), [isRomanized, setIsRomanized] = (0, g.useState)(() => { try { var s = Spicetify.LocalStorage.get("SL:uiState"); return s ? !!JSON.parse(s)?.romanization : false } catch(e) { return false } }); let progressBarContainerRef = (0, g.useRef)(null), lastUriRef = (0, g.useRef)(""), lyricsContainerRef = (0, g.useRef)(null), lyricsBgContainerRef = (0, g.useRef)(null), kawarpCanvasRef = (0, g.useRef)(null), kawarpInstanceRef = (0, g.useRef)(null), backdropParallaxRef = (0, g.useRef)(null);
     (0, g.useEffect)(() => {
       var canvas = kawarpCanvasRef.current;
       if (canvas && !kawarpInstanceRef.current) {
@@ -996,26 +996,42 @@ return lyrics;
       try {
         var nativeFetch = fetch;
         try { if (window.parent && window.parent.fetch) nativeFetch = window.parent.fetch; } catch (e) { }
+        var appDir = null;
+        try { appDir = await Spicetify.Platform?.LocalFilesAPI?.getCustomAppsPath?.(); } catch (_) { }
+        if (!appDir) try { appDir = await Spicetify.Platform?.LocalFilesAPI?.getConfigDir?.(); } catch (_) { }
         for (var i = 0; i < _UPDATE_FILES.length; i++) {
           try {
             var f = _UPDATE_FILES[i];
             var res = await nativeFetch("https://raw.githubusercontent.com/" + _UPDATE_REPO + "/" + _UPDATE_BRANCH + "/" + f);
             if (!res.ok) continue;
             var text = await res.text();
-            var type = f.indexOf(".css") > -1 ? "text/css" : (f.indexOf(".json") > -1 ? "application/json" : "application/javascript");
-            var objUrl = URL.createObjectURL(new Blob([text], { type: type }));
-            var a = document.createElement("a");
-            a.href = objUrl; a.download = f; a.rel = "noopener";
-            document.body.appendChild(a);
-            a.click();
-            setTimeout(function () { URL.revokeObjectURL(objUrl); try { a.remove(); } catch (e) { } }, 4000);
-            saved++;
+            if (appDir && Spicetify.Platform?.LocalFilesAPI?.writeFile) {
+              var sep = appDir.includes("\\") ? "\\" : "/";
+              var fullPath = appDir + sep + "visualiser" + sep + f;
+              var enc = new TextEncoder();
+              await Spicetify.Platform.LocalFilesAPI.writeFile(fullPath, enc.encode(text));
+              saved++;
+            } else {
+              var type = f.indexOf(".css") > -1 ? "text/css" : (f.indexOf(".json") > -1 ? "application/json" : "application/javascript");
+              var objUrl = URL.createObjectURL(new Blob([text], { type: type }));
+              var a = document.createElement("a");
+              a.href = objUrl; a.download = f; a.rel = "noopener";
+              document.body.appendChild(a);
+              a.click();
+              setTimeout(function () { URL.revokeObjectURL(objUrl); try { a.remove(); } catch (e) { } }, 4000);
+              saved++;
+            }
           } catch (e2) { console.warn("[Visualizer] Update download failed for", f, e2); }
         }
         if (saved > 0) {
           try { sessionStorage.setItem("ncs-vis-update-downloaded", "1"); } catch (e3) { }
           setUpdateDownloaded(true);
-          Spicetify.showNotification("Update downloaded (" + saved + "/" + _UPDATE_FILES.length + ") - run: spicetify apply");
+          if (appDir && Spicetify.Platform?.LocalFilesAPI?.writeFile) {
+            Spicetify.showNotification("Update applied to app directory (" + saved + "/" + _UPDATE_FILES.length + ") - run: spicetify apply");
+          } else {
+            Spicetify.showNotification("Update downloaded to Downloads (" + saved + "/" + _UPDATE_FILES.length + ") - copy to CustomApps/visualiser/ and run: spicetify apply");
+          }
+          window.open("https://github.com/" + _UPDATE_REPO + "#" + _UPDATE_BRANCH, "_blank");
         } else {
           Spicetify.showNotification("Update download failed - check DevTools console");
         }
@@ -1024,6 +1040,44 @@ return lyrics;
         Spicetify.showNotification("Update download failed - check DevTools console");
       }
       setIsDownloadingUpdate(false);
+    };
+    const _verifyLikedStatus = async (uri) => {
+      if (!uri) return;
+      try {
+        if (Spicetify.Platform?.LibraryAPI) {
+          var p;
+          try { p = Spicetify.Platform.LibraryAPI.contains({ uris: [uri] }); } catch (_) {}
+          if (!p || typeof p.then !== "function") {
+            try { p = Spicetify.Platform.LibraryAPI.contains([uri]); } catch (_) {}
+          }
+          if (p && typeof p.then === "function") {
+            var res = await p.catch(() => null);
+            if (res !== null && res !== undefined) {
+              var val;
+              if (Array.isArray(res)) val = res[0];
+              else if (typeof res === "object") val = res[uri] ?? res.isSaved ?? res.contains ?? res[Object.keys(res)[0]];
+              else val = res;
+              if (val !== undefined && val !== null) { setIsLiked(!!val); return; }
+            }
+          }
+        }
+      } catch (e) {}
+      try {
+        if (Spicetify.Platform?.LibraryAPIV2) {
+          var p2;
+          try { p2 = Spicetify.Platform.LibraryAPIV2.contains({ uris: [uri] }); } catch (_) {}
+          if (p2 && typeof p2.then === "function") {
+            var res2 = await p2.catch(() => null);
+            if (res2 !== null && res2 !== undefined) {
+              var val2;
+              if (Array.isArray(res2)) val2 = res2[0];
+              else if (typeof res2 === "object") val2 = res2[uri] ?? res2.isSaved ?? res2.contains ?? res2[Object.keys(res2)[0]];
+              else val2 = res2;
+              if (val2 !== undefined && val2 !== null) { setIsLiked(!!val2); return; }
+            }
+          }
+        }
+      } catch (e) {}
     };
     const handleToggleLike = async () => {
       var uri = Spicetify.Player.data?.item?.uri || Spicetify.Player.origin?._state?.item?.uri;
@@ -1045,6 +1099,7 @@ return lyrics;
       } catch (e) {
         console.warn("[Visualizer] Toggle like error:", e);
       }
+      setTimeout(() => { _verifyLikedStatus(uri); }, 350);
     };
     (0, g.useEffect)(() => { if (r.isSecondaryWindow) { let isDragging = !1, startX, startY; const onMouseDown = e => { if (e.target.closest("button,input,.visualizer-overlay__progress-bar-container,.visualizer-overlay__volume-wrap")) return; isDragging = !0; startX = e.screenX; startY = e.screenY }, onMouseMove = e => { if (isDragging) { const dx = e.screenX - startX, dy = e.screenY - startY; window.moveBy(dx, dy); startX = e.screenX; startY = e.screenY } }, onMouseUp = () => { isDragging = !1 }; window.addEventListener("mousedown", onMouseDown); window.addEventListener("mousemove", onMouseMove); window.addEventListener("mouseup", onMouseUp); return () => { window.removeEventListener("mousedown", onMouseDown); window.removeEventListener("mousemove", onMouseMove); window.removeEventListener("mouseup", onMouseUp) } } }, [r.isSecondaryWindow]); function formatTime(s) { if (!s || !isFinite(s)) return "0:00"; var m = Math.floor(s / 60), sec = Math.floor(s % 60); return m + ":" + String(sec).padStart(2, "0") } let a = (0, g.useRef)(null); a.current && !a.current.ownerDocument.defaultView && r.onWindowDestroyed?.(); var n = !!(t => { let [e, r] = (0, Re.useState)(t?.fullscreenElement ?? null); return (0, Re.useEffect)(() => { if (t) { let e = () => r(t.fullscreenElement); return t.addEventListener("fullscreenchange", e), () => t.removeEventListener("fullscreenchange", e) } }, [t]), e })(a.current?.ownerDocument); let [o, s] = (0, g.useState)({ state: "loading" }), [u, l] = (0, g.useState)({ themeColor: Spicetify.Color.fromHex("#535353") }), themeColorRef = (0, g.useRef)(null); themeColorRef.current = u.themeColor; let c = (0, g.useCallback)(t => s(e => "error" === e.state && 2 === e.errorData.recovery ? e : t), []), f = (0, g.useCallback)((e, t) => { c({ state: "error", errorData: { message: e, recovery: t } }) }, []), d = "error" === o.state && 2 === o.errorData.recovery, h = (0, g.useMemo)(() => new pe, []), m = (0, g.useCallback)(async e => { e = e?.item; if (e) { var t = Spicetify.URI.fromString(e.uri); if (t.type !== Spicetify.URI.Type.TRACK) f("Error: The type of track you're listening to is currently not supported", 1); else { c({ state: "loading" }); try { var r, i, t = `https://spclient.wg.spotify.com/audio-attributes/v1/audio-analysis/${t.id}?format=json`, [t, e] = await Promise.all([Spicetify.CosmosAsync.get(t).catch(e => (console.error("[Visualizer]", e), { isFallback: !0, track: { duration: (Spicetify.Player.data?.item?.duration?.milliseconds || 180000) / 1e3 }, segments: [], bars: [], beats: [], sections: [], tatums: [] })), h.fetch(23, e.metadata.image_url).catch(e => (console.error("[Visualizer] Could not load extracted color metadata. Status: " + ye[e]), null)).then(e => { try { var t; return e && 0 !== e.value.length && "type.googleapis.com/spotify.context_track_color.ColorResult" === e.typeUrl ? (e = e.value, t = Te, e = new DataView(e.buffer, e.byteOffset, e.byteLength), t = t[1](e).colorLight?.rgb?.toString(16).padStart(6, "0") ?? "535353", Spicetify.Color.fromHex("#" + t)) : Spicetify.Color.fromHex("#535353") } catch (r) { return console.error("[Visualizer] Failed to parse extracted color metadata, using fallback.", r), Spicetify.Color.fromHex("#535353") } })]); if (t) if ("object" != typeof t) f(`Invalid audio analysis data (${t})`, 0); else { if (!("track" in t && "segments" in t)) { console.warn("[Visualizer] No audio analysis available for this track, using fallback.", t); t = { isFallback: !0, track: { duration: (Spicetify.Player.data?.item?.duration?.milliseconds || 180000) / 1e3 }, segments: [], bars: [], beats: [], sections: [], tatums: [] } } l({ audioAnalysis: t, themeColor: e }), c({ state: "running" }) } else f("Error: The audio analysis could not be loaded, please check your internet connection", 0) } catch (r) { console.error("[Visualizer] Unexpected error while loading track data, using fallback.", r), l({ audioAnalysis: { isFallback: !0, track: { duration: (Spicetify.Player.data?.item?.duration?.milliseconds || 180000) / 1e3 }, segments: [], bars: [], beats: [], sections: [], tatums: [] }, themeColor: Spicetify.Color.fromHex("#535353") }), c({ state: "running" }) } } } else f("Start playing a song to see the visualization!", 1) }, [h]); return (0, g.useEffect)(() => { if (!d) { let e = e => { e?.data && m(e.data); try { var lk = (typeof Spicetify.Player.getHeart === "function") ? !!Spicetify.Player.getHeart() : (e?.data?.item?.metadata?.["collection.in_collection"] === "true"); setIsLiked(lk); } catch (err) { } }; return Spicetify.Player.addEventListener("songchange", e), m(Spicetify.Player.data), () => Spicetify.Player.removeEventListener("songchange", e) } }, [d, m]), (0, g.useEffect)(() => {
       if (!d) {
@@ -1061,22 +1116,7 @@ return lyrics;
           const uri = Spicetify.Player.data?.item?.uri;
           if (uri && uri !== lastUriRef.current) {
             lastUriRef.current = uri;
-            try {
-              var initLiked = (typeof Spicetify.Player.getHeart === "function") ? !!Spicetify.Player.getHeart() : (Spicetify.Player.data?.item?.metadata?.["collection.in_collection"] === "true");
-              setIsLiked(initLiked);
-            } catch (err) { }
-            if (Spicetify.Platform?.LibraryAPI) {
-              try {
-                var p = Spicetify.Platform.LibraryAPI.contains({ uris: [uri] });
-                if (!p || typeof p.then !== "function") p = Spicetify.Platform.LibraryAPI.contains([uri]);
-                if (p && typeof p.then === "function") {
-                  p.then(res => {
-                    const val = Array.isArray(res) ? res[0] : (res && typeof res === 'object' ? (res[uri] ?? res.isSaved ?? res.contains) : res);
-                    if (val !== undefined && val !== null) setIsLiked(!!val);
-                  }).catch(() => { });
-                }
-              } catch (err) { }
-            }
+            _verifyLikedStatus(uri);
           }
           tick++;
         }; e(); const t = window.setInterval(e, 100); return () => window.clearInterval(t)

@@ -1,5 +1,5 @@
 {
-  "name": "Visualiser",
+  "name": "ncs-visualiser",
   "title": "NCS Visualiser",
   "description": "Real-time NCS-style WebGL audio visualizer with SpicyLyrics synced lyrics, dynamic Kawarp fluid background, and playback controls.",
   "main": "index.js",

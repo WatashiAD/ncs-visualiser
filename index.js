@@ -279,7 +279,7 @@ void main() {
   var _fetching = false;
 
   // ---- Auto-update (download + spicetify apply) & lyrics romanization pipeline ----
-  var _LOCAL_SHA = "b5a0ac803b042483994c78d9046e005a72134429";
+  var _LOCAL_SHA = "546f83fbef0485062fb7e0f138c9e33625c162b2";
     var _UPDATE_REPO = "WatashiAD/ncs-visualiser";
     var _UPDATE_BRANCH = "main";
     var _UPDATE_FILES = ["index.js", "style.css", "manifest.json"];

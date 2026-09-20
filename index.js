@@ -279,7 +279,7 @@ void main() {
   var _fetching = false;
 
   // ---- Auto-update (download + spicetify apply) & lyrics romanization pipeline ----
-  var _LOCAL_SHA = "d151ab0b3e190286ba935aea0b3cb979dd297ac1";
+  var _LOCAL_SHA = "b5a0ac803b042483994c78d9046e005a72134429";
     var _UPDATE_REPO = "WatashiAD/ncs-visualiser";
     var _UPDATE_BRANCH = "main";
     var _UPDATE_FILES = ["index.js", "style.css", "manifest.json"];
@@ -1846,22 +1846,95 @@ return lyrics;
       }
 
 
+      function _romanizeText(str) {
+        if (!str || typeof str !== "string") return str;
+        var hasKana = /[\u3040-\u309F\u30A0-\u30FF]/.test(str);
+        var hasHangul = /[\uAC00-\uD7AF]/.test(str);
+        if (!hasKana && !hasHangul) return str;
+        var res = "";
+        if (hasKana) {
+          var kanaMap = {
+            'あ':'a','い':'i','う':'u','え':'e','お':'o','か':'ka','き':'ki','く':'ku','け':'ke','こ':'ko',
+            'さ':'sa','し':'shi','す':'su','せ':'se','そ':'so','た':'ta','ち':'chi','つ':'tsu','て':'te','と':'to',
+            'な':'na','に':'ni','ぬ':'nu','ね':'ne','の':'no','は':'ha','ひ':'hi','ふ':'fu','へ':'he','ほ':'ho',
+            'ま':'ma','み':'mi','む':'mu','め':'me','も':'mo','や':'ya','ゆ':'yu','よ':'yo',
+            'ら':'ra','り':'ri','る':'ru','れ':'re','ろ':'ro','わ':'wa','を':'wo','ん':'n',
+            'が':'ga','ぎ':'gi','ぐ':'gu','げ':'ge','ご':'go','ざ':'za','じ':'ji','ず':'zu','ぜ':'ze','ぞ':'zo',
+            'だ':'da','ぢ':'ji','づ':'zu','で':'de','ど':'do','ば':'ba','び':'bi','ぶ':'bu','べ':'be','ぼ':'bo',
+            'ぱ':'pa','ぴ':'pi','ぷ':'pu','ぺ':'pe','ぽ':'po',
+            'きゃ':'kya','きゅ':'kyu','きょ':'kyo','しゃ':'sha','しゅ':'shu','しょ':'sho','ちゃ':'cha','ちゅ':'chu','ちょ':'cho',
+            'にゃ':'nya','にゅ':'nyu','にょ':'nyo','ひゃ':'hya','ひゅ':'hyu','ひょ':'hyo','みゃ':'mya','みゅ':'myu','みょ':'myo',
+            'りゃ':'rya','りゅ':'ryu','りょ':'ryo','ぎゃ':'gya','ぎゅ':'gyu','ぎょ':'gyo','じゃ':'ja','じゅ':'ju','じょ':'jo',
+            'びゃ':'bya','びゅ':'byu','びょ':'byo','ぴゃ':'pya','ぴゅ':'pyu','ぴょ':'pyo',
+            'ア':'a','イ':'i','ウ':'u','エ':'e','オ':'o','カ':'ka','キ':'ki','ク':'ku','ケ':'ke','コ':'ko',
+            'サ':'sa','シ':'shi','ス':'su','セ':'se','ソ':'so','タ':'ta','チ':'chi','ツ':'tsu','テ':'te','ト':'to',
+            'ナ':'na','ニ':'ni','ヌ':'nu','ネ':'ne','ノ':'no','ハ':'ha','ヒ':'hi','フ':'fu','ヘ':'he','ホ':'ho',
+            'マ':'ma','ミ':'mi','ム':'mu','メ':'me','モ':'mo','ヤ':'ya','ユ':'yu','ヨ':'yo',
+            'ラ':'ra','リ':'ri','ル':'ru','レ':'re','ロ':'ro','ワ':'wa','ヲ':'wo','ン':'n',
+            'ガ':'ga','ギ':'gi','グ':'gu','ゲ':'ge','ゴ':'go','ザ':'za','ジ':'ji','ズ':'zu','ゼ':'ze','ゾ':'zo',
+            'ダ':'da','ヂ':'ji','ヅ':'zu','デ':'de','ド':'do','バ':'ba','ビ':'bi','ブ':'bu','ベ':'be','ボ':'bo',
+            'パ':'pa','ピ':'pi','プ':'pu','ペ':'pe','ポ':'po',
+            'キャ':'kya','キュ':'kyu','キョ':'kyo','シャ':'sha','シュ':'shu','ショ':'sho','チャ':'cha','チュ':'chu','チョ':'cho',
+            'ニャ':'nya','ニュ':'nyu','ニョ':'nyo','ヒャ':'hya','ヒュ':'hyu','ヒョ':'hyo','ミャ':'mya','ミュ':'myu','ミョ':'myo',
+            'リャ':'rya','リュ':'ryu','リョ':'ryo','ギャ':'gya','ギュ':'gyu','ギョ':'gyo','ジャ':'ja','ジュ':'ju','ジョ':'jo',
+            'ビャ':'bya','ビュ':'byu','ビョ':'byo','ピャ':'pya','ピュ':'pyu','ピョ':'pyo','ー':''
+          };
+          var i = 0;
+          while (i < str.length) {
+            var c1 = str[i];
+            var c2 = i + 1 < str.length ? c1 + str[i + 1] : "";
+            if (c2 && kanaMap[c2]) { res += kanaMap[c2]; i += 2; }
+            else if (kanaMap[c1]) { res += kanaMap[c1]; i++; }
+            else if (c1 === 'っ' || c1 === 'ッ') {
+              var nextC = i + 1 < str.length ? str[i + 1] : "";
+              var nextRom = kanaMap[nextC];
+              if (nextRom) { res += nextRom[0]; }
+              i++;
+            } else { res += c1; i++; }
+          }
+          str = res; res = "";
+        }
+        if (hasHangul) {
+          var initials = ["g", "n", "d", "r", "m", "b", "s", "", "j", "ch", "k", "t", "p", "h", "g", "d", "b", "s", "jj"];
+          var medials = ["a", "ae", "ya", "yae", "eo", "e", "yeo", "ye", "o", "wa", "wae", "oe", "yo", "u", "weo", "we", "wi", "yu", "eu", "ui", "i"];
+          var finals = ["", "g", "gg", "gs", "n", "nj", "nh", "d", "l", "lg", "lm", "lb", "ls", "lt", "lp", "lh", "m", "b", "bs", "s", "ss", "ng", "j", "ch", "k", "t", "p", "h"];
+          for (var k = 0; k < str.length; k++) {
+            var code = str.charCodeAt(k);
+            if (code >= 0xAC00 && code <= 0xD7A3) {
+              var sIndex = code - 0xAC00;
+              res += (initials[Math.floor(sIndex / 588)] || "") + (medials[Math.floor((sIndex % 588) / 28)] || "") + (finals[sIndex % 28] || "");
+            } else { res += str[k]; }
+          }
+          return res;
+        }
+        return str;
+      }
+
+      function _getDisplayText(item, isRomanized) {
+        if (!item) return "";
+        if (isRomanized) {
+          if (item.TransliteratedText) return item.TransliteratedText;
+          if (item.Text) return _romanizeText(item.Text);
+        }
+        return item.Text || "";
+      }
+
       function _getActiveLine(ly, ps, isRomanized) {
         if (!ly || !ly.Content) return null;
         for (var i = 0; i < ly.Content.length; i++) {
           var l = ly.Content[i];
           if (ly.Type === "Line" && l.Type === "Vocal" && ps >= l.StartTime && ps <= l.EndTime) {
-            var txt = (isRomanized && l.TransliteratedText) ? l.TransliteratedText : (l.Text || "");
+            var txt = _getDisplayText(l, isRomanized);
             return { text: txt, startTime: l.StartTime, endTime: l.EndTime, li: i, opposite: !!l.OppositeAligned, syllables: null, bgText: "", bgSyllables: null };
           }
           if (ly.Type === "Syllable" && l.Lead && ps >= l.Lead.StartTime && ps <= l.Lead.EndTime) {
             var s = l.Lead.Syllables || [];
             var txt = "";
             if (s.length > 0) {
-              txt = (isRomanized && s[0].TransliteratedText) ? s[0].TransliteratedText : (s[0].Text || "");
+              txt = _getDisplayText(s[0], isRomanized);
             }
             for (var j = 1; j < s.length; j++) {
-              var word = (isRomanized && s[j].TransliteratedText) ? s[j].TransliteratedText : (s[j].Text || "");
+              var word = _getDisplayText(s[j], isRomanized);
               txt += (s[j - 1].IsPartOfWord ? "" : " ") + word;
             }
 
@@ -1872,10 +1945,10 @@ return lyrics;
               if (bgLine) {
                 var bgS = bgLine.Syllables || [];
                 if (bgS.length > 0) {
-                  bgTxt = (isRomanized && bgS[0].TransliteratedText) ? bgS[0].TransliteratedText : (bgS[0].Text || "");
+                  bgTxt = _getDisplayText(bgS[0], isRomanized);
                 }
                 for (var j = 1; j < bgS.length; j++) {
-                  var word = (isRomanized && bgS[j].TransliteratedText) ? bgS[j].TransliteratedText : (bgS[j].Text || "");
+                  var word = _getDisplayText(bgS[j], isRomanized);
                   bgTxt += (bgS[j - 1].IsPartOfWord ? "" : " ") + word;
                 }
                 bgSyllables = bgS;
@@ -1895,8 +1968,6 @@ return lyrics;
           }
         } return null;
       }
-
-
 
       function _getLineLetters(info, lyType, isRomanized) {
         var chars = [];
@@ -1929,7 +2000,7 @@ return lyrics;
           for (var i = 0; i < syllables.length; i++) {
             var sy = syllables[i];
             if (i > 0 && !syllables[i - 1].IsPartOfWord) { chars.push({ char: " ", isSpace: true }); }
-            var txt = (isRomanized && sy.TransliteratedText) ? sy.TransliteratedText : (sy.Text || "");
+            var txt = _getDisplayText(sy, isRomanized);
             var graphemes = [];
             var regex = /(\p{L}\p{M}*|[\s\d.,\/#!$%\^&\*;:{}=\-_`~()?"'’[\]+<>|\\—♪♫♬]|.)/gu;
             var match;

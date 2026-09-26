@@ -597,6 +597,7 @@
   transform-origin: 50% 50%;
   will-change: transform;
   transition: none !important;
+  margin: 0 0.06em;
 }
 
 .vis-letter {

@@ -365,30 +365,62 @@ void main() {
       return out;
     }
 
+    function _loadScript(url) {
+      return new Promise(function (resolve, reject) {
+        if (typeof document !== "undefined" && document.querySelector('script[src="' + url + '"]')) return resolve();
+        var s = typeof document !== "undefined" ? document.createElement("script") : null;
+        if (s) {
+          s.src = url;
+          s.onload = function () { resolve(); };
+          s.onerror = function () {
+            var f = (typeof window !== "undefined" && window.parent && window.parent.fetch) ? window.parent.fetch : fetch;
+            f(url).then(function (r) {
+              if (!r.ok) throw new Error("HTTP " + r.status);
+              return r.text();
+            }).then(function (code) {
+              try { (0, eval)(code); resolve(); } catch (err) { reject(err); }
+            }).catch(reject);
+          };
+          (document.head || document.body || document.documentElement).appendChild(s);
+        } else {
+          var f2 = (typeof window !== "undefined" && window.parent && window.parent.fetch) ? window.parent.fetch : fetch;
+          f2(url).then(function (r) {
+            if (!r.ok) throw new Error("HTTP " + r.status);
+            return r.text();
+          }).then(function (code) {
+            try { (0, eval)(code); resolve(); } catch (err) { reject(err); }
+          }).catch(reject);
+        }
+      });
+    }
+
     var _convPromises = {};
     function _loadConv(name) {
       if (_convPromises[name]) return _convPromises[name];
       var pr;
       if (name === "kuroshiro") {
         pr = (async function () {
-          var Kuroshiro = (await import(/* webpackIgnore: true */ "https://esm.sh/kuroshiro@1.2.0")).default;
-          var KuromojiAnalyzer = (await import(/* webpackIgnore: true */ "https://esm.sh/kuroshiro-analyzer-kuromoji@1.1.0")).default;
-          var k = new Kuroshiro();
-          await k.init(new KuromojiAnalyzer());
+          await _loadScript("https://cdn.jsdelivr.net/npm/kuroshiro@1.2.0/dist/kuroshiro.min.js");
+          await _loadScript("https://cdn.jsdelivr.net/npm/kuroshiro-analyzer-kuromoji@1.1.0/dist/kuroshiro-analyzer-kuromoji.min.js");
+          var KuroshiroClass = (typeof window !== "undefined" ? window.Kuroshiro : null) || globalThis.Kuroshiro;
+          if (KuroshiroClass && KuroshiroClass.default) KuroshiroClass = KuroshiroClass.default;
+          var AnalyzerClass = (typeof window !== "undefined" ? window.KuromojiAnalyzer : null) || globalThis.KuromojiAnalyzer;
+          if (AnalyzerClass && AnalyzerClass.default) AnalyzerClass = AnalyzerClass.default;
+          if (!KuroshiroClass || !AnalyzerClass) throw new Error("Kuroshiro or KuromojiAnalyzer failed to load");
+          var analyzer = new AnalyzerClass({ dictPath: "https://cdn.jsdelivr.net/npm/kuromoji@0.1.2/dict" });
+          var k = new KuroshiroClass();
+          await k.init(analyzer);
           return { conv: function (t) { return k.convert(t, { to: "romaji", mode: "spaced" }); } };
         })();
       } else if (name === "pinyin") {
         pr = (async function () {
-          var mod = await import(/* webpackIgnore: true */ "https://pkgs.spikerko.org/pinyin/pinyin@4.0.0.mjs");
-          var fn = (mod && (mod.default || {}).pinyin) || (mod && mod.pinyin);
-          return { conv: function (t) { return fn ? fn(t, { segment: false, group: true }).join("-") : null; } };
+          await _loadScript("https://cdn.jsdelivr.net/npm/pinyin@4.0.0/lib/umd/pinyin.js");
+          var pinyinObj = (typeof window !== "undefined" ? window.pinyin : null) || globalThis.pinyin;
+          var fn = (pinyinObj && pinyinObj.default) || pinyinObj;
+          return { conv: function (t) { return typeof fn === "function" ? fn(t, { segment: false, group: true }).join("-") : null; } };
         })();
       } else if (name === "aromanize") {
-        pr = (async function () {
-          var mod = await import(/* webpackIgnore: true */ "https://pkgs.spikerko.org/aromanize/aromanize@1.0.0.js");
-          var fn = mod && ((mod.default && mod.default.default) || mod.default || mod);
-          return { conv: function (t) { return typeof fn === "function" ? fn(t, "RevisedRomanizationTransliteration") : null; } };
-        })();
+        pr = Promise.resolve({ conv: function (t) { return _hangulToRomaji(t); } });
       } else {
         pr = Promise.resolve(null);
       }
@@ -896,7 +928,7 @@ return lyrics;
   var _bgAnimController = new BackgroundAnimationController();
 
   function we(r) {
-    let [t, i] = (0, g.useState)(() => { var e = new Set(Se.map(e => e.id)), t = r.initialRenderer; return t && e.has(t) || (t = new URLSearchParams(Spicetify.Platform?.History?.location?.search || "").get("renderer")) && e.has(t) ? t : "ncs" }); (0, g.useEffect)(() => { var e = new URLSearchParams; e.set("renderer", t), Spicetify.Platform?.History?.replace({ search: e.toString() }) }, [t]); var e = Se.find(e => e.id === t)?.renderer; let [albumArt, setAlbumArt] = (0, g.useState)(Spicetify.Player.data?.item?.metadata?.image_url ?? ""), [currentArt, setCurrentArt] = (0, g.useState)(Spicetify.Player.data?.item?.metadata?.image_url ?? ""), [prevArt, setPrevArt] = (0, g.useState)(""), [fadeKey, setFadeKey] = (0, g.useState)(0), [isPlaying, setIsPlaying] = (0, g.useState)(Spicetify.Player.isPlaying), [trackTitle, setTrackTitle] = (0, g.useState)(Spicetify.Player.data?.item?.name ?? ""), [trackProgress, setTrackProgress] = (0, g.useState)(Spicetify.Player.getProgress() / 1e3), [volume, setVolume] = (0, g.useState)(Spicetify.Player.getVolume() || 0), [shuffle, setShuffle] = (0, g.useState)("function" == typeof Spicetify.Player.getShuffle && Spicetify.Player.getShuffle()), [repeatMode, setRepeatMode] = (0, g.useState)("function" == typeof Spicetify.Player.getRepeat ? +Spicetify.Player.getRepeat() || 0 : 0), [isDraggingSeek, setIsDraggingSeek] = (0, g.useState)(!1), [dragProgress, setDragProgress] = (0, g.useState)(0), [isLiked, setIsLiked] = (0, g.useState)(false), [lyricsLine, setLyricsLine] = (0, g.useState)(""),[showLyrics, setShowLyrics] = (0, g.useState)(true), [refreshTrigger, setRefreshTrigger] = (0, g.useState)(0), [hasNoLyrics, setHasNoLyrics] = (0, g.useState)(false), [isRomanized, setIsRomanized] = (0, g.useState)(() => { try { var s = Spicetify.LocalStorage.get("SL:uiState"); return s ? !!JSON.parse(s)?.romanization : false } catch(e) { return false } }); let progressBarContainerRef = (0, g.useRef)(null), lastUriRef = (0, g.useRef)(""), lyricsContainerRef = (0, g.useRef)(null), lyricsBgContainerRef = (0, g.useRef)(null), kawarpCanvasRef = (0, g.useRef)(null), kawarpInstanceRef = (0, g.useRef)(null), backdropParallaxRef = (0, g.useRef)(null);
+    let [t, i] = (0, g.useState)(() => { var e = new Set(Se.map(e => e.id)), t = r.initialRenderer; return t && e.has(t) || (t = new URLSearchParams(Spicetify.Platform?.History?.location?.search || "").get("renderer")) && e.has(t) ? t : "ncs" }); (0, g.useEffect)(() => { var e = new URLSearchParams; e.set("renderer", t), Spicetify.Platform?.History?.replace({ search: e.toString() }) }, [t]); var e = Se.find(e => e.id === t)?.renderer; let [albumArt, setAlbumArt] = (0, g.useState)(Spicetify.Player.data?.item?.metadata?.image_url ?? ""), [currentArt, setCurrentArt] = (0, g.useState)(Spicetify.Player.data?.item?.metadata?.image_url ?? ""), [prevArt, setPrevArt] = (0, g.useState)(""), [fadeKey, setFadeKey] = (0, g.useState)(0), [isPlaying, setIsPlaying] = (0, g.useState)(Spicetify.Player.isPlaying), [trackTitle, setTrackTitle] = (0, g.useState)(Spicetify.Player.data?.item?.name ?? ""), [trackProgress, setTrackProgress] = (0, g.useState)(Spicetify.Player.getProgress() / 1e3), [volume, setVolume] = (0, g.useState)(Spicetify.Player.getVolume() || 0), [shuffle, setShuffle] = (0, g.useState)("function" == typeof Spicetify.Player.getShuffle && Spicetify.Player.getShuffle()), [repeatMode, setRepeatMode] = (0, g.useState)("function" == typeof Spicetify.Player.getRepeat ? +Spicetify.Player.getRepeat() || 0 : 0), [isDraggingSeek, setIsDraggingSeek] = (0, g.useState)(!1), [dragProgress, setDragProgress] = (0, g.useState)(0), [isLiked, setIsLiked] = (0, g.useState)(() => { try { var u = Spicetify.Player.data?.item?.uri; if (u && Spicetify.Platform?.LibraryAPI?.containsSync) { var s = Spicetify.Platform.LibraryAPI.containsSync(u); if (s !== undefined && s !== null) return !!s; } return typeof Spicetify.Player.getHeart === "function" ? !!Spicetify.Player.getHeart() : false; } catch (_) { return false; } }), [lyricsLine, setLyricsLine] = (0, g.useState)(""),[showLyrics, setShowLyrics] = (0, g.useState)(true), [refreshTrigger, setRefreshTrigger] = (0, g.useState)(0), [hasNoLyrics, setHasNoLyrics] = (0, g.useState)(false), [isRomanized, setIsRomanized] = (0, g.useState)(() => { try { var s = Spicetify.LocalStorage.get("SL:uiState"); return s ? !!JSON.parse(s)?.romanization : false } catch(e) { return false } }); let progressBarContainerRef = (0, g.useRef)(null), lastUriRef = (0, g.useRef)(""), lyricsContainerRef = (0, g.useRef)(null), lyricsBgContainerRef = (0, g.useRef)(null), kawarpCanvasRef = (0, g.useRef)(null), kawarpInstanceRef = (0, g.useRef)(null), backdropParallaxRef = (0, g.useRef)(null);
     (0, g.useEffect)(() => {
       var canvas = kawarpCanvasRef.current;
       if (canvas && !kawarpInstanceRef.current) {
@@ -984,24 +1016,33 @@ return lyrics;
         uiState.romanization = nextVal;
         Spicetify.LocalStorage.set("SL:uiState", JSON.stringify(uiState));
       } catch (e) { }
+      var tid = Spicetify.Player.data?.item?.uri ? Spicetify.Player.data.item.uri.replace("spotify:track:", "") : "";
+      if (tid) {
+        _lyricsMemCache.delete(tid);
+      }
+      _cachedTrackId = "";
+      _cachedLyrics = undefined;
       setRefreshTrigger(prev => prev + 1);
     };
     const _verifyLikedStatus = async (uri) => {
       if (!uri) return;
       try {
         if (Spicetify.Platform?.LibraryAPI) {
+          if (typeof Spicetify.Platform.LibraryAPI.containsSync === "function") {
+            var syncVal = Spicetify.Platform.LibraryAPI.containsSync(uri);
+            if (syncVal !== undefined && syncVal !== null) {
+              setIsLiked(!!syncVal);
+            }
+          }
           var p;
-          try { p = Spicetify.Platform.LibraryAPI.contains({ uris: [uri] }); } catch (_) {}
+          try { p = Spicetify.Platform.LibraryAPI.contains(uri); } catch (_) {}
           if (!p || typeof p.then !== "function") {
-            try { p = Spicetify.Platform.LibraryAPI.contains([uri]); } catch (_) {}
+            try { p = Spicetify.Platform.LibraryAPI.contains({ uris: [uri] }); } catch (_) {}
           }
           if (p && typeof p.then === "function") {
             var res = await p.catch(() => null);
             if (res !== null && res !== undefined) {
-              var val;
-              if (Array.isArray(res)) val = res[0];
-              else if (typeof res === "object") val = res[uri] ?? res.isSaved ?? res.contains ?? res[Object.keys(res)[0]];
-              else val = res;
+              var val = Array.isArray(res) ? res[0] : (typeof res === "object" ? (res[uri] ?? res.isSaved ?? res.contains ?? res[Object.keys(res)[0]]) : res);
               if (val !== undefined && val !== null) { setIsLiked(!!val); return; }
             }
           }
@@ -1010,38 +1051,41 @@ return lyrics;
       try {
         if (Spicetify.Platform?.LibraryAPIV2) {
           var p2;
-          try { p2 = Spicetify.Platform.LibraryAPIV2.contains({ uris: [uri] }); } catch (_) {}
+          try { p2 = Spicetify.Platform.LibraryAPIV2.contains(uri); } catch (_) {}
+          if (!p2 || typeof p2.then !== "function") {
+            try { p2 = Spicetify.Platform.LibraryAPIV2.contains({ uris: [uri] }); } catch (_) {}
+          }
           if (p2 && typeof p2.then === "function") {
             var res2 = await p2.catch(() => null);
             if (res2 !== null && res2 !== undefined) {
-              var val2;
-              if (Array.isArray(res2)) val2 = res2[0];
-              else if (typeof res2 === "object") val2 = res2[uri] ?? res2.isSaved ?? res2.contains ?? res2[Object.keys(res2)[0]];
-              else val2 = res2;
+              var val2 = Array.isArray(res2) ? res2[0] : (typeof res2 === "object" ? (res2[uri] ?? res2.isSaved ?? res2.contains ?? res2[Object.keys(res2)[0]]) : res2);
               if (val2 !== undefined && val2 !== null) { setIsLiked(!!val2); return; }
             }
           }
+        }
+      } catch (e) {}
+      try {
+        if (typeof Spicetify.Player.getHeart === "function") {
+          setIsLiked(!!Spicetify.Player.getHeart());
         }
       } catch (e) {}
     };
     const handleToggleLike = async () => {
       var uri = Spicetify.Player.data?.item?.uri || Spicetify.Player.origin?._state?.item?.uri;
       if (!uri) return;
-      var currentlyLiked = false;
+      var currentlyLiked = isLiked;
       try {
         if (Spicetify.Platform?.LibraryAPI) {
-          var p;
-          try { p = Spicetify.Platform.LibraryAPI.contains({ uris: [uri] }); } catch (_) {}
-          if (!p || typeof p.then !== "function") {
-            try { p = Spicetify.Platform.LibraryAPI.contains([uri]); } catch (_) {}
+          if (typeof Spicetify.Platform.LibraryAPI.containsSync === "function") {
+            var syncVal = Spicetify.Platform.LibraryAPI.containsSync(uri);
+            if (syncVal !== undefined && syncVal !== null) currentlyLiked = !!syncVal;
           }
+          var p;
+          try { p = Spicetify.Platform.LibraryAPI.contains(uri); } catch (_) {}
           if (p && typeof p.then === "function") {
             var res = await p.catch(() => null);
             if (res !== null && res !== undefined) {
-              var val;
-              if (Array.isArray(res)) val = res[0];
-              else if (typeof res === "object") val = res[uri] ?? res.isSaved ?? res.contains ?? res[Object.keys(res)[0]];
-              else val = res;
+              var val = Array.isArray(res) ? res[0] : (typeof res === "object" ? (res[uri] ?? res.isSaved ?? res.contains ?? res[Object.keys(res)[0]]) : res);
               if (val !== undefined && val !== null) currentlyLiked = !!val;
             }
           }
@@ -1065,7 +1109,7 @@ return lyrics;
         console.warn("[Visualizer] Toggle like error:", e);
       }
     };
-    (0, g.useEffect)(() => { if (r.isSecondaryWindow) { let isDragging = !1, startX, startY; const onMouseDown = e => { if (e.target.closest("button,input,.visualizer-overlay__progress-bar-container,.visualizer-overlay__volume-wrap")) return; isDragging = !0; startX = e.screenX; startY = e.screenY }, onMouseMove = e => { if (isDragging) { const dx = e.screenX - startX, dy = e.screenY - startY; window.moveBy(dx, dy); startX = e.screenX; startY = e.screenY } }, onMouseUp = () => { isDragging = !1 }; window.addEventListener("mousedown", onMouseDown); window.addEventListener("mousemove", onMouseMove); window.addEventListener("mouseup", onMouseUp); return () => { window.removeEventListener("mousedown", onMouseDown); window.removeEventListener("mousemove", onMouseMove); window.removeEventListener("mouseup", onMouseUp) } } }, [r.isSecondaryWindow]); function formatTime(s) { if (!s || !isFinite(s)) return "0:00"; var m = Math.floor(s / 60), sec = Math.floor(s % 60); return m + ":" + String(sec).padStart(2, "0") } let a = (0, g.useRef)(null); a.current && !a.current.ownerDocument.defaultView && r.onWindowDestroyed?.(); var n = !!(t => { let [e, r] = (0, Re.useState)(t?.fullscreenElement ?? null); return (0, Re.useEffect)(() => { if (t) { let e = () => r(t.fullscreenElement); return t.addEventListener("fullscreenchange", e), () => t.removeEventListener("fullscreenchange", e) } }, [t]), e })(a.current?.ownerDocument); let [o, s] = (0, g.useState)({ state: "loading" }), [u, l] = (0, g.useState)({ themeColor: Spicetify.Color.fromHex("#535353") }), themeColorRef = (0, g.useRef)(null); themeColorRef.current = u.themeColor; let c = (0, g.useCallback)(t => s(e => "error" === e.state && 2 === e.errorData.recovery ? e : t), []), f = (0, g.useCallback)((e, t) => { c({ state: "error", errorData: { message: e, recovery: t } }) }, []), d = "error" === o.state && 2 === o.errorData.recovery, h = (0, g.useMemo)(() => new pe, []), m = (0, g.useCallback)(async e => { e = e?.item; if (e) { var t = Spicetify.URI.fromString(e.uri); if (t.type !== Spicetify.URI.Type.TRACK) f("Error: The type of track you're listening to is currently not supported", 1); else { c({ state: "loading" }); try { var r, i, t = `https://spclient.wg.spotify.com/audio-attributes/v1/audio-analysis/${t.id}?format=json`, [t, e] = await Promise.all([Spicetify.CosmosAsync.get(t).catch(e => (console.error("[Visualizer]", e), { isFallback: !0, track: { duration: (Spicetify.Player.data?.item?.duration?.milliseconds || 180000) / 1e3 }, segments: [], bars: [], beats: [], sections: [], tatums: [] })), h.fetch(23, e.metadata.image_url).catch(e => (console.error("[Visualizer] Could not load extracted color metadata. Status: " + ye[e]), null)).then(e => { try { var t; return e && 0 !== e.value.length && "type.googleapis.com/spotify.context_track_color.ColorResult" === e.typeUrl ? (e = e.value, t = Te, e = new DataView(e.buffer, e.byteOffset, e.byteLength), t = t[1](e).colorLight?.rgb?.toString(16).padStart(6, "0") ?? "535353", Spicetify.Color.fromHex("#" + t)) : Spicetify.Color.fromHex("#535353") } catch (r) { return console.error("[Visualizer] Failed to parse extracted color metadata, using fallback.", r), Spicetify.Color.fromHex("#535353") } })]); if (t) if ("object" != typeof t) f(`Invalid audio analysis data (${t})`, 0); else { if (!("track" in t && "segments" in t)) { console.warn("[Visualizer] No audio analysis available for this track, using fallback.", t); t = { isFallback: !0, track: { duration: (Spicetify.Player.data?.item?.duration?.milliseconds || 180000) / 1e3 }, segments: [], bars: [], beats: [], sections: [], tatums: [] } } l({ audioAnalysis: t, themeColor: e }), c({ state: "running" }) } else f("Error: The audio analysis could not be loaded, please check your internet connection", 0) } catch (r) { console.error("[Visualizer] Unexpected error while loading track data, using fallback.", r), l({ audioAnalysis: { isFallback: !0, track: { duration: (Spicetify.Player.data?.item?.duration?.milliseconds || 180000) / 1e3 }, segments: [], bars: [], beats: [], sections: [], tatums: [] }, themeColor: Spicetify.Color.fromHex("#535353") }), c({ state: "running" }) } } } else f("Start playing a song to see the visualization!", 1) }, [h]); return (0, g.useEffect)(() => { if (!d) { let e = e => { e?.data && m(e.data); try { var lk = (typeof Spicetify.Player.getHeart === "function") ? !!Spicetify.Player.getHeart() : (e?.data?.item?.metadata?.["collection.in_collection"] === "true"); setIsLiked(lk); } catch (err) { } }; return Spicetify.Player.addEventListener("songchange", e), m(Spicetify.Player.data), () => Spicetify.Player.removeEventListener("songchange", e) } }, [d, m]), (0, g.useEffect)(() => {
+    (0, g.useEffect)(() => { if (r.isSecondaryWindow) { let isDragging = !1, startX, startY; const onMouseDown = e => { if (e.target.closest("button,input,.visualizer-overlay__progress-bar-container,.visualizer-overlay__volume-wrap")) return; isDragging = !0; startX = e.screenX; startY = e.screenY }, onMouseMove = e => { if (isDragging) { const dx = e.screenX - startX, dy = e.screenY - startY; window.moveBy(dx, dy); startX = e.screenX; startY = e.screenY } }, onMouseUp = () => { isDragging = !1 }; window.addEventListener("mousedown", onMouseDown); window.addEventListener("mousemove", onMouseMove); window.addEventListener("mouseup", onMouseUp); return () => { window.removeEventListener("mousedown", onMouseDown); window.removeEventListener("mousemove", onMouseMove); window.removeEventListener("mouseup", onMouseUp) } } }, [r.isSecondaryWindow]); function formatTime(s) { if (!s || !isFinite(s)) return "0:00"; var m = Math.floor(s / 60), sec = Math.floor(s % 60); return m + ":" + String(sec).padStart(2, "0") } let a = (0, g.useRef)(null); a.current && !a.current.ownerDocument.defaultView && r.onWindowDestroyed?.(); var n = !!(t => { let [e, r] = (0, Re.useState)(t?.fullscreenElement ?? null); return (0, Re.useEffect)(() => { if (t) { let e = () => r(t.fullscreenElement); return t.addEventListener("fullscreenchange", e), () => t.removeEventListener("fullscreenchange", e) } }, [t]), e })(a.current?.ownerDocument); let [o, s] = (0, g.useState)({ state: "loading" }), [u, l] = (0, g.useState)({ themeColor: Spicetify.Color.fromHex("#535353") }), themeColorRef = (0, g.useRef)(null); themeColorRef.current = u.themeColor; let c = (0, g.useCallback)(t => s(e => "error" === e.state && 2 === e.errorData.recovery ? e : t), []), f = (0, g.useCallback)((e, t) => { c({ state: "error", errorData: { message: e, recovery: t } }) }, []), d = "error" === o.state && 2 === o.errorData.recovery, h = (0, g.useMemo)(() => new pe, []), m = (0, g.useCallback)(async e => { e = e?.item; if (e) { var t = Spicetify.URI.fromString(e.uri); if (t.type !== Spicetify.URI.Type.TRACK) f("Error: The type of track you're listening to is currently not supported", 1); else { c({ state: "loading" }); try { var r, i, t = `https://spclient.wg.spotify.com/audio-attributes/v1/audio-analysis/${t.id}?format=json`, [t, e] = await Promise.all([Spicetify.CosmosAsync.get(t).catch(e => (console.error("[Visualizer]", e), { isFallback: !0, track: { duration: (Spicetify.Player.data?.item?.duration?.milliseconds || 180000) / 1e3 }, segments: [], bars: [], beats: [], sections: [], tatums: [] })), h.fetch(23, e.metadata.image_url).catch(e => (console.error("[Visualizer] Could not load extracted color metadata. Status: " + ye[e]), null)).then(e => { try { var t; return e && 0 !== e.value.length && "type.googleapis.com/spotify.context_track_color.ColorResult" === e.typeUrl ? (e = e.value, t = Te, e = new DataView(e.buffer, e.byteOffset, e.byteLength), t = t[1](e).colorLight?.rgb?.toString(16).padStart(6, "0") ?? "535353", Spicetify.Color.fromHex("#" + t)) : Spicetify.Color.fromHex("#535353") } catch (r) { return console.error("[Visualizer] Failed to parse extracted color metadata, using fallback.", r), Spicetify.Color.fromHex("#535353") } })]); if (t) if ("object" != typeof t) f(`Invalid audio analysis data (${t})`, 0); else { if (!("track" in t && "segments" in t)) { console.warn("[Visualizer] No audio analysis available for this track, using fallback.", t); t = { isFallback: !0, track: { duration: (Spicetify.Player.data?.item?.duration?.milliseconds || 180000) / 1e3 }, segments: [], bars: [], beats: [], sections: [], tatums: [] } } l({ audioAnalysis: t, themeColor: e }), c({ state: "running" }) } else f("Error: The audio analysis could not be loaded, please check your internet connection", 0) } catch (r) { console.error("[Visualizer] Unexpected error while loading track data, using fallback.", r), l({ audioAnalysis: { isFallback: !0, track: { duration: (Spicetify.Player.data?.item?.duration?.milliseconds || 180000) / 1e3 }, segments: [], bars: [], beats: [], sections: [], tatums: [] }, themeColor: Spicetify.Color.fromHex("#535353") }), c({ state: "running" }) } } } else f("Start playing a song to see the visualization!", 1) }, [h]); return (0, g.useEffect)(() => { if (!d) { let e = e => { e?.data && m(e.data); try { var uri = e?.data?.item?.uri || Spicetify.Player.data?.item?.uri; if (uri) _verifyLikedStatus(uri); } catch (err) { } }; Spicetify.Player.addEventListener("songchange", e); m(Spicetify.Player.data); try { var initUri = Spicetify.Player.data?.item?.uri; if (initUri) _verifyLikedStatus(initUri); } catch (err) { } var libEvents = Spicetify.Platform?.LibraryAPI?.getEvents?.(); var updateListener = null; if (libEvents && typeof libEvents.addListener === "function") { updateListener = ev => { var curUri = Spicetify.Player.data?.item?.uri; if (ev?.data?.uri === curUri) { var likedVal = ev.data.isInLibrary ?? ev.data.isInSet; if (likedVal !== undefined && likedVal !== null) { setIsLiked(!!likedVal); } } }; try { libEvents.addListener("update_item", updateListener); } catch (_) {} } return () => { Spicetify.Player.removeEventListener("songchange", e); if (libEvents && updateListener && typeof libEvents.removeListener === "function") { try { libEvents.removeListener("update_item", updateListener); } catch (_) {} } }; } }, [d, m]), (0, g.useEffect)(() => {
       if (!d) {
         let tick = 0; const e = () => {
           isDraggingSeek || setTrackProgress(Spicetify.Player.getProgress() / 1e3); setAlbumArt(prev => {
@@ -1323,7 +1367,7 @@ return lyrics;
           if (window.parent?._spicy_lyrics?.version) return window.parent._spicy_lyrics.version;
           if (window._spicy_lyrics?.version) return window._spicy_lyrics.version;
         } catch (e) { }
-        return "6.3.20";
+        return "6.3.50";
       }
 
       async function _fetchSpicyLyricsApi(id, _retryCount) {
@@ -1342,6 +1386,7 @@ return lyrics;
           };
           var headers = {
             "Content-Type": "application/json",
+            "X-mode": "2",
             "SpicyLyrics-Version": slVersion,
             "SpicyLyrics-WebAuth": "Bearer " + token
           };
@@ -1366,6 +1411,14 @@ return lyrics;
             });
             if (!res.ok) {
               var errText = ""; try { errText = await res.text(); } catch (e) { }
+              if (res.status === 401) {
+                console.warn("[Visualizer Lyrics] API returned 401, refreshing token and retrying...");
+                _spotifyTokenCache = null;
+                _spotifyTokenExpiresAt = 0;
+                if (_retryCount < 1) {
+                  return await _fetchSpicyLyricsApi(id, _retryCount + 1);
+                }
+              }
               console.warn("[Visualizer Lyrics] API fetch failed:", res.status, errText.substring(0, 200));
               return null;
             }
@@ -1410,6 +1463,16 @@ return lyrics;
 
           if (queryRes.httpStatus === 404) {
             console.log("[Visualizer Lyrics] Lyrics not found on SpicyLyrics (404)");
+            return null;
+          }
+
+          if (queryRes.httpStatus === 401) {
+            console.warn("[Visualizer Lyrics] Token rejected (401), invalidating and retrying...");
+            _spotifyTokenCache = null;
+            _spotifyTokenExpiresAt = 0;
+            if (_retryCount < 1) {
+              return await _fetchSpicyLyricsApi(id, _retryCount + 1);
+            }
             return null;
           }
 
@@ -1784,6 +1847,8 @@ return lyrics;
 
       function _romanizeText(str) {
         if (!str || typeof str !== "string") return str;
+        if (_CYR_TEXT_TEST.test(str)) str = _cyrillicToLatin(str);
+        if (_GRK_TEXT_TEST.test(str)) str = _greekToLatin(str);
         var hasKana = /[\u3040-\u309F\u30A0-\u30FF]/.test(str);
         var hasHangul = /[\uAC00-\uD7AF]/.test(str);
         if (!hasKana && !hasHangul) return str;
@@ -2157,14 +2222,14 @@ return lyrics;
             var txt = "";
             var syllables = null;
             if (_cachedLyrics.Type === "Line") {
-              txt = (isRomanized && l.TransliteratedText) ? l.TransliteratedText : (l.Text || "");
+              txt = _getDisplayText(l, isRomanized);
             } else if (_cachedLyrics.Type === "Syllable" && l.Lead) {
               var s = l.Lead.Syllables || [];
               if (s.length > 0) {
-                txt = (isRomanized && s[0].TransliteratedText) ? s[0].TransliteratedText : (s[0].Text || "");
+                txt = _getDisplayText(s[0], isRomanized);
               }
               for (var j = 1; j < s.length; j++) {
-                var word = (isRomanized && s[j].TransliteratedText) ? s[j].TransliteratedText : (s[j].Text || "");
+                var word = _getDisplayText(s[j], isRomanized);
                 txt += (s[j - 1].IsPartOfWord ? "" : " ") + word;
               }
               syllables = s;
@@ -2204,6 +2269,7 @@ return lyrics;
 
                 if (isWord || !currentWord) {
                   if (currentWord) {
+                    if (isRomanized) currentWord.hasTrailingSpace = true;
                     words.push(currentWord);
                   }
                   currentWord = {
@@ -2313,8 +2379,9 @@ return lyrics;
         
 
         // 1. Lead Line Html
-        if (info.li !== _lastLineIdx) {
-          _lastLineIdx = info.li;
+        var lineKey = info.li + "_" + (isRomanized ? "1" : "0");
+        if (lineKey !== _lastLineIdx) {
+          _lastLineIdx = lineKey;
           var chars = _getLineLetters(info, _cachedLyrics.Type, isRomanized);
           _lineWords = _getLineWords(chars);
           if (el) {
@@ -2335,7 +2402,7 @@ return lyrics;
         var bgEl = lyricsBgContainerRef.current;
         if (info.bgText) {
           var bgInfo = { text: info.bgText, startTime: info.startTime, endTime: info.endTime, syllables: info.bgSyllables };
-          var bgLiKey = info.li + "_" + info.bgText;
+          var bgLiKey = info.li + "_" + info.bgText + "_" + (isRomanized ? "1" : "0");
           if (bgLiKey !== _lastBgLineIdx) {
             _lastBgLineIdx = bgLiKey;
             var bgChars = _getLineLetters(bgInfo, _cachedLyrics.Type, isRomanized);

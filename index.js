@@ -2636,7 +2636,7 @@ void main() {
 
               var avgCharDur = numLetters > 0 ? dur / numLetters : dur;
               var speedFactor = Math.min(1.0, Math.max(0.0, (avgCharDur - 0.08) / 0.35));
-              var maxBulge = (0.18 + 0.16 * speedFactor) * (isBg ? 0.7 : 1.0);
+              var maxBulge = (0.10 + 0.06 * speedFactor) * (isBg ? 0.6 : 1.0);
 
               var activeCharIdx = 0;
               for (var cIdx = 0; cIdx < numLetters; cIdx++) {
@@ -2660,11 +2660,34 @@ void main() {
                 var ch = chars[i];
                 var chStart = ch ? ch.startTime : (word.startTime + (i / numLetters) * dur);
                 var chEnd = ch ? ch.endTime : (word.startTime + ((i + 1) / numLetters) * dur);
-                var chDur = chEnd - chStart;
+                var chDur = Math.max(0.04, chEnd - chStart);
 
                 var dist = i - activeCharIdx;
-                var weight = Math.exp(-0.5 * (dist * dist) / (sigma * sigma));
-                var letterScale = 1.0 + maxBulge * weight;
+                var neighborWeight = Math.exp(-0.5 * (dist * dist) / (sigma * sigma));
+                var letterScale = 1.0;
+
+                if (ps < chStart) {
+                  var preT = (ps - (chStart - 0.08)) / 0.08;
+                  var preEase = preT > 0 ? (preT * preT * (3 - 2 * preT)) : 0;
+                  letterScale = 1.0 + maxBulge * Math.max(neighborWeight * 0.45, preEase * 0.35);
+                } else if (ps <= chEnd) {
+                  var cProg = (ps - chStart) / chDur;
+                  cProg = Math.max(0, Math.min(1, cProg));
+                  var bell = Math.sin(cProg * Math.PI);
+                  var swell = 0.35 + 0.65 * Math.sin(Math.pow(cProg, 0.75) * Math.PI);
+                  var activeWave = Math.max(bell, swell);
+                  letterScale = 1.0 + maxBulge * Math.max(activeWave, neighborWeight * 0.75);
+                } else {
+                  var elapsedCh = ps - chEnd;
+                  var settleChDur = Math.min(0.28, Math.max(0.12, chDur * 0.7));
+                  if (elapsedCh < settleChDur) {
+                    var sDecay = 1.0 - elapsedCh / settleChDur;
+                    var sEase = sDecay * sDecay * (3 - 2 * sDecay);
+                    letterScale = 1.0 + maxBulge * Math.max(sEase * 0.55, neighborWeight * 0.4);
+                  } else {
+                    letterScale = 1.0;
+                  }
+                }
                 letters[i].style.transform = "scale(" + letterScale.toFixed(4) + ") translateZ(0)";
 
                 var xMid = (chStart + chEnd) * 0.5 - lineStart;
@@ -2688,31 +2711,33 @@ void main() {
                 }
               }
 
-              var peakScale = isBg ? 1.10 : 1.18;
+              var peakScale = isBg ? 1.04 : (numLetters <= 2 ? 1.06 : 1.12);
               var growEase = Math.sin(progress * Math.PI * 0.5);
               var wordScale = 1.0 + (peakScale - 1.0) * growEase;
               _setStyle(span, "transform", "scale(" + wordScale.toFixed(4) + ") translateZ(0)");
               _setStyle(span, "filter", "none");
             } else {
               var dur = word.endTime - word.startTime;
-              var peakScale = isBg ? 1.10 : 1.18;
+              var peakScale = isBg ? 1.04 : (numLetters <= 2 ? 1.06 : 1.12);
               var elapsed = ps - word.endTime;
-              var returnDur = Math.min(0.40, Math.max(0.18, dur * 0.50));
-              var decayFactor = elapsed < returnDur ? Math.pow(1.0 - elapsed / returnDur, 2.0) : 0;
+              var returnDur = Math.min(0.35, Math.max(0.18, dur * 0.60));
+              var decay = elapsed < returnDur ? (1.0 - elapsed / returnDur) : 0;
+              var decayEase = decay * decay * (3 - 2 * decay);
+
               for (var i = 0; i < numLetters; i++) {
                 if (!letters[i]) continue;
                 _setStyle(letters[i], "color", "var(--vis-sung-color)");
                 _setStyle(letters[i], "opacity", String(isBg ? 0.6 : 0.95));
                 _setStyle(letters[i], "filter", "drop-shadow(0 0 " + (isBg ? 4 : 8) + "px var(--vis-glow-color))");
-                if (decayFactor > 0.01) {
-                  var settledScale = 1.0 + maxBulge * 0.12 * decayFactor;
+                if (decayEase > 0.005) {
+                  var settledScale = 1.0 + maxBulge * 0.25 * decayEase;
                   letters[i].style.transform = "scale(" + settledScale.toFixed(4) + ") translateZ(0)";
                 } else {
                   letters[i].style.transform = "scale(1) translateZ(0)";
                 }
               }
-              if (decayFactor > 0.01) {
-                var settledWordScale = 1.0 + (peakScale - 1.0) * decayFactor;
+              if (decayEase > 0.005) {
+                var settledWordScale = 1.0 + (peakScale - 1.0) * decayEase;
                 _setStyle(span, "transform", "scale(" + settledWordScale.toFixed(4) + ") translateZ(0)");
                 _setStyle(span, "filter", "none");
               } else {

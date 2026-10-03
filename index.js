@@ -285,14 +285,11 @@ void main() {
     var _JS_TEXT_TEST = /[ぁ-んァ-ン]/;
     var _ZH_TEXT_TEST = /[一-鿿]/;
     var _KR_TEXT_TEST = /[가-힯]|[ᄀ-ᇿ]|[㄰-㆏]|[ꥠ-꥿]|[ힰ-퟿]/;
-    var _CYR_TEXT_TEST = /[Ѐ-ӿԀ-ԯⷠ-ⷿꙀ-ꚟ]/;
+    var _CYR_TEXT_TEST = /[Ѐ-ӿԀ-ԯⷠ-ⷿꙀ-ꚟ]{2,}/;
     var _GRK_TEXT_TEST = /[Ͱ-Ͽἀ-῿]/;
+    var _SCRIPT_PRIORITY = ["Japanese", "Chinese", "Korean", "Cyrillic", "Greek"];
 
-    var _CYR_MAP = { "а":"a","б":"b","в":"v","г":"g","д":"d","е":"e","ё":"e","ж":"zh","з":"z","и":"i","й":"y","к":"k","л":"l","м":"m","н":"n","о":"o","п":"p","р":"r","с":"s","т":"t","у":"u","ф":"f","х":"h","ц":"ts","ч":"ch","ш":"sh","щ":"shch","ъ":"","ы":"y","ь":"","э":"e","ю":"yu","я":"ya","А":"A","Б":"B","В":"V","Г":"G","Д":"D","Е":"E","Ё":"E","Ж":"Zh","З":"Z","И":"I","Й":"Y","К":"K","Л":"L","М":"M","Н":"N","О":"O","П":"P","Р":"R","С":"S","Т":"T","У":"U","Ф":"F","Х":"Kh","Ц":"Ts","Ч":"Ch","Ш":"Sh","Щ":"Shch","Ъ":"","Ы":"Y","Ь":"","Э":"E","Ю":"Yu","Я":"Ya" };
-
-    var _GRK_MAP = { "ά":"a","έ":"e","ή":"i","ί":"i","ό":"o","ύ":"y","ώ":"o","Ά":"A","Έ":"E","Ή":"I","Ί":"I","Ό":"O","Ύ":"Y","Ώ":"O","ϊ":"i","ΐ":"i","ϋ":"y","ΰ":"y","ϐ":"v","ϑ":"th","ϕ":"f","ϖ":"p","ϒ":"Y","ϓ":"Y","ϔ":"Y", "α":"a","Α":"A","β":"v","Β":"V","γ":"g","Γ":"G","δ":"d","Δ":"D","ε":"e","Ε":"E","ζ":"z","Ζ":"Z","η":"i","Η":"I","θ":"th","Θ":"Th","ι":"i","Ι":"I","κ":"k","Κ":"K","λ":"l","Λ":"L","μ":"m","Μ":"M","ν":"n","Ν":"N","ξ":"x","Ξ":"X","ο":"o","Ο":"O","π":"p","Π":"P","ρ":"r","Ρ":"R","σ":"s","ς":"s","τ":"t","Τ":"T","υ":"y","Υ":"Y","φ":"f","Φ":"F","χ":"ch","Χ":"Ch","ψ":"ps","Ψ":"Ps","ω":"o","Ω":"O" };
-
-    var _KANA = { "あ":"a","い":"i","う":"u","え":"e","お":"o","か":"ka","き":"ki","く":"ku","け":"ke","こ":"ko","さ":"sa","し":"shi","す":"su","せ":"se","そ":"so","た":"ta","ち":"chi","つ":"tsu","て":"te","と":"to","な":"na","に":"ni","ぬ":"nu","ね":"ne","の":"no","は":"ha","ひ":"hi","ふ":"fu","へ":"he","ほ":"ho","ま":"ma","み":"mi","む":"mu","め":"me","も":"mo","や":"ya","ゆ":"yu","よ":"yo","ら":"ra","り":"ri","る":"ru","れ":"re","ろ":"ro","わ":"wa","を":"o","ん":"n","が":"ga","ぎ":"gi","ぐ":"gu","げ":"ge","ご":"go","ざ":"za","じ":"ji","ず":"zu","ぜ":"ze","ぞ":"zo","だ":"da","ぢ":"ji","づ":"zu","で":"de","ど":"do","ば":"ba","び":"bi","ぶ":"bu","べ":"be","ぼ":"bo","ぱ":"pa","ぴ":"pi","ぷ":"pu","ぺ":"pe","ぽ":"po","ぁ":"a","ぃ":"i","ぅ":"u","ぇ":"e","ぉ":"o","ゔ":"vu","ア":"a","イ":"i","ウ":"u","エ":"e","オ":"o","カ":"ka","キ":"ki","ク":"ku","ケ":"ke","コ":"ko","サ":"sa","シ":"shi","ス":"su","セ":"se","ソ":"so","タ":"ta","チ":"chi","ツ":"tsu","テ":"te","ト":"to","ナ":"na","ニ":"ni","ヌ":"nu","ネ":"ne","ノ":"no","ハ":"ha","ヒ":"hi","フ":"fu","ヘ":"he","ホ":"ho","マ":"ma","ミ":"mi","ム":"mu","メ":"me","モ":"mo","ヤ":"ya","ユ":"yu","ヨ":"yo","ラ":"ra","リ":"ri","ル":"ru","レ":"re","ロ":"ro","ワ":"wa","ヲ":"o","ン":"n","ガ":"ga","ギ":"gi","グ":"gu","ゲ":"ge","ゴ":"go","ザ":"za","ジ":"ji","ズ":"zu","ゼ":"ze","ゾ":"zo","ダ":"da","ヂ":"ji","ヅ":"zu","デ":"de","ド":"do","バ":"ba","ビ":"bi","ブ":"bu","ベ":"be","ボ":"bo","パ":"pa","ピ":"pi","プ":"pu","ペ":"pe","ポ":"po","ァ":"a","ィ":"i","ゥ":"u","ェ":"e","ォ":"o","ヴ":"vu","キャ":"kya","キュ":"kyu","キョ":"kyo","シャ":"sha","シュ":"shu","ショ":"sho","チャ":"cha","チュ":"chu","チョ":"cho","ニャ":"nya","ニュ":"nyu","ニョ":"nyo","ヒャ":"hya","ヒュ":"hyu","ヒョ":"hyo","ミャ":"mya","ミュ":"myu","ミョ":"myo","リャ":"rya","リュ":"ryu","リョ":"ryo","ギャ":"gya","ギュ":"gyu","ギョ":"gyo","ジャ":"ja","ジュ":"ju","ジョ":"jo","ヂャ":"ja","ヂュ":"ju","ヂョ":"jo","ビャ":"bya","ビュ":"byu","ビョ":"byo","ピャ":"pya","ピュ":"pyu","ピョ":"pyo","きゃ":"kya","きゅ":"kyu","きょ":"kyo","しゃ":"sha","しゅ":"shu","しょ":"sho","ちゃ":"cha","ちゅ":"chu","ちょ":"cho","にゃ":"nya","にゅ":"nyu","にょ":"nyo","ひゃ":"hya","ひゅ":"hyu","ひょ":"hyo","みゃ":"mya","みゅ":"myu","みょ":"myo","りゃ":"rya","りゅ":"ryu","りょ":"ryo","ぎゃ":"gya","ぎゅ":"gyu","ぎょ":"gyo","じゃ":"ja","じゅ":"ju","じょ":"jo","びゃ":"bya","びゅ":"byu","びょ":"byo","ぴゃ":"pya","ぴゅ":"pyu","ぴょ":"pyo" };
+    var _KANA = { "あ":"a","い":"i","う":"u","え":"e","お":"o","か":"ka","き":"ki","く":"ku","け":"ke","こ":"ko","さ":"sa","し":"shi","す":"su","せ":"se","そ":"so","た":"ta","ち":"chi","つ":"tsu","て":"te","と":"to","な":"na","に":"ni","ぬ":"nu","ね":"ne","の":"no","は":"ha","ひ":"hi","ふ":"fu","へ":"he","ほ":"ho","ま":"ma","み":"mi","む":"mu","め":"me","も":"mo","や":"ya","ゆ":"yu","よ":"yo","ら":"ra","り":"ri","る":"ru","れ":"re","ろ":"ro","わ":"wa","を":"o","ん":"n","が":"ga","ぎ":"gi","ぐ":"gu","げ":"ge","ご":"go","ざ":"za","じ":"ji","ず":"zu","ぜ":"ze","ぞ":"zo","だ":"da","ぢ":"ji","づ":"zu","で":"de","ど":"do","ば":"ba","び":"bi","ぶ":"bu","べ":"be","ぼ":"bo","ぱ":"pa","ぴ":"pi","ぷ":"pu","ぺ":"pe","ぽ":"po","ぁ":"a","ぃ":"i","ぅ":"u","ぇ":"e","ぉ":"o","ゔ":"vu","ア":"a","イ":"i","ウ":"u","エ":"e","オ":"o","カ":"ka","キ":"ki","ク":"ku","ケ":"ke","コ":"ko","サ":"sa","シ":"shi","ス":"su","セ":"se","ソ":"so","タ":"ta","チ":"chi","ツ":"tsu","テ":"te","ト":"to","ナ":"na","ニ":"ni","ヌ":"nu","ネ":"ne","ノ":"no","ハ":"ha","ヒ":"hi","フ":"fu","ヘ":"he","ほ":"ho","マ":"ma","ミ":"mi","む":"mu","メ":"me","モ":"mo","ヤ":"ya","ユ":"yu","ヨ":"yo","ラ":"ra","リ":"ri","ル":"ru","レ":"re","ロ":"ro","ワ":"wa","ヲ":"o","ン":"n","ガ":"ga","ギ":"gi","グ":"gu","ゲ":"ge","ゴ":"go","ザ":"za","ジ":"ji","ズ":"zu","ゼ":"ze","ゾ":"zo","ダ":"da","ヂ":"ji","ヅ":"zu","デ":"de","ド":"do","バ":"ba","ビ":"bi","ブ":"bu","ベ":"be","ボ":"bo","パ":"pa","ピ":"pi","プ":"pu","ペ":"pe","ポ":"po","ァ":"a","ィ":"i","ゥ":"u","ェ":"e","ォ":"o","ヴ":"vu","キャ":"kya","キュ":"kyu","キョ":"kyo","シャ":"sha","シュ":"shu","ショ":"sho","チャ":"cha","チュ":"chu","チョ":"cho","ニャ":"nya","ニュ":"nyu","ニョ":"nyo","ヒャ":"hya","ヒュ":"hyu","ヒョ":"hyo","ミャ":"mya","ミュ":"myu","ミョ":"myo","リャ":"rya","リュ":"ryu","リョ":"ryo","ギャ":"gya","ギュ":"gyu","ギョ":"gyo","ジャ":"ja","ジュ":"ju","ジョ":"jo","ヂャ":"ja","ヂュ":"ju","ヂョ":"jo","ビャ":"bya","ビュ":"byu","ビョ":"byo","ピャ":"pya","ピュ":"pyu","ピョ":"pyo","きゃ":"kya","きゅ":"kyu","きょ":"kyo","しゃ":"sha","しゅ":"shu","しょ":"sho","チャ":"cha","チュ":"chu","ちょ":"cho","にゃ":"nya","にゅ":"nyu","にょ":"nyo","ひゃ":"hya","ひゅ":"hyu","ひょ":"hyo","みゃ":"mya","みゅ":"myu","みょ":"myo","りゃ":"rya","りゅ":"ryu","りょ":"ryo","ぎゃ":"gya","ぎゅ":"gyu","ぎょ":"gyo","じゃ":"ja","じゅ":"ju","じょ":"jo","びゃ":"bya","びゅ":"byu","びょ":"byo","ぴゃ":"pya","ぴゅ":"pyu","ぴょ":"pyo" };
     var _KANA_SMALL_TA = "っッ";
     var _KANA_LONG = "ー";
     var _KANA_KOMBINE = { "し":"sh","ち":"ch","じ":"j","ぢ":"j","き":"k","ぎ":"g","に":"n","ひ":"h","び":"b","ぴ":"p","み":"m","り":"r","シ":"sh","チ":"ch","ジ":"j","ヂ":"j","キ":"k","ギ":"g","ニ":"n","ヒ":"h","ビ":"b","ピ":"p","ミ":"m","リ":"r" };
@@ -331,11 +328,146 @@ void main() {
       return r;
     }
 
+    var _PKGS_CDN = "https://pkgs.spikerko.org";
+
+    function _loadScript(url) {
+      return new Promise(function (resolve, reject) {
+        if (typeof document !== "undefined" && document.querySelector('script[src="' + url + '"]')) return resolve();
+        var fetchFn = (typeof window !== "undefined" && window.parent && window.parent.fetch) ? window.parent.fetch : fetch;
+        fetchFn(url).then(function (r) {
+          if (!r.ok) throw new Error("HTTP " + r.status);
+          return r.text();
+        }).then(function (code) {
+          try {
+            (new Function("window", "exports", "module", "define", code))(typeof window !== "undefined" ? window : globalThis, undefined, undefined, undefined);
+            resolve();
+          } catch (evalErr) {
+            try { (0, eval)(code); resolve(); } catch (err2) { reject(err2); }
+          }
+        }).catch(function (fetchErr) {
+          var s = typeof document !== "undefined" ? document.createElement("script") : null;
+          if (s) {
+            s.src = url;
+            s.onload = function () { resolve(); };
+            s.onerror = function () { reject(fetchErr); };
+            (document.head || document.body || document.documentElement).appendChild(s);
+          } else {
+            reject(fetchErr);
+          }
+        });
+      });
+    }
+
+    var _convPromises = {};
+    function _loadConv(name) {
+      if (_convPromises[name]) return _convPromises[name];
+      var pr;
+      if (name === "kuroshiro") {
+        pr = (async function () {
+          try {
+            await _loadScript(_PKGS_CDN + "/Kuromoji/Kuromoji@1.0.0.js");
+            var startWait = Date.now();
+            while (!(typeof window !== "undefined" && window.kuromoji) && Date.now() - startWait < 3000) {
+              await new Promise(function (r) { setTimeout(r, 50); });
+            }
+          } catch (e) { }
+          await _loadScript("https://cdn.jsdelivr.net/npm/kuroshiro@1.2.0/dist/kuroshiro.min.js");
+          var KuroshiroClass = (typeof window !== "undefined" ? window.Kuroshiro : null) || globalThis.Kuroshiro;
+          if (KuroshiroClass && KuroshiroClass.default) KuroshiroClass = KuroshiroClass.default;
+
+          if (typeof window !== "undefined" && window.kuromoji && KuroshiroClass) {
+            var analyzer = {
+              init: function () {
+                return new Promise(function (resolve, reject) {
+                  window.kuromoji.builder({ dicPath: "https://cdn.jsdelivr.net/npm/kuromoji@0.1.2/dict" }).build(function (error, _tokenizer) {
+                    if (error) return reject(error);
+                    analyzer._tokenizer = _tokenizer;
+                    resolve();
+                  });
+                });
+              },
+              parse: function (text) {
+                if (!text || !text.trim() || !analyzer._tokenizer) return Promise.resolve([]);
+                var result = analyzer._tokenizer.tokenize(text);
+                for (var t = 0; t < result.length; t++) {
+                  result[t].verbose = { word_id: result[t].word_id, word_type: result[t].word_type, word_position: result[t].word_position };
+                  delete result[t].word_id;
+                  delete result[t].word_type;
+                  delete result[t].word_position;
+                }
+                return Promise.resolve(result);
+              }
+            };
+            var k = new KuroshiroClass();
+            await k.init(analyzer);
+            return { conv: function (t) { return k.convert(t, { to: "romaji", mode: "spaced" }); } };
+          }
+
+          await _loadScript("https://cdn.jsdelivr.net/npm/kuroshiro-analyzer-kuromoji@1.1.0/dist/kuroshiro-analyzer-kuromoji.min.js");
+          var AnalyzerClass = (typeof window !== "undefined" ? window.KuromojiAnalyzer : null) || globalThis.KuromojiAnalyzer;
+          if (AnalyzerClass && AnalyzerClass.default) AnalyzerClass = AnalyzerClass.default;
+          if (!KuroshiroClass || !AnalyzerClass) throw new Error("Kuroshiro or Analyzer failed to load");
+          var analyzerFallback = new AnalyzerClass({ dictPath: "https://cdn.jsdelivr.net/npm/kuromoji@0.1.2/dict" });
+          var kf = new KuroshiroClass();
+          await kf.init(analyzerFallback);
+          return { conv: function (t) { return kf.convert(t, { to: "romaji", mode: "spaced" }); } };
+        })();
+      } else if (name === "pinyin") {
+        pr = (async function () {
+          try {
+            var pinyinMod = await import(_PKGS_CDN + "/pinyin/pinyin@4.0.0.mjs");
+            var fn = (pinyinMod && pinyinMod.pinyin) || (pinyinMod && pinyinMod.default);
+            if (typeof fn === "function") return { conv: function (t) { return fn(t, { segment: false, group: true }).join("-"); } };
+          } catch (e) { }
+          await _loadScript("https://cdn.jsdelivr.net/npm/pinyin@4.0.0/lib/umd/pinyin.js");
+          var pinyinObj = (typeof window !== "undefined" ? window.pinyin : null) || globalThis.pinyin;
+          var fn2 = (pinyinObj && pinyinObj.default) || pinyinObj;
+          return { conv: function (t) { return typeof fn2 === "function" ? fn2(t, { segment: false, group: true }).join("-") : null; } };
+        })();
+      } else if (name === "aromanize") {
+        pr = (async function () {
+          try {
+            var aromanizeMod = await import(_PKGS_CDN + "/aromanize/aromanize@1.0.0.js");
+            var arFn = aromanizeMod?.default || aromanizeMod;
+            if (typeof arFn === "function") return { conv: function (t) { return arFn(t, "RevisedRomanizationTransliteration"); } };
+            if (typeof arFn === "object" && typeof arFn.default === "function") return { conv: function (t) { return arFn.default(t, "RevisedRomanizationTransliteration"); } };
+          } catch (e) {
+            console.warn("[Visualizer] aromanize CDN import failed, using built-in fallback:", e && e.message ? e.message : e);
+          }
+          return { conv: function (t) { return _hangulToRomajiFallback(t); } };
+        })();
+      } else if (name === "cyrillic") {
+        pr = (async function () {
+          try {
+            var cyrMod = await import("https://cdn.jsdelivr.net/npm/cyrillic-romanization@1.2.1/dist/index.js");
+            var cyrFn = cyrMod?.default || cyrMod;
+            if (typeof cyrFn === "function") return { conv: function (t) { var r = cyrFn(t); return r != null ? r : t; } };
+          } catch (e) { }
+          return { conv: function (t) { return _cyrillicToLatinFallback(t); } };
+        })();
+      } else if (name === "greek") {
+        pr = (async function () {
+          try {
+            var grkMod = await import(_PKGS_CDN + "/GreekRomanization/GreekRomanization@1.0.0.js");
+            var grkFn = (grkMod?.default && typeof grkMod.default === "function") ? grkMod.default : grkMod;
+            if (typeof grkFn === "function") return { conv: function (t) { var r = grkFn(t); return r != null ? r : t; } };
+            if (typeof grkFn === "object" && typeof grkFn.default === "function") return { conv: function (t) { var r = grkFn.default(t); return r != null ? r : t; } };
+          } catch (e) { }
+          return { conv: function (t) { return _greekToLatinFallback(t); } };
+        })();
+      } else {
+        pr = Promise.resolve(null);
+      }
+      _convPromises[name] = pr;
+      if (pr && pr.catch) pr.catch(function () { delete _convPromises[name]; });
+      return pr;
+    }
+    try { setTimeout(function () { _loadConv("kuroshiro").catch(function () {}); }, 500); } catch (_) { }
+
     var _HCHO = ["g","kk","n","d","tt","r","m","b","pp","s","ss","","j","jj","ch","k","t","p","h"];
     var _HJOONG = ["a","ae","ya","yae","eo","e","yeo","ye","o","wa","wae","oe","yo","u","wo","we","wi","yu","eu","ui","i"];
     var _HJONG = ["","k","k","ks","n","nj","nh","t","l","lk","lm","lb","ls","lt","lp","lh","m","p","ps","t","tt","ng","t","ch","k","t","p","h"];
-
-    function _hangulToRomaji(txt) {
+    function _hangulToRomajiFallback(txt) {
       var out = "";
       var re = /[\uac00-\ud7a3]/g;
       var last = 0, m;
@@ -353,100 +485,50 @@ void main() {
       return out;
     }
 
-    function _cyrillicToLatin(txt) {
+    var _CYR_MAP = { "а":"a","б":"b","в":"v","г":"g","д":"d","е":"e","ё":"e","ж":"zh","з":"z","и":"i","й":"y","к":"k","л":"l","м":"m","н":"n","о":"o","п":"p","р":"r","с":"s","т":"t","у":"u","ф":"f","х":"h","ц":"ts","ч":"ch","ш":"sh","щ":"shch","ъ":"","ы":"y","ь":"","э":"e","ю":"yu","я":"ya","А":"A","Б":"B","В":"V","Г":"G","Д":"D","Е":"E","Ё":"E","Ж":"Zh","З":"Z","И":"I","Й":"Y","К":"K","Л":"L","М":"M","Н":"N","О":"O","П":"P","Р":"R","С":"S","Т":"T","У":"U","Ф":"F","Х":"Kh","Ц":"Ts","Ч":"Ch","Ш":"Sh","Щ":"Shch","Ъ":"","Ы":"Y","Ь":"","Э":"E","Ю":"Yu","Я":"Ya" };
+    function _cyrillicToLatinFallback(txt) {
       var out = "";
       for (var i = 0; i < txt.length; i++) out += _CYR_MAP[txt[i]] !== undefined ? _CYR_MAP[txt[i]] : txt[i];
       return out;
     }
+    function _cyrillicToLatin(txt) { return _cyrillicToLatinFallback(txt); }
 
-    function _greekToLatin(txt) {
+    var _GRK_MAP = { "ά":"a","έ":"e","ή":"i","ί":"i","ό":"o","ύ":"y","ώ":"o","Ά":"A","Έ":"E","Ή":"I","Ί":"I","Ό":"O","Ύ":"Y","Ώ":"O","ϊ":"i","ΐ":"i","ϋ":"y","ΰ":"y","ϐ":"v","ϑ":"th","ϕ":"f","ϖ":"p","ϒ":"Y","ϓ":"Y","ϔ":"Y", "α":"a","Α":"A","β":"v","Β":"V","γ":"g","Γ":"G","δ":"d","Δ":"D","ε":"e","Ε":"E","ζ":"z","Ζ":"Z","η":"i","Η":"I","θ":"th","Θ":"Th","ι":"i","Ι":"I","κ":"k","Κ":"K","λ":"l","Λ":"L","μ":"m","Μ":"M","ν":"n","Ν":"N","ξ":"x","Ξ":"X","ο":"o","Ο":"O","π":"p","Π":"P","ρ":"r","Ρ":"R","σ":"s","ς":"s","τ":"t","Τ":"T","υ":"y","Υ":"Y","φ":"f","Φ":"F","χ":"ch","Χ":"Ch","ψ":"ps","Ψ":"Ps","ω":"o","Ω":"O" };
+    function _greekToLatinFallback(txt) {
       var out = "";
       for (var i = 0; i < txt.length; i++) out += _GRK_MAP[txt[i]] !== undefined ? _GRK_MAP[txt[i]] : txt[i];
       return out;
     }
+    function _greekToLatin(txt) { return _greekToLatinFallback(txt); }
 
-    function _loadScript(url) {
-      return new Promise(function (resolve, reject) {
-        if (typeof document !== "undefined" && document.querySelector('script[src="' + url + '"]')) return resolve();
-        var s = typeof document !== "undefined" ? document.createElement("script") : null;
-        if (s) {
-          s.src = url;
-          s.onload = function () { resolve(); };
-          s.onerror = function () {
-            var f = (typeof window !== "undefined" && window.parent && window.parent.fetch) ? window.parent.fetch : fetch;
-            f(url).then(function (r) {
-              if (!r.ok) throw new Error("HTTP " + r.status);
-              return r.text();
-            }).then(function (code) {
-              try { (0, eval)(code); resolve(); } catch (err) { reject(err); }
-            }).catch(reject);
-          };
-          (document.head || document.body || document.documentElement).appendChild(s);
-        } else {
-          var f2 = (typeof window !== "undefined" && window.parent && window.parent.fetch) ? window.parent.fetch : fetch;
-          f2(url).then(function (r) {
-            if (!r.ok) throw new Error("HTTP " + r.status);
-            return r.text();
-          }).then(function (code) {
-            try { (0, eval)(code); resolve(); } catch (err) { reject(err); }
-          }).catch(reject);
-        }
-      });
+    function _detectPresentScripts(text) {
+      var scripts = [];
+      var hasKana = _JS_TEXT_TEST.test(text);
+      var hasHan = _ZH_TEXT_TEST.test(text);
+      var hasKorean = _KR_TEXT_TEST.test(text);
+      var hasCyrillic = _CYR_TEXT_TEST.test(text);
+      var hasGreek = _GRK_TEXT_TEST.test(text);
+      if (hasKana) scripts.push("Japanese");
+      if (hasHan && !hasKana) scripts.push("Chinese");
+      if (hasKorean) scripts.push("Korean");
+      if (hasCyrillic) scripts.push("Cyrillic");
+      if (hasGreek) scripts.push("Greek");
+      scripts.sort(function (a, b) { return _SCRIPT_PRIORITY.indexOf(a) - _SCRIPT_PRIORITY.indexOf(b); });
+      return scripts;
     }
 
-    var _convPromises = {};
-    function _loadConv(name) {
-      if (_convPromises[name]) return _convPromises[name];
-      var pr;
-      if (name === "kuroshiro") {
-        pr = (async function () {
-          await _loadScript("https://cdn.jsdelivr.net/npm/kuroshiro@1.2.0/dist/kuroshiro.min.js");
-          await _loadScript("https://cdn.jsdelivr.net/npm/kuroshiro-analyzer-kuromoji@1.1.0/dist/kuroshiro-analyzer-kuromoji.min.js");
-          var KuroshiroClass = (typeof window !== "undefined" ? window.Kuroshiro : null) || globalThis.Kuroshiro;
-          if (KuroshiroClass && KuroshiroClass.default) KuroshiroClass = KuroshiroClass.default;
-          var AnalyzerClass = (typeof window !== "undefined" ? window.KuromojiAnalyzer : null) || globalThis.KuromojiAnalyzer;
-          if (AnalyzerClass && AnalyzerClass.default) AnalyzerClass = AnalyzerClass.default;
-          if (!KuroshiroClass || !AnalyzerClass) throw new Error("Kuroshiro or KuromojiAnalyzer failed to load");
-          var analyzer = new AnalyzerClass({ dictPath: "https://cdn.jsdelivr.net/npm/kuromoji@0.1.2/dict" });
-          var k = new KuroshiroClass();
-          await k.init(analyzer);
-          return { conv: function (t) { return k.convert(t, { to: "romaji", mode: "spaced" }); } };
-        })();
-      } else if (name === "pinyin") {
-        pr = (async function () {
-          await _loadScript("https://cdn.jsdelivr.net/npm/pinyin@4.0.0/lib/umd/pinyin.js");
-          var pinyinObj = (typeof window !== "undefined" ? window.pinyin : null) || globalThis.pinyin;
-          var fn = (pinyinObj && pinyinObj.default) || pinyinObj;
-          return { conv: function (t) { return typeof fn === "function" ? fn(t, { segment: false, group: true }).join("-") : null; } };
-        })();
-      } else if (name === "aromanize") {
-        pr = Promise.resolve({ conv: function (t) { return _hangulToRomaji(t); } });
-      } else {
-        pr = Promise.resolve(null);
+    async function _loadPackagesForScripts(scripts) {
+      var pkgs = { jpConv: null, cnConv: null, korConv: null, cyrConv: null, grkConv: null };
+      var promises = [];
+      for (var i = 0; i < scripts.length; i++) {
+        if (scripts[i] === "Japanese") promises.push(_loadConv("kuroshiro").then(function (m) { pkgs.jpConv = m ? m.conv : null; }).catch(function () { }));
+        else if (scripts[i] === "Chinese") promises.push(_loadConv("pinyin").then(function (m) { pkgs.cnConv = m ? m.conv : null; }).catch(function () { }));
+        else if (scripts[i] === "Korean") promises.push(_loadConv("aromanize").then(function (m) { pkgs.korConv = m ? m.conv : null; }).catch(function () { }));
+        else if (scripts[i] === "Cyrillic") promises.push(_loadConv("cyrillic").then(function (m) { pkgs.cyrConv = m ? m.conv : null; }).catch(function () { }));
+        else if (scripts[i] === "Greek") promises.push(_loadConv("greek").then(function (m) { pkgs.grkConv = m ? m.conv : null; }).catch(function () { }));
       }
-      _convPromises[name] = pr;
-      if (pr && pr.catch) pr.catch(function () { delete _convPromises[name]; });
-      return pr;
-    }
-
-    function _chooseScript(text) {
-      if (_JS_TEXT_TEST.test(text)) return "japanese";
-      if (_ZH_TEXT_TEST.test(text)) return "chinese";
-      if (_KR_TEXT_TEST.test(text)) return "korean";
-      if (_CYR_TEXT_TEST.test(text)) return "cyrillic";
-      if (_GRK_TEXT_TEST.test(text)) return "greek";
-      return null;
-    }
-
-    function _romanizeSimple(txt, script) {
-      if (txt === undefined || txt === null) return null;
-      var out = txt;
-      if (script === "cyrillic") out = _cyrillicToLatin(out);
-      else if (script === "greek") out = _greekToLatin(out);
-      else if (script === "korean") out = _hangulToRomaji(out);
-      else if (script === "japanese") out = _kanaToRomaji(out);
-      else return null;
-      return out !== txt ? out : null;
+      await Promise.all(promises);
+      return pkgs;
     }
 
     function _cleanRomanized(v) {
@@ -464,6 +546,66 @@ void main() {
       return true;
     }
 
+    async function _romanizeEntry(text, scripts, pkgs) {
+      var changed = false;
+      for (var si = 0; si < scripts.length; si++) {
+        var sc = scripts[si];
+        if (sc === "Japanese" && (_JS_TEXT_TEST.test(text) || _ZH_TEXT_TEST.test(text))) {
+          if (pkgs.jpConv) {
+            try {
+              var r = await pkgs.jpConv(text);
+              if (r) { text = r; changed = true; }
+            } catch (e) { }
+          }
+          if (!changed && !_ZH_TEXT_TEST.test(text)) {
+            var fb = _kanaToRomaji(text);
+            if (fb !== text) { text = fb; changed = true; }
+          }
+        } else if (sc === "Chinese" && _ZH_TEXT_TEST.test(text)) {
+          if (pkgs.cnConv) {
+            try {
+              var r = pkgs.cnConv(text);
+              if (r) { text = r; changed = true; }
+            } catch (e) { }
+          }
+        } else if (sc === "Korean" && _KR_TEXT_TEST.test(text)) {
+          if (pkgs.korConv) {
+            try {
+              var r = pkgs.korConv(text);
+              if (r) { text = r; changed = true; }
+            } catch (e) { }
+          }
+          if (!changed) {
+            var fb = _hangulToRomajiFallback(text);
+            if (fb !== text) { text = fb; changed = true; }
+          }
+        } else if (sc === "Cyrillic" && _CYR_TEXT_TEST.test(text)) {
+          if (pkgs.cyrConv) {
+            try {
+              var r = pkgs.cyrConv(text);
+              if (r) { text = r; changed = true; }
+            } catch (e) { }
+          }
+          if (!changed) {
+            var fb = _cyrillicToLatinFallback(text);
+            if (fb !== text) { text = fb; changed = true; }
+          }
+        } else if (sc === "Greek" && _GRK_TEXT_TEST.test(text)) {
+          if (pkgs.grkConv) {
+            try {
+              var r = pkgs.grkConv(text);
+              if (r) { text = r; changed = true; }
+            } catch (e) { }
+          }
+          if (!changed) {
+            var fb = _greekToLatinFallback(text);
+            if (fb !== text) { text = fb; changed = true; }
+          }
+        }
+      }
+      return changed ? text : null;
+    }
+
     async function _romanizeLyrics(lyrics) {
       if (!lyrics || !lyrics.Content || !Array.isArray(lyrics.Content) || (lyrics.Type !== "Line" && lyrics.Type !== "Syllable")) return lyrics;
       try {
@@ -476,15 +618,9 @@ void main() {
             if (item.Background) for (var v = 0; v < item.Background.length; v++) { var bg = item.Background[v] || {}; var bs = bg.Syllables || []; for (var w = 0; w < bs.length; w++) probe += (bs[w].Text || "") + "\n"; }
           } else if (item.Type === "Vocal" && item.Text) probe += item.Text + "\n";
         }
-        var script = _chooseScript(probe);
-        if (!script) return lyrics;
-        var jp = script === "japanese", cn = script === "chinese", kor = script === "korean";
-        var jpConv = null;
-        if (jp) { try { var m1 = await _loadConv("kuroshiro"); jpConv = m1 ? m1.conv : null; } catch (e) { jpConv = null; } }
-        var cnConv = null;
-        if (cn) { try { var m2 = await _loadConv("pinyin"); cnConv = m2 ? m2.conv : null; } catch (e2) { cnConv = null; } }
-        var korConv = null;
-        if (kor) { try { var m3 = await _loadConv("aromanize"); korConv = m3 ? m3.conv : null; } catch (e3) { korConv = null; } }
+        var scripts = _detectPresentScripts(probe);
+        if (scripts.length === 0) return lyrics;
+        var pkgs = await _loadPackagesForScripts(scripts);
 
         var any = false;
         for (var i = 0; i < lyrics.Content.length; i++) {
@@ -497,31 +633,23 @@ void main() {
             for (var g = 0; g < groups.length; g++) {
               for (var s = 0; s < groups[g].syl.length; s++) {
                 var sy = groups[g].syl[s];
-                if (!sy || !sy.Text || sy.TransliteratedText) continue;
-                var v = null;
-                if (jp) { if (jpConv) { try { v = await jpConv(sy.Text); } catch (e4) { v = null; } } if (!v) v = _romanizeSimple(sy.Text, "japanese"); }
-                else if (cn && cnConv) { try { v = cnConv(sy.Text); } catch (e5) { v = null; } }
-                else if (kor) { if (korConv) { try { v = korConv(sy.Text); } catch (e6) { v = null; } } if (!v) v = _romanizeSimple(sy.Text, "korean"); }
-                else if (script === "cyrillic" || script === "greek") v = _romanizeSimple(sy.Text, script);
-                if (_setTranslit(sy, groups[g].line, v)) any = true;
+                if (!sy || !sy.Text || sy.TransliteratedText !== undefined) continue;
+                var romanized = await _romanizeEntry(sy.Text, scripts, pkgs);
+                if (romanized && _setTranslit(sy, groups[g].line, romanized)) any = true;
               }
             }
           } else if (it.Type === "Vocal" && it.Text) {
-            if (it.TransliteratedText) continue;
-            var val = null;
-            if (jp) { if (jpConv) { try { val = await jpConv(it.Text); } catch (e7) { val = null; } } if (!val) val = _romanizeSimple(it.Text, "japanese"); }
-            else if (cn && cnConv) { try { val = cnConv(it.Text); } catch (e8) { val = null; } }
-            else if (kor) { if (korConv) { try { val = korConv(it.Text); } catch (e9) { val = null; } } if (!val) val = _romanizeSimple(it.Text, "korean"); }
-            else if (script === "cyrillic" || script === "greek") val = _romanizeSimple(it.Text, script);
-            if (_setTranslit(it, it, val)) any = true;
+            if (it.TransliteratedText !== undefined) continue;
+            var romanized = await _romanizeEntry(it.Text, scripts, pkgs);
+            if (romanized && _setTranslit(it, it, romanized)) any = true;
           }
         }
         if (any) lyrics.HasTransliterations = true;
       } catch (e) {
         console.warn("[Visualizer] Romanization pipeline error:", e && e.message ? e.message : e);
       }
-return lyrics;
-  }
+      return lyrics;
+    }
 
 
   const _KW_BLUR_SIZE = 128;
@@ -1367,7 +1495,7 @@ return lyrics;
           if (window.parent?._spicy_lyrics?.version) return window.parent._spicy_lyrics.version;
           if (window._spicy_lyrics?.version) return window._spicy_lyrics.version;
         } catch (e) { }
-        return "6.3.50";
+        return "6.3.142";
       }
 
       async function _fetchSpicyLyricsApi(id, _retryCount) {
@@ -1851,6 +1979,8 @@ return lyrics;
         if (_GRK_TEXT_TEST.test(str)) str = _greekToLatin(str);
         var hasKana = /[\u3040-\u309F\u30A0-\u30FF]/.test(str);
         var hasHangul = /[\uAC00-\uD7AF]/.test(str);
+        var hasKanji = /[一-鿿]/.test(str);
+        if (hasKanji) return str;
         if (!hasKana && !hasHangul) return str;
         var res = "";
         if (hasKana) {

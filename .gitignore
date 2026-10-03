@@ -2,6 +2,7 @@
 .DS_Store
 Thumbs.db
 Desktop.ini
+ehthumbs.db
 
 # Editor files
 *.swp
@@ -12,6 +13,12 @@ Desktop.ini
 *.sublime-project
 *.sublime-workspace
 
+# Build, logs, and scratch files
+*.log
+*.tmp
+scratch/
+tmp/
+
 # Spicetify backup/working files
 *.zip
 backup/
@@ -19,4 +26,3 @@ backup/
 # Local download and reference files
 dl.ps1
 objpack_full.txt
-

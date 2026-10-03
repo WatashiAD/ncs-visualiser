@@ -2607,143 +2607,133 @@ void main() {
             }
             return;
           }
-          var edgeHalf = 1.5 / Math.max(1, (words.reduce(function(a, w) { return a + (w.chars || []).length; }, 0) || 1));
+          var allLetters = [];
+          for (var w = 0; w < words.length; w++) {
+            var word = words[w];
+            if (!word) continue;
+            var wLetters = word.letterSpans || [];
+            var wChars = word.chars || [];
+            var wDur = Math.max(0.04, word.endTime - word.startTime);
+            for (var i = 0; i < wLetters.length; i++) {
+              if (!wLetters[i]) continue;
+              var ch = wChars[i];
+              var chStart = ch ? ch.startTime : (word.startTime + (i / wLetters.length) * wDur);
+              var chEnd = ch ? ch.endTime : (word.startTime + ((i + 1) / wLetters.length) * wDur);
+              allLetters.push({
+                el: wLetters[i],
+                startTime: chStart,
+                endTime: chEnd,
+                dur: Math.max(0.04, chEnd - chStart)
+              });
+            }
+          }
+
+          var numAllLetters = allLetters.length;
+          if (numAllLetters === 0) return;
+
+          var activeIdx = -1;
+          var lastEnd = allLetters[numAllLetters - 1].endTime;
+          if (ps < allLetters[0].startTime) {
+            activeIdx = -1;
+          } else if (ps >= lastEnd) {
+            activeIdx = numAllLetters;
+          } else {
+            for (var j = 0; j < numAllLetters; j++) {
+              var lItem = allLetters[j];
+              if (ps >= lItem.startTime && ps < lItem.endTime) {
+                var cProg = (ps - lItem.startTime) / lItem.dur;
+                activeIdx = j + Math.max(0, Math.min(1, cProg));
+                break;
+              } else if (j + 1 < numAllLetters && ps >= lItem.endTime && ps < allLetters[j + 1].startTime) {
+                var gapDur = allLetters[j + 1].startTime - lItem.endTime;
+                if (gapDur <= 0.35) {
+                  var gapProg = (ps - lItem.endTime) / gapDur;
+                  activeIdx = j + gapProg;
+                } else {
+                  var elapsedGap = ps - lItem.endTime;
+                  var remainingGap = allLetters[j + 1].startTime - ps;
+                  if (elapsedGap < 0.18) {
+                    activeIdx = j + (elapsedGap / 0.18) * 1.5;
+                  } else if (remainingGap < 0.10) {
+                    activeIdx = (j + 1) - (remainingGap / 0.10) * 0.5;
+                  } else {
+                    activeIdx = -1;
+                  }
+                }
+                break;
+              }
+            }
+            if (activeIdx === -1) activeIdx = numAllLetters;
+          }
+
+          var settleFade = 1.0;
+          if (activeIdx >= numAllLetters) {
+            var postElapsed = ps - lastEnd;
+            settleFade = postElapsed < 0.22 ? (1.0 - postElapsed / 0.22) : 0;
+          }
+
+          var sigma = 1.15;
+          for (var j = 0; j < numAllLetters; j++) {
+            var item = allLetters[j];
+            var letEl = item.el;
+
+            var letterScale = 1.0;
+            if (activeIdx >= 0 && settleFade > 0.001) {
+              var dist = j - activeIdx;
+              var bell = Math.exp(-0.5 * (dist * dist) / (sigma * sigma));
+              var speedFactor = Math.min(1.0, Math.max(0.0, (item.dur - 0.10) / 0.30));
+              var maxBulge = (0.07 + 0.06 * speedFactor) * (isBg ? 0.6 : 1.0);
+              letterScale = 1.0 + maxBulge * bell * settleFade;
+            }
+            _setStyle(letEl, "transform", "scale(" + letterScale.toFixed(4) + ") translateZ(0)");
+
+            if (ps < item.startTime) {
+              _setStyle(letEl, "color", "var(--vis-unsung-color)");
+              _setStyle(letEl, "opacity", String(isBg ? 0.25 : 0.40));
+              _setStyle(letEl, "filter", "none");
+            } else if (ps >= item.endTime) {
+              _setStyle(letEl, "color", "var(--vis-sung-color)");
+              _setStyle(letEl, "opacity", String(isBg ? 0.6 : 0.95));
+              _setStyle(letEl, "filter", "drop-shadow(0 0 " + (isBg ? 4 : 8) + "px var(--vis-glow-color))");
+            } else {
+              var charProg = Math.max(0, Math.min(1, (ps - item.startTime) / item.dur));
+              var fillAmt = Math.round(charProg * 20) * 5;
+              _setStyle(letEl, "color", "color-mix(in srgb, var(--vis-sung-color) " + fillAmt + "%, var(--vis-unsung-color))");
+              _setStyle(letEl, "opacity", ((isBg ? 0.25 : 0.40) + (isBg ? 0.35 : 0.55) * (fillAmt / 100)).toFixed(2));
+              _setStyle(letEl, "filter", "drop-shadow(0 0 " + (isBg ? 4 : 7) + "px var(--vis-glow-color))");
+            }
+          }
+
           for (var w = 0; w < spans.length; w++) {
             var span = spans[w];
             var word = words[w];
-            if (!word) continue;
+            if (!word || !span) continue;
+            var wLetters = word.letterSpans || [];
+            var numLetters = wLetters.length;
+            var wDur = Math.max(0.04, word.endTime - word.startTime);
 
-            var letters = word.letterSpans || [];
-            var numLetters = letters.length;
-            var chars = word.chars || [];
+            _setStyle(span, "filter", "none");
 
-            if (ps < word.startTime) {
-              _setStyle(span, "filter", "none");
-              _setStyle(span, "transform", "scale(1) translateZ(0)");
-              for (var i = 0; i < numLetters; i++) {
-                if (!letters[i]) continue;
-                _setStyle(letters[i], "transform", "scale(1) translateZ(0)");
-                _setStyle(letters[i], "color", "var(--vis-unsung-color)");
-                _setStyle(letters[i], "opacity", String(isBg ? 0.25 : 0.40));
-                _setStyle(letters[i], "filter", "none");
-              }
-              continue;
-            }
-            if (ps <= word.endTime) {
-              var dur = word.endTime - word.startTime;
-              var progress = dur > 0 ? (ps - word.startTime) / dur : 1;
-              progress = Math.max(0, Math.min(1, progress));
-
-              var avgCharDur = numLetters > 0 ? dur / numLetters : dur;
-              var speedFactor = Math.min(1.0, Math.max(0.0, (avgCharDur - 0.08) / 0.35));
-              var maxBulge = (0.10 + 0.06 * speedFactor) * (isBg ? 0.6 : 1.0);
-
-              var activeCharIdx = 0;
-              for (var cIdx = 0; cIdx < numLetters; cIdx++) {
-                var cItem = chars[cIdx];
-                if (cItem) {
-                  if (ps >= cItem.startTime && ps <= cItem.endTime) {
-                    var cDur = cItem.endTime - cItem.startTime;
-                    var cProg = cDur > 0 ? (ps - cItem.startTime) / cDur : 0;
-                    activeCharIdx = cIdx + cProg;
-                    break;
-                  } else if (ps > cItem.endTime) {
-                    activeCharIdx = cIdx + 1;
-                  }
-                }
-              }
-
-              var sigma = 1.25;
-
-              for (var i = 0; i < numLetters; i++) {
-                if (!letters[i]) continue;
-                var ch = chars[i];
-                var chStart = ch ? ch.startTime : (word.startTime + (i / numLetters) * dur);
-                var chEnd = ch ? ch.endTime : (word.startTime + ((i + 1) / numLetters) * dur);
-                var chDur = Math.max(0.04, chEnd - chStart);
-
-                var dist = i - activeCharIdx;
-                var neighborWeight = Math.exp(-0.5 * (dist * dist) / (sigma * sigma));
-                var letterScale = 1.0;
-
-                if (ps < chStart) {
-                  var preT = (ps - (chStart - 0.08)) / 0.08;
-                  var preEase = preT > 0 ? (preT * preT * (3 - 2 * preT)) : 0;
-                  letterScale = 1.0 + maxBulge * Math.max(neighborWeight * 0.45, preEase * 0.35);
-                } else if (ps <= chEnd) {
-                  var cProg = (ps - chStart) / chDur;
-                  cProg = Math.max(0, Math.min(1, cProg));
-                  var bell = Math.sin(cProg * Math.PI);
-                  var swell = 0.35 + 0.65 * Math.sin(Math.pow(cProg, 0.75) * Math.PI);
-                  var activeWave = Math.max(bell, swell);
-                  letterScale = 1.0 + maxBulge * Math.max(activeWave, neighborWeight * 0.75);
-                } else {
-                  var elapsedCh = ps - chEnd;
-                  var settleChDur = Math.min(0.28, Math.max(0.12, chDur * 0.7));
-                  if (elapsedCh < settleChDur) {
-                    var sDecay = 1.0 - elapsedCh / settleChDur;
-                    var sEase = sDecay * sDecay * (3 - 2 * sDecay);
-                    letterScale = 1.0 + maxBulge * Math.max(sEase * 0.55, neighborWeight * 0.4);
-                  } else {
-                    letterScale = 1.0;
-                  }
-                }
-                letters[i].style.transform = "scale(" + letterScale.toFixed(4) + ") translateZ(0)";
-
-                var xMid = (chStart + chEnd) * 0.5 - lineStart;
-                var xNorm = lineDur > 0 ? xMid / lineDur : 0;
-                var edgeDist = (P - xNorm) / edgeHalf;
-                var fillAmt = Math.max(0, Math.min(1, 0.5 + edgeDist * 0.5));
-                fillAmt = Math.round(fillAmt * 20) * 5;
-
-                if (fillAmt <= 0) {
-                  _setStyle(letters[i], "color", "var(--vis-unsung-color)");
-                  _setStyle(letters[i], "opacity", String(isBg ? 0.25 : 0.40));
-                  _setStyle(letters[i], "filter", "none");
-                } else if (fillAmt >= 100) {
-                  _setStyle(letters[i], "color", "var(--vis-sung-color)");
-                  _setStyle(letters[i], "opacity", String(isBg ? 0.6 : 0.95));
-                  _setStyle(letters[i], "filter", "drop-shadow(0 0 " + (isBg ? 4 : 8) + "px var(--vis-glow-color))");
-                } else {
-                  _setStyle(letters[i], "color", "color-mix(in srgb, var(--vis-sung-color) " + fillAmt + "%, var(--vis-unsung-color))");
-                  _setStyle(letters[i], "opacity", ((isBg ? 0.25 : 0.40) + (isBg ? 0.35 : 0.55) * (fillAmt / 100)).toFixed(2));
-                  _setStyle(letters[i], "filter", "drop-shadow(0 0 " + (isBg ? 4 : 6) + "px var(--vis-glow-color))");
-                }
-              }
-
-              var peakScale = isBg ? 1.04 : (numLetters <= 2 ? 1.06 : 1.12);
-              var growEase = Math.sin(progress * Math.PI * 0.5);
-              var wordScale = 1.0 + (peakScale - 1.0) * growEase;
+            if (numLetters >= 3 && ps >= word.startTime && ps <= word.endTime) {
+              var wProg = Math.max(0, Math.min(1, (ps - word.startTime) / wDur));
+              var peakWordScale = isBg ? 1.03 : 1.06;
+              var growEase = Math.sin(wProg * Math.PI * 0.5);
+              var wordScale = 1.0 + (peakWordScale - 1.0) * growEase;
               _setStyle(span, "transform", "scale(" + wordScale.toFixed(4) + ") translateZ(0)");
-              _setStyle(span, "filter", "none");
-            } else {
-              var dur = word.endTime - word.startTime;
-              var peakScale = isBg ? 1.04 : (numLetters <= 2 ? 1.06 : 1.12);
+            } else if (numLetters >= 3 && ps > word.endTime) {
               var elapsed = ps - word.endTime;
-              var returnDur = Math.min(0.35, Math.max(0.18, dur * 0.60));
-              var decay = elapsed < returnDur ? (1.0 - elapsed / returnDur) : 0;
-              var decayEase = decay * decay * (3 - 2 * decay);
-
-              for (var i = 0; i < numLetters; i++) {
-                if (!letters[i]) continue;
-                _setStyle(letters[i], "color", "var(--vis-sung-color)");
-                _setStyle(letters[i], "opacity", String(isBg ? 0.6 : 0.95));
-                _setStyle(letters[i], "filter", "drop-shadow(0 0 " + (isBg ? 4 : 8) + "px var(--vis-glow-color))");
-                if (decayEase > 0.005) {
-                  var settledScale = 1.0 + maxBulge * 0.25 * decayEase;
-                  letters[i].style.transform = "scale(" + settledScale.toFixed(4) + ") translateZ(0)";
-                } else {
-                  letters[i].style.transform = "scale(1) translateZ(0)";
-                }
-              }
-              if (decayEase > 0.005) {
-                var settledWordScale = 1.0 + (peakScale - 1.0) * decayEase;
+              var returnDur = Math.min(0.30, Math.max(0.14, wDur * 0.5));
+              if (elapsed < returnDur) {
+                var decay = 1.0 - elapsed / returnDur;
+                var decayEase = decay * decay * (3 - 2 * decay);
+                var peakWordScale = isBg ? 1.03 : 1.06;
+                var settledWordScale = 1.0 + (peakWordScale - 1.0) * decayEase;
                 _setStyle(span, "transform", "scale(" + settledWordScale.toFixed(4) + ") translateZ(0)");
-                _setStyle(span, "filter", "none");
               } else {
                 _setStyle(span, "transform", "scale(1) translateZ(0)");
-                _setStyle(span, "filter", "none");
               }
+            } else {
+              _setStyle(span, "transform", "scale(1) translateZ(0)");
             }
           }
         }

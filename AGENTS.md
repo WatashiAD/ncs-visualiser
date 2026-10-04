@@ -143,7 +143,7 @@ There is **no `package.json`, no node_modules, no bundler**. You edit `index.js`
     2. Implemented 16x16 canvas downsample luminance measurement ($L_{avg}$) in `Kawarp.loadImage` with smooth exponential transfer curve ($rawExp = (T / (L + 0.05))^{0.62}$), clamped between 0.40x and 1.85x, with theme color fallback.
     3. Added framerate-independent exponential eye adaptation lerp over ~0.8s (`1.0 - Math.exp(-2.4 * dt)`) in `Kawarp.render` to eliminate abrupt brightness jumps on song changes.
     4. Added audio-reactive exposure modulation in `BackgroundAnimationController` (loudness factor + beat pulse) and synced CSS custom property `--bg-exposure` to `.visualizer-container` and fallback parallax `<img>`.
-    5. Added a top-bar toggle button (`hdr_auto` glyph) with tooltip and persistence in `Spicetify.LocalStorage.get/set("visualizer:autoExposure")`.
+    5. Added a top-bar toggle button (`sunny` sun glyph) with tooltip and persistence in `Spicetify.LocalStorage.get/set("visualizer:autoExposure")`.
 - **Visualizer on-beat timing sync & authentic lyrics animation restoration**:
   - *Problem*: The NCS particle sphere visualizer was noticeably off-beat with audio playback. It relied on `Spicetify.Player.getProgress() / 1000` (which only polls every 500-1000ms) and had an 800ms deadband (`Math.abs(smooth - actual) > 0.8`), causing drift and lag to persist indefinitely. In addition, experimental per-syllable zoom animations felt unnatural and choppy compared to the original design.
   - *Fix*:

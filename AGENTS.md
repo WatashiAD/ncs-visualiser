@@ -136,14 +136,6 @@ There is **no `package.json`, no node_modules, no bundler**. You edit `index.js`
   - *Fix*:
     1. Implemented robust `_loadScript` that dynamically loads standalone UMD bundles from jsDelivr (`kuroshiro@1.2.0/dist/kuroshiro.min.js`, `kuroshiro-analyzer-kuromoji@1.1.0/dist/kuroshiro-analyzer-kuromoji.min.js`) with CORS-enabled dictionary path `https://cdn.jsdelivr.net/npm/kuromoji@0.1.2/dict` (falling back to main XPUI context `window.parent.fetch` + eval if script tags are blocked). Full Kanji transliteration is restored with 0 leftover Kanji.
     2. Updated `_getLineWords` to set `currentWord.hasTrailingSpace = true` when pushing words in romanized mode, and added `margin: 0 0.06em;` to `.vis-word` in `style.css` so scaled active words never collide.
-- **Dynamic background autoexposure & temporal eye adaptation**:
-  - *Problem*: Dark album covers (e.g. black metal, dark hip-hop) caused the dynamic fluid background to appear crushed, dull, or nearly invisible, while very bright album covers produced excess glare that reduced lyrics and UI contrast.
-  - *Fix*:
-    1. Added `uniform float u_exposure` and soft shoulder highlight tone curve (`ex / (vec3(1.0) + max(vec3(0.0), ex - vec3(0.7)) * 0.4)`) to `_KW_OUT_FS` in `Kawarp`.
-    2. Implemented 16x16 canvas downsample luminance measurement ($L_{avg}$) in `Kawarp.loadImage` with smooth exponential transfer curve ($rawExp = (T / (L + 0.05))^{0.62}$), clamped between 0.40x and 1.85x, with theme color fallback.
-    3. Added framerate-independent exponential eye adaptation lerp over ~0.8s (`1.0 - Math.exp(-2.4 * dt)`) in `Kawarp.render` to eliminate abrupt brightness jumps on song changes.
-    4. Added audio-reactive exposure modulation in `BackgroundAnimationController` (loudness factor + beat pulse) and synced CSS custom property `--bg-exposure` to `.visualizer-container` and fallback parallax `<img>`.
-    5. Added a top-bar toggle button (`sunny` sun glyph) with tooltip and persistence in `Spicetify.LocalStorage.get/set("visualizer:autoExposure")`.
 - **Visualizer on-beat timing sync & authentic lyrics animation restoration**:
   - *Problem*: The NCS particle sphere visualizer was noticeably off-beat with audio playback. It relied on `Spicetify.Player.getProgress() / 1000` (which only polls every 500-1000ms) and had an 800ms deadband (`Math.abs(smooth - actual) > 0.8`), causing drift and lag to persist indefinitely. In addition, experimental per-syllable zoom animations felt unnatural and choppy compared to the original design.
   - *Fix*:

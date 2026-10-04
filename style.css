@@ -95,7 +95,7 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  filter: blur(50px) brightness(0.45) saturate(2.5) contrast(1.05);
+  filter: blur(50px) brightness(calc(0.45 * var(--bg-exposure, 1.0))) saturate(2.5) contrast(1.05);
   transform-origin: center center;
   transform: translate3d(0, 0, 0);
   opacity: 0.8;

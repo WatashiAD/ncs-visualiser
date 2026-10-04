@@ -658,7 +658,7 @@ void main() {
   const _KW_BLEND_FS = `precision highp float;uniform sampler2D u_tex1;uniform sampler2D u_tex2;uniform float u_blend;varying vec2 v_uv;void main(){vec4 c1=texture2D(u_tex1,v_uv);vec4 c2=texture2D(u_tex2,v_uv);gl_FragColor=mix(c1,c2,u_blend);}`;
   const _KW_TINT_FS = `precision highp float;uniform sampler2D u_tex;uniform vec3 u_tintColor;uniform float u_tintIntensity;varying vec2 v_uv;void main(){vec4 c=texture2D(u_tex,v_uv);float luma=dot(c.rgb,vec3(.299,.587,.114));float dm=1.-smoothstep(0.,.5,luma);c.rgb=mix(c.rgb,u_tintColor,dm*u_tintIntensity);gl_FragColor=c;}`;
   const _KW_WARP_FS = `precision highp float;uniform sampler2D u_tex;uniform float u_time;uniform float u_intensity;varying vec2 v_uv;vec3 mod289(vec3 x){return x-floor(x*(1./289.))*289.;}vec2 mod289(vec2 x){return x-floor(x*(1./289.))*289.;}vec3 permute(vec3 x){return mod289(((x*34.)+1.)*x);}float snoise(vec2 v){const vec4 C=vec4(.211324865405187,.366025403784439,-.577350269189626,.024390243902439);vec2 i=floor(v+dot(v,C.yy));vec2 x0=v-i+dot(i,C.xx);vec2 i1=(x0.x>x0.y)?vec2(1.,0.):vec2(0.,1.);vec4 x12=x0.xyxy+C.xxzz;x12.xy-=i1;i=mod289(i);vec3 p=permute(permute(i.y+vec3(0.,i1.y,1.))+i.x+vec3(0.,i1.x,1.));vec3 m=max(.5-vec3(dot(x0,x0),dot(x12.xy,x12.xy),dot(x12.zw,x12.zw)),0.);m=m*m;m=m*m;vec3 x=2.*fract(p*C.www)-1.;vec3 h=abs(x)-.5;vec3 ox=floor(x+.5);vec3 a0=x-ox;m*=1.79284291400159-.85373472095314*(a0*a0+h*h);vec3 g;g.x=a0.x*x0.x+h.x*x0.y;g.yz=a0.yz*x12.xz+h.yz*x12.yw;return 130.*dot(m,g);}void main(){vec2 uv=v_uv;float t=u_time*.05;vec2 center=uv-.5;float cw=1.-smoothstep(0.,.7,length(center));float n1=snoise(uv*.35+vec2(t,t*.7));float n2=snoise(uv*.35+vec2(-t*.8,t*.5)+vec2(50.,50.));float n3=snoise(uv*.9+vec2(t*1.2,-t)+vec2(100.,0.));float n4=snoise(uv*.9+vec2(-t,t*1.1)+vec2(0.,100.));vec2 warp=vec2(n1*.65+n3*.35,n2*.65+n4*.35)*cw;vec2 wuv=clamp(uv+warp*u_intensity,0.,1.);gl_FragColor=texture2D(u_tex,wuv);}`;
-  const _KW_OUT_FS = `precision highp float;uniform sampler2D u_tex;uniform float u_sat;uniform float u_dith;uniform float u_time;uniform float u_scale;uniform vec2 u_res;varying vec2 v_uv;float hash(vec3 p){p=fract(p*.1031);p+=dot(p,p.zyx+31.32);return fract((p.x+p.y)*p.z);}void main(){vec2 uv=clamp((v_uv-.5)/u_scale+.5,0.,1.);vec4 c=texture2D(u_tex,uv);vec2 center=v_uv-.5;c.rgb*=(1.-dot(center,center)*.3);float gray=dot(c.rgb,vec3(.299,.587,.114));c.rgb=mix(vec3(gray),c.rgb,u_sat);vec2 pp=floor(v_uv*u_res);c.rgb+=(hash(vec3(pp,floor(u_time*60.)))-.5)*u_dith;gl_FragColor=c;}`;
+  const _KW_OUT_FS = `precision highp float;uniform sampler2D u_tex;uniform float u_sat;uniform float u_dith;uniform float u_time;uniform float u_scale;uniform float u_exposure;uniform vec2 u_res;varying vec2 v_uv;float hash(vec3 p){p=fract(p*.1031);p+=dot(p,p.zyx+31.32);return fract((p.x+p.y)*p.z);}void main(){vec2 uv=clamp((v_uv-.5)/u_scale+.5,0.,1.);vec4 c=texture2D(u_tex,uv);vec2 center=v_uv-.5;c.rgb*=(1.-dot(center,center)*.3);float gray=dot(c.rgb,vec3(.299,.587,.114));c.rgb=mix(vec3(gray),c.rgb,u_sat);vec3 ex=c.rgb*u_exposure;c.rgb=ex/(vec3(1.0)+max(vec3(0.0),ex-vec3(0.7))*0.4);vec2 pp=floor(v_uv*u_res);c.rgb+=(hash(vec3(pp,floor(u_time*60.)))-.5)*u_dith;gl_FragColor=c;}`;
 
   class Kawarp {
     constructor(canvas, options = {}) {
@@ -678,6 +678,14 @@ void main() {
       this._tintIntensity = options.tintIntensity ?? 0.15;
       this._dithering = options.dithering ?? 0.008;
       this._scale = options.scale ?? 1.0;
+      this._autoExposure = options.autoExposure ?? true;
+      this._targetLuminance = 0.26;
+      this._measuredLuma = 0.26;
+      this._targetExposure = 1.0;
+      this._currentExposure = 1.0;
+      this._audioExposure = 1.0;
+      this._lastExposureTimestamp = 0;
+      this._hasMeasuredFromImage = false;
 
       this.blurProgram = this.createProgram(_KW_VS, _KW_BLUR_FS);
       this.blendProgram = this.createProgram(_KW_VS, _KW_BLEND_FS);
@@ -694,7 +702,7 @@ void main() {
         blend: { texture1: gl.getUniformLocation(this.blendProgram, "u_tex1"), texture2: gl.getUniformLocation(this.blendProgram, "u_tex2"), blend: gl.getUniformLocation(this.blendProgram, "u_blend") },
         warp: { texture: gl.getUniformLocation(this.warpProgram, "u_tex"), time: gl.getUniformLocation(this.warpProgram, "u_time"), intensity: gl.getUniformLocation(this.warpProgram, "u_intensity") },
         tint: { texture: gl.getUniformLocation(this.tintProgram, "u_tex"), tintColor: gl.getUniformLocation(this.tintProgram, "u_tintColor"), tintIntensity: gl.getUniformLocation(this.tintProgram, "u_tintIntensity") },
-        output: { texture: gl.getUniformLocation(this.outputProgram, "u_tex"), saturation: gl.getUniformLocation(this.outputProgram, "u_sat"), dithering: gl.getUniformLocation(this.outputProgram, "u_dith"), time: gl.getUniformLocation(this.outputProgram, "u_time"), scale: gl.getUniformLocation(this.outputProgram, "u_scale"), resolution: gl.getUniformLocation(this.outputProgram, "u_res") },
+        output: { texture: gl.getUniformLocation(this.outputProgram, "u_tex"), saturation: gl.getUniformLocation(this.outputProgram, "u_sat"), dithering: gl.getUniformLocation(this.outputProgram, "u_dith"), time: gl.getUniformLocation(this.outputProgram, "u_time"), scale: gl.getUniformLocation(this.outputProgram, "u_scale"), exposure: gl.getUniformLocation(this.outputProgram, "u_exposure"), resolution: gl.getUniformLocation(this.outputProgram, "u_res") },
       };
 
       this.positionBuffer = this.createBuffer(new Float32Array([-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]));
@@ -725,10 +733,41 @@ void main() {
       if (opts.transitionDuration !== undefined) this._transitionDuration = opts.transitionDuration;
       if (opts.saturation !== undefined) this._saturation = opts.saturation;
       if (opts.scale !== undefined) this._scale = opts.scale;
+      if (opts.autoExposure !== undefined) {
+        this._autoExposure = !!opts.autoExposure;
+        this.updateAutoExposure(this._measuredLuma);
+        if (!this._autoExposure) {
+          this._audioExposure = 1.0;
+        }
+      }
+    }
+
+    setAudioExposure(exp) {
+      if (typeof exp === "number" && isFinite(exp)) {
+        this._audioExposure = Math.max(0.5, Math.min(1.8, exp));
+      }
+    }
+
+    updateAutoExposure(luma) {
+      if (luma === null || luma === undefined || !isFinite(luma)) return;
+      this._measuredLuma = luma;
+      if (this._autoExposure) {
+        var rawExp = Math.pow(this._targetLuminance / Math.max(0.025, luma + 0.05), 0.62);
+        this._targetExposure = Math.max(0.40, Math.min(1.85, rawExp));
+      } else {
+        this._targetExposure = 1.0;
+      }
+    }
+
+    updateAutoExposureFallback(luma) {
+      if (!this._hasMeasuredFromImage) {
+        this.updateAutoExposure(luma);
+      }
     }
 
     async loadImage(src) {
       if (!src || this.disposed) return;
+      this._hasMeasuredFromImage = false;
       let bitmap = null;
       try {
         const res = await fetch(src, { mode: "cors" });
@@ -751,6 +790,22 @@ void main() {
         }
       }
       if (this.disposed) return;
+      try {
+        const offscreen = document.createElement("canvas");
+        offscreen.width = 16;
+        offscreen.height = 16;
+        const offCtx = offscreen.getContext("2d", { willReadFrequently: true });
+        if (offCtx) {
+          offCtx.drawImage(bitmap, 0, 0, 16, 16);
+          const imgData = offCtx.getImageData(0, 0, 16, 16).data;
+          let totalLuma = 0;
+          for (let p = 0; p < imgData.length; p += 4) {
+            totalLuma += 0.2126 * (imgData[p] / 255) + 0.7152 * (imgData[p + 1] / 255) + 0.0722 * (imgData[p + 2] / 255);
+          }
+          this._hasMeasuredFromImage = true;
+          this.updateAutoExposure(totalLuma / 256);
+        }
+      } catch (e) { }
       const gl = this.gl;
       gl.bindTexture(gl.TEXTURE_2D, this.sourceTexture);
       gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 0);
@@ -892,6 +947,12 @@ void main() {
       gl.uniform1f(this.uniforms.warp.intensity, this._warpIntensity);
       gl.drawArrays(gl.TRIANGLES, 0, 6);
 
+      var dt = Math.max(0.001, Math.min(0.1, (timestamp - (this._lastExposureTimestamp || timestamp)) / 1000));
+      this._lastExposureTimestamp = timestamp;
+      var adaptSpeed = 2.4;
+      this._currentExposure += (this._targetExposure - this._currentExposure) * (1.0 - Math.exp(-adaptSpeed * dt));
+      var finalExposure = Math.max(0.25, Math.min(2.5, this._currentExposure * this._audioExposure));
+
       gl.useProgram(this.outputProgram);
       this.setupAttributes();
       gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -902,6 +963,7 @@ void main() {
       gl.uniform1f(this.uniforms.output.dithering, this._dithering);
       gl.uniform1f(this.uniforms.output.time, time);
       gl.uniform1f(this.uniforms.output.scale, this._scale);
+      gl.uniform1f(this.uniforms.output.exposure, finalExposure);
       gl.uniform2f(this.uniforms.output.resolution, width, height);
       gl.drawArrays(gl.TRIANGLES, 0, 6);
     }
@@ -1051,12 +1113,27 @@ void main() {
       }
       return Math.max(0.1, Math.min(currentSpeed, 3.0));
     }
+    getExposureMultiplier(currentTime, data) {
+      if (!data) return 1.0;
+      let exposureMod = 1.0;
+      const currentSection = this.getActiveElement(data.sections, currentTime);
+      const currentLoudness = currentSection ? (currentSection.loudness ?? -10) : (data.track?.loudness ?? -10);
+      const normLoudness = Math.max(0, Math.min(1, (currentLoudness + 35) / 30));
+      exposureMod = 0.94 + (normLoudness * 0.12);
+      const currentBeat = this.getActiveElement(data.beats, currentTime);
+      if (currentBeat && (currentBeat.confidence || 0) > this.MIN_BEAT_CONFIDENCE) {
+        const progressIntoBeat = (currentTime - currentBeat.start) / (currentBeat.duration || 0.5);
+        const pulseDecay = Math.exp(-6.0 * Math.max(0, Math.min(1, progressIntoBeat)));
+        exposureMod += 0.08 * pulseDecay * currentBeat.confidence;
+      }
+      return Math.max(0.85, Math.min(1.20, exposureMod));
+    }
   }
 
   var _bgAnimController = new BackgroundAnimationController();
 
   function we(r) {
-    let [t, i] = (0, g.useState)(() => { var e = new Set(Se.map(e => e.id)), t = r.initialRenderer; return t && e.has(t) || (t = new URLSearchParams(Spicetify.Platform?.History?.location?.search || "").get("renderer")) && e.has(t) ? t : "ncs" }); (0, g.useEffect)(() => { var e = new URLSearchParams; e.set("renderer", t), Spicetify.Platform?.History?.replace({ search: e.toString() }) }, [t]); var e = Se.find(e => e.id === t)?.renderer; let [albumArt, setAlbumArt] = (0, g.useState)(Spicetify.Player.data?.item?.metadata?.image_url ?? ""), [currentArt, setCurrentArt] = (0, g.useState)(Spicetify.Player.data?.item?.metadata?.image_url ?? ""), [prevArt, setPrevArt] = (0, g.useState)(""), [fadeKey, setFadeKey] = (0, g.useState)(0), [isPlaying, setIsPlaying] = (0, g.useState)(Spicetify.Player.isPlaying), [trackTitle, setTrackTitle] = (0, g.useState)(Spicetify.Player.data?.item?.name ?? ""), [trackProgress, setTrackProgress] = (0, g.useState)(Spicetify.Player.getProgress() / 1e3), [volume, setVolume] = (0, g.useState)(Spicetify.Player.getVolume() || 0), [shuffle, setShuffle] = (0, g.useState)("function" == typeof Spicetify.Player.getShuffle && Spicetify.Player.getShuffle()), [repeatMode, setRepeatMode] = (0, g.useState)("function" == typeof Spicetify.Player.getRepeat ? +Spicetify.Player.getRepeat() || 0 : 0), [isDraggingSeek, setIsDraggingSeek] = (0, g.useState)(!1), [dragProgress, setDragProgress] = (0, g.useState)(0), [isLiked, setIsLiked] = (0, g.useState)(() => { try { var u = Spicetify.Player.data?.item?.uri; if (u && Spicetify.Platform?.LibraryAPI?.containsSync) { var s = Spicetify.Platform.LibraryAPI.containsSync(u); if (s !== undefined && s !== null) return !!s; } return typeof Spicetify.Player.getHeart === "function" ? !!Spicetify.Player.getHeart() : false; } catch (_) { return false; } }), [lyricsLine, setLyricsLine] = (0, g.useState)(""),[showLyrics, setShowLyrics] = (0, g.useState)(true), [refreshTrigger, setRefreshTrigger] = (0, g.useState)(0), [hasNoLyrics, setHasNoLyrics] = (0, g.useState)(false), [isRomanized, setIsRomanized] = (0, g.useState)(() => { try { var s = Spicetify.LocalStorage.get("SL:uiState"); return s ? !!JSON.parse(s)?.romanization : false } catch(e) { return false } }); let progressBarContainerRef = (0, g.useRef)(null), lastUriRef = (0, g.useRef)(""), lyricsContainerRef = (0, g.useRef)(null), lyricsBgContainerRef = (0, g.useRef)(null), kawarpCanvasRef = (0, g.useRef)(null), kawarpInstanceRef = (0, g.useRef)(null), backdropParallaxRef = (0, g.useRef)(null);
+    let [t, i] = (0, g.useState)(() => { var e = new Set(Se.map(e => e.id)), t = r.initialRenderer; return t && e.has(t) || (t = new URLSearchParams(Spicetify.Platform?.History?.location?.search || "").get("renderer")) && e.has(t) ? t : "ncs" }); (0, g.useEffect)(() => { var e = new URLSearchParams; e.set("renderer", t), Spicetify.Platform?.History?.replace({ search: e.toString() }) }, [t]); var e = Se.find(e => e.id === t)?.renderer; let [albumArt, setAlbumArt] = (0, g.useState)(Spicetify.Player.data?.item?.metadata?.image_url ?? ""), [currentArt, setCurrentArt] = (0, g.useState)(Spicetify.Player.data?.item?.metadata?.image_url ?? ""), [prevArt, setPrevArt] = (0, g.useState)(""), [fadeKey, setFadeKey] = (0, g.useState)(0), [isPlaying, setIsPlaying] = (0, g.useState)(Spicetify.Player.isPlaying), [trackTitle, setTrackTitle] = (0, g.useState)(Spicetify.Player.data?.item?.name ?? ""), [trackProgress, setTrackProgress] = (0, g.useState)(Spicetify.Player.getProgress() / 1e3), [volume, setVolume] = (0, g.useState)(Spicetify.Player.getVolume() || 0), [shuffle, setShuffle] = (0, g.useState)("function" == typeof Spicetify.Player.getShuffle && Spicetify.Player.getShuffle()), [repeatMode, setRepeatMode] = (0, g.useState)("function" == typeof Spicetify.Player.getRepeat ? +Spicetify.Player.getRepeat() || 0 : 0), [isDraggingSeek, setIsDraggingSeek] = (0, g.useState)(!1), [dragProgress, setDragProgress] = (0, g.useState)(0), [isLiked, setIsLiked] = (0, g.useState)(() => { try { var u = Spicetify.Player.data?.item?.uri; if (u && Spicetify.Platform?.LibraryAPI?.containsSync) { var s = Spicetify.Platform.LibraryAPI.containsSync(u); if (s !== undefined && s !== null) return !!s; } return typeof Spicetify.Player.getHeart === "function" ? !!Spicetify.Player.getHeart() : false; } catch (_) { return false; } }), [lyricsLine, setLyricsLine] = (0, g.useState)(""),[showLyrics, setShowLyrics] = (0, g.useState)(true), [refreshTrigger, setRefreshTrigger] = (0, g.useState)(0), [hasNoLyrics, setHasNoLyrics] = (0, g.useState)(false), [isRomanized, setIsRomanized] = (0, g.useState)(() => { try { var s = Spicetify.LocalStorage.get("SL:uiState"); return s ? !!JSON.parse(s)?.romanization : false } catch(e) { return false } }), [isAutoExposure, setIsAutoExposure] = (0, g.useState)(() => { try { var s = Spicetify.LocalStorage.get("visualizer:autoExposure"); return s !== null ? s === "true" : true; } catch (e) { return true; } }); let progressBarContainerRef = (0, g.useRef)(null), lastUriRef = (0, g.useRef)(""), lyricsContainerRef = (0, g.useRef)(null), lyricsBgContainerRef = (0, g.useRef)(null), kawarpCanvasRef = (0, g.useRef)(null), kawarpInstanceRef = (0, g.useRef)(null), backdropParallaxRef = (0, g.useRef)(null);
     (0, g.useEffect)(() => {
       var canvas = kawarpCanvasRef.current;
       if (canvas && !kawarpInstanceRef.current) {
@@ -1068,7 +1145,8 @@ void main() {
             saturation: 1.5,
             dithering: 0.008,
             transitionDuration: 1000,
-            scale: 1.0
+            scale: 1.0,
+            autoExposure: isAutoExposure
           });
           kw.start();
           kawarpInstanceRef.current = kw;
@@ -1151,6 +1229,16 @@ void main() {
       _cachedTrackId = "";
       _cachedLyrics = undefined;
       setRefreshTrigger(prev => prev + 1);
+    };
+    const handleToggleAutoExposure = () => {
+      var nextVal = !isAutoExposure;
+      setIsAutoExposure(nextVal);
+      try {
+        Spicetify.LocalStorage.set("visualizer:autoExposure", String(nextVal));
+      } catch (e) { }
+      if (kawarpInstanceRef.current) {
+        kawarpInstanceRef.current.setOptions({ autoExposure: nextVal });
+      }
     };
     const _verifyLikedStatus = async (uri) => {
       if (!uri) return;
@@ -1258,6 +1346,14 @@ void main() {
         }; e(); const t = window.setInterval(e, 100); return () => window.clearInterval(t)
       }
     }, [d, isDraggingSeek]), (0, g.useEffect)(() => { var t = a.current; if (t) { var e = new ResizeObserver(function (e) { e = e[0]; var r = e.contentRect; t.style.setProperty("--vis-w", r.width), t.style.setProperty("--vis-h", r.height) }); return e.observe(t), function () { e.disconnect() } } }, []), (0, g.useEffect)(() => {
+      if (kawarpInstanceRef.current && u?.themeColor?.rgb) {
+        var rCol = u.themeColor.rgb.r ?? 83;
+        var gCol = u.themeColor.rgb.g ?? 83;
+        var bCol = u.themeColor.rgb.b ?? 83;
+        var fallbackLuma = (0.2126 * rCol + 0.7152 * gCol + 0.0722 * bCol) / 255;
+        kawarpInstanceRef.current.updateAutoExposureFallback(fallbackLuma);
+      }
+    }, [u?.themeColor]), (0, g.useEffect)(() => {
       _cachedTrackId = ""; _cachedLyrics = undefined; _fetching = false;
       var _lastLineIdx = -1, _wordSpans = [], _lineWords = [];
       var _lastBgLineIdx = -1, _bgWordSpans = [], _bgLineWords = [];
@@ -2260,7 +2356,15 @@ void main() {
         var ps = progressMs / 1000;
         if (kawarpInstanceRef.current && u.audioAnalysis && Spicetify.Player.isPlaying()) {
           var bgSpeed = _bgAnimController.getSpeedMultiplier(ps, u.audioAnalysis);
+          var bgExp = isAutoExposure ? _bgAnimController.getExposureMultiplier(ps, u.audioAnalysis) : 1.0;
           kawarpInstanceRef.current.setOptions({ animationSpeed: bgSpeed });
+          kawarpInstanceRef.current.setAudioExposure(bgExp);
+        } else if (kawarpInstanceRef.current && !Spicetify.Player.isPlaying()) {
+          kawarpInstanceRef.current.setAudioExposure(1.0);
+        }
+        if (a.current && kawarpInstanceRef.current) {
+          var expVal = isAutoExposure ? kawarpInstanceRef.current._currentExposure * (kawarpInstanceRef.current._audioExposure || 1.0) : 1.0;
+          a.current.style.setProperty("--bg-exposure", expVal.toFixed(3));
         }
 
         var info = _getActiveLine(_cachedLyrics, ps, isRomanized);
@@ -2783,6 +2887,6 @@ void main() {
         if (syncTimeoutId) clearTimeout(syncTimeoutId);
         Spicetify.Player.removeEventListener("songchange", _songChangeHandler);
       };
-    }, [refreshTrigger, Spicetify.Player.data?.item?.uri, isRomanized]), g.default.createElement("div", { className: "visualizer-container" + (isPlaying ? "" : " visualizer-container--paused"), ref: a, style: { "--theme-color": "rgb(" + (u?.themeColor?.rgb?.r ?? 83) + "," + (u?.themeColor?.rgb?.g ?? 83) + "," + (u?.themeColor?.rgb?.b ?? 83) + ")" } }, !d && g.default.createElement(g.default.Fragment, null, g.default.createElement("div", { className: "visualizer-backdrop" }, g.default.createElement("canvas", { ref: kawarpCanvasRef, className: "visualizer-backdrop__canvas spicy-dynamic-bg" }), g.default.createElement("div", { ref: backdropParallaxRef, className: "visualizer-backdrop__parallax" }, prevArt && g.default.createElement("img", { src: prevArt, className: "visualizer-backdrop__img", alt: "" }), currentArt && g.default.createElement("img", { key: fadeKey, src: currentArt, className: "visualizer-backdrop__img visualizer-backdrop__img--fade-in", alt: "" }))), g.default.createElement(p.Provider, { value: f }, e && g.default.createElement(e, { isEnabled: "running" === o.state, audioAnalysis: u.audioAnalysis, themeColor: u.themeColor, isPlaying: isPlaying })), g.default.createElement("div", { className: "visualizer-overlay", style: { "--theme-color": "rgb(" + (u?.themeColor?.rgb?.r ?? 83) + "," + (u?.themeColor?.rgb?.g ?? 83) + "," + (u?.themeColor?.rgb?.b ?? 83) + ")" } }, g.default.createElement("div", { className: "visualizer-overlay__upper" }, g.default.createElement("div", { className: "visualizer-overlay__label" }, "Now Playing", g.default.createElement("div", { className: "visualizer-overlay__wave" + (isPlaying ? " is-playing" : "") }, g.default.createElement("span", { className: "visualizer-overlay__wave-dot", style: { "--i": 1 } }), g.default.createElement("span", { className: "visualizer-overlay__wave-dot", style: { "--i": 2 } }), g.default.createElement("span", { className: "visualizer-overlay__wave-dot", style: { "--i": 3 } }))), g.default.createElement("div", { className: "visualizer-overlay__title-container" }, g.default.createElement("strong", { className: "visualizer-overlay__title", style: { "--title-length": (trackTitle || "No track").length } }, trackTitle || "No track")), g.default.createElement("div", { className: "visualizer-overlay__artist" }, Spicetify.Player.data?.item?.artists?.map(a => a.name).join(", ") || ""), g.default.createElement("div", { className: "visualizer-overlay__progress" }, g.default.createElement("div", { className: "visualizer-overlay__time-row" }, g.default.createElement("div", { className: "visualizer-overlay__time-left" }, formatTime(isDraggingSeek ? dragProgress : trackProgress)), g.default.createElement("div", { className: "visualizer-overlay__time-right" }, formatTime(u.audioAnalysis?.track?.duration || 0))), g.default.createElement("div", { ref: progressBarContainerRef, className: "visualizer-overlay__progress-bar-container" + (isDraggingSeek ? " visualizer-overlay__progress-bar-container--dragging" : ""), onMouseDown: handleSeekMouseDown }, g.default.createElement("div", { className: "visualizer-overlay__progress-bar", style: { width: (100 * ((isDraggingSeek ? dragProgress : trackProgress) / (u.audioAnalysis?.track?.duration || 1))) + "%" } }))), (n || r.isSecondaryWindow) && g.default.createElement("div", { className: "visualizer-overlay__controls" }, g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn" + (isLiked ? " visualizer-overlay__ctrl-btn--liked" : ""), onClick: handleToggleLike, title: isLiked ? "Remove from Your Library" : "Save to Your Library" }, g.default.createElement("span", { className: "material-icons" }, isLiked ? "favorite" : "favorite_border")), g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn" + (shuffle ? " visualizer-overlay__ctrl-btn--active" : ""), onClick: () => Spicetify.Player.toggleShuffle() }, g.default.createElement("span", { className: "material-icons" }, "shuffle")), g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn", onClick: () => Spicetify.Player.prev() }, g.default.createElement("span", { className: "material-icons" }, "skip_previous")), g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn visualizer-overlay__ctrl-btn--play", onClick: () => Spicetify.Player.togglePlay() }, g.default.createElement("span", { className: "material-icons" }, isPlaying ? "pause" : "play_arrow")), g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn", onClick: () => Spicetify.Player.next() }, g.default.createElement("span", { className: "material-icons" }, "skip_next")), g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn" + (repeatMode ? " visualizer-overlay__ctrl-btn--active" : ""), onClick: () => Spicetify.Player.toggleRepeat() }, g.default.createElement("span", { className: "material-icons" }, 2 === repeatMode ? "repeat_one" : repeatMode ? "repeat" : "repeat")), g.default.createElement("div", { className: "visualizer-overlay__volume-wrap" }, g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn", onClick: () => Spicetify.Player.setMuted && Spicetify.Player.setMuted(!Spicetify.Player.isMuted()) }, g.default.createElement("span", { className: "material-icons" }, Spicetify.Player.isMuted && Spicetify.Player.isMuted() || volume === 0 ? "volume_off" : volume < .5 ? "volume_down" : "volume_up")), g.default.createElement("input", { type: "range", className: "visualizer-overlay__volume", min: "0", max: "1", step: "0.01", value: volume, onChange: e => Spicetify.Player.setVolume(parseFloat(e.target.value)) })))), showLyrics && lyricsLine && g.default.createElement("div", { className: "visualizer-overlay__lyrics" }, hasNoLyrics ? g.default.createElement("div", { key: "no-lyrics", className: "visualizer-overlay__no-lyrics-container" }, g.default.createElement("span", { className: "visualizer-overlay__lyrics-text" }, "No lyrics available"), g.default.createElement("button", { className: "visualizer-overlay__lyrics-refresh-btn-inline", onClick: handleRefreshLyrics, title: "Refresh Lyrics", style: { background: "none", border: "none", cursor: "pointer", padding: "0", display: "inline-flex", alignItems: "center", justifyContent: "center", color: "var(--theme-color, #ffffff)" } }, g.default.createElement("span", { className: "material-symbols-outlined", style: { fontSize: "1.2rem" } }, "refresh"))) : g.default.createElement(g.default.Fragment, null, g.default.createElement("div", { ref: lyricsContainerRef, key: "lyrics-words", className: "visualizer-overlay__lyrics-text", id: "vis-lyrics-words" }), g.default.createElement("div", { ref: lyricsBgContainerRef, key: "lyrics-bg-words", className: "visualizer-overlay__lyrics-bg-text", id: "vis-lyrics-bg-words", style: { display: "none" } })))), !r.isSecondaryWindow && g.default.createElement("div", { className: "visualizer-top-bar" }, u.audioAnalysis?.isFallback && g.default.createElement(Spicetify.ReactComponent.TooltipWrapper, { label: "Spotify doesn't have audio analysis data for this song right now, so this animation is simulated and not synced to the music.", placement: "bottom" }, g.default.createElement("button", { className: "visualizer-top-btn", type: "button", "aria-label": "Simulated animation notice" }, g.default.createElement("span", { className: "material-symbols-outlined" }, "info"))), g.default.createElement(Spicetify.ReactComponent.TooltipWrapper, { label: showLyrics ? "Hide Lyrics" : "Show Lyrics", placement: "bottom" }, g.default.createElement("button", { className: "visualizer-top-btn" + (showLyrics ? " visualizer-top-btn--active" : ""), onClick: () => { var nextVal = !showLyrics; setShowLyrics(nextVal); if (nextVal) handleRefreshLyrics(); } }, g.default.createElement("span", { className: "material-symbols-outlined" }, "lyrics"))), g.default.createElement(Spicetify.ReactComponent.TooltipWrapper, { label: isRomanized ? "Show Original Lyrics" : "Show Romanized Lyrics", placement: "bottom" }, g.default.createElement("button", { className: "visualizer-top-btn" + (isRomanized ? " visualizer-top-btn--active" : ""), onClick: handleToggleRomanization }, g.default.createElement("span", { className: "material-symbols-outlined" }, "translate"))), g.default.createElement(Spicetify.ReactComponent.TooltipWrapper, { label: n ? "Exit Fullscreen" : "Enter Fullscreen", placement: "bottom" }, g.default.createElement("button", { className: "visualizer-top-btn", onClick: () => n ? a.current?.ownerDocument.exitFullscreen() : a.current?.requestFullscreen() }, g.default.createElement("span", { className: "material-symbols-outlined" }, n ? "fullscreen_exit" : "fullscreen"))), g.default.createElement("button", { className: "visualizer-top-btn", title: r.isSecondaryWindow ? "Close Window" : "Open Popup", onClick: () => r.isSecondaryWindow ? window.close() : (async r => { try { let e = null; try { e = window.open("about:blank", "_blank", "width=960,height=540"); } catch(err) { e = null; } if (!e) { let t = "fallback PiP API is not available"; if (window.documentPictureInPicture && (window.documentPictureInPicture.window ? t = "cannot open another PiP window" : e = await window.documentPictureInPicture.requestWindow({ width: 960, height: 540 }).catch(e => (t = e ? "" + e : "unknown error", null))), !e) return void Spicetify.showNotification(_.default.createElement("span", null, "Failed to open window: ", t, ". Try with devtools using", " ", _.default.createElement("code", { style: { fontSize: "12px", background: "rgba(0 0 0 / 0.2)", borderRadius: "4px", padding: "2px" } }, "spicetify enable-devtools"), "."), !0) } let t = e.document; Array.from(document.styleSheets).forEach(e => { e.ownerNode && "tagName" in e.ownerNode && (e = e.ownerNode, e = t.importNode(e, !0), t.head.appendChild(e)) }), _injectFonts(t), t.documentElement.className = document.documentElement.className, t.body.className = document.body.className; var i = D.getStyleSheetManager(), a = Spicetify.ReactDOM.unmountComponentAtNode(t.body), n = _.default.createElement(we, { isSecondaryWindow: !0, onWindowDestroyed: a, initialRenderer: r }); i ? Spicetify.ReactDOM.render(_.default.createElement(i, { target: t.head }, n), t.body) : (Spicetify.showNotification("[Visualizer] Could not find StyleSheetManager. Styles in popup window probably won't work.", !0), Spicetify.ReactDOM.render(n, t.body)) } catch (e) { console.error("[Visualizer]", "error opening popup window", e); let t = e ? "" + e : "unknown error"; Spicetify.showNotification("Failed to open window: " + t, !0) } })(t) }, g.default.createElement("span", { className: "material-symbols-outlined" }, r.isSecondaryWindow ? "pip_exit" : "pip")))), "loading" === o.state ? g.default.createElement(B, null) : "error" === o.state ? g.default.createElement("div", { className: y.error_container }, g.default.createElement("div", { className: y.error_message }, o.errorData.message), 0 === o.errorData.recovery && g.default.createElement(Spicetify.ReactComponent.ButtonPrimary, { onClick: () => m(Spicetify.Player.data) }, "Try again")) : null)
+    }, [refreshTrigger, Spicetify.Player.data?.item?.uri, isRomanized]), g.default.createElement("div", { className: "visualizer-container" + (isPlaying ? "" : " visualizer-container--paused"), ref: a, style: { "--theme-color": "rgb(" + (u?.themeColor?.rgb?.r ?? 83) + "," + (u?.themeColor?.rgb?.g ?? 83) + "," + (u?.themeColor?.rgb?.b ?? 83) + ")", "--bg-exposure": (isAutoExposure ? (kawarpInstanceRef.current?._targetExposure ?? 1.0) : 1.0).toFixed(3) } }, !d && g.default.createElement(g.default.Fragment, null, g.default.createElement("div", { className: "visualizer-backdrop" }, g.default.createElement("canvas", { ref: kawarpCanvasRef, className: "visualizer-backdrop__canvas spicy-dynamic-bg" }), g.default.createElement("div", { ref: backdropParallaxRef, className: "visualizer-backdrop__parallax" }, prevArt && g.default.createElement("img", { src: prevArt, className: "visualizer-backdrop__img", alt: "" }), currentArt && g.default.createElement("img", { key: fadeKey, src: currentArt, className: "visualizer-backdrop__img visualizer-backdrop__img--fade-in", alt: "" }))), g.default.createElement(p.Provider, { value: f }, e && g.default.createElement(e, { isEnabled: "running" === o.state, audioAnalysis: u.audioAnalysis, themeColor: u.themeColor, isPlaying: isPlaying })), g.default.createElement("div", { className: "visualizer-overlay", style: { "--theme-color": "rgb(" + (u?.themeColor?.rgb?.r ?? 83) + "," + (u?.themeColor?.rgb?.g ?? 83) + "," + (u?.themeColor?.rgb?.b ?? 83) + ")" } }, g.default.createElement("div", { className: "visualizer-overlay__upper" }, g.default.createElement("div", { className: "visualizer-overlay__label" }, "Now Playing", g.default.createElement("div", { className: "visualizer-overlay__wave" + (isPlaying ? " is-playing" : "") }, g.default.createElement("span", { className: "visualizer-overlay__wave-dot", style: { "--i": 1 } }), g.default.createElement("span", { className: "visualizer-overlay__wave-dot", style: { "--i": 2 } }), g.default.createElement("span", { className: "visualizer-overlay__wave-dot", style: { "--i": 3 } }))), g.default.createElement("div", { className: "visualizer-overlay__title-container" }, g.default.createElement("strong", { className: "visualizer-overlay__title", style: { "--title-length": (trackTitle || "No track").length } }, trackTitle || "No track")), g.default.createElement("div", { className: "visualizer-overlay__artist" }, Spicetify.Player.data?.item?.artists?.map(a => a.name).join(", ") || ""), g.default.createElement("div", { className: "visualizer-overlay__progress" }, g.default.createElement("div", { className: "visualizer-overlay__time-row" }, g.default.createElement("div", { className: "visualizer-overlay__time-left" }, formatTime(isDraggingSeek ? dragProgress : trackProgress)), g.default.createElement("div", { className: "visualizer-overlay__time-right" }, formatTime(u.audioAnalysis?.track?.duration || 0))), g.default.createElement("div", { ref: progressBarContainerRef, className: "visualizer-overlay__progress-bar-container" + (isDraggingSeek ? " visualizer-overlay__progress-bar-container--dragging" : ""), onMouseDown: handleSeekMouseDown }, g.default.createElement("div", { className: "visualizer-overlay__progress-bar", style: { width: (100 * ((isDraggingSeek ? dragProgress : trackProgress) / (u.audioAnalysis?.track?.duration || 1))) + "%" } }))), (n || r.isSecondaryWindow) && g.default.createElement("div", { className: "visualizer-overlay__controls" }, g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn" + (isLiked ? " visualizer-overlay__ctrl-btn--liked" : ""), onClick: handleToggleLike, title: isLiked ? "Remove from Your Library" : "Save to Your Library" }, g.default.createElement("span", { className: "material-icons" }, isLiked ? "favorite" : "favorite_border")), g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn" + (shuffle ? " visualizer-overlay__ctrl-btn--active" : ""), onClick: () => Spicetify.Player.toggleShuffle() }, g.default.createElement("span", { className: "material-icons" }, "shuffle")), g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn", onClick: () => Spicetify.Player.prev() }, g.default.createElement("span", { className: "material-icons" }, "skip_previous")), g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn visualizer-overlay__ctrl-btn--play", onClick: () => Spicetify.Player.togglePlay() }, g.default.createElement("span", { className: "material-icons" }, isPlaying ? "pause" : "play_arrow")), g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn", onClick: () => Spicetify.Player.next() }, g.default.createElement("span", { className: "material-icons" }, "skip_next")), g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn" + (repeatMode ? " visualizer-overlay__ctrl-btn--active" : ""), onClick: () => Spicetify.Player.toggleRepeat() }, g.default.createElement("span", { className: "material-icons" }, 2 === repeatMode ? "repeat_one" : repeatMode ? "repeat" : "repeat")), g.default.createElement("div", { className: "visualizer-overlay__volume-wrap" }, g.default.createElement("button", { className: "visualizer-overlay__ctrl-btn", onClick: () => Spicetify.Player.setMuted && Spicetify.Player.setMuted(!Spicetify.Player.isMuted()) }, g.default.createElement("span", { className: "material-icons" }, Spicetify.Player.isMuted && Spicetify.Player.isMuted() || volume === 0 ? "volume_off" : volume < .5 ? "volume_down" : "volume_up")), g.default.createElement("input", { type: "range", className: "visualizer-overlay__volume", min: "0", max: "1", step: "0.01", value: volume, onChange: e => Spicetify.Player.setVolume(parseFloat(e.target.value)) })))), showLyrics && lyricsLine && g.default.createElement("div", { className: "visualizer-overlay__lyrics" }, hasNoLyrics ? g.default.createElement("div", { key: "no-lyrics", className: "visualizer-overlay__no-lyrics-container" }, g.default.createElement("span", { className: "visualizer-overlay__lyrics-text" }, "No lyrics available"), g.default.createElement("button", { className: "visualizer-overlay__lyrics-refresh-btn-inline", onClick: handleRefreshLyrics, title: "Refresh Lyrics", style: { background: "none", border: "none", cursor: "pointer", padding: "0", display: "inline-flex", alignItems: "center", justifyContent: "center", color: "var(--theme-color, #ffffff)" } }, g.default.createElement("span", { className: "material-symbols-outlined", style: { fontSize: "1.2rem" } }, "refresh"))) : g.default.createElement(g.default.Fragment, null, g.default.createElement("div", { ref: lyricsContainerRef, key: "lyrics-words", className: "visualizer-overlay__lyrics-text", id: "vis-lyrics-words" }), g.default.createElement("div", { ref: lyricsBgContainerRef, key: "lyrics-bg-words", className: "visualizer-overlay__lyrics-bg-text", id: "vis-lyrics-bg-words", style: { display: "none" } })))), !r.isSecondaryWindow && g.default.createElement("div", { className: "visualizer-top-bar" }, u.audioAnalysis?.isFallback && g.default.createElement(Spicetify.ReactComponent.TooltipWrapper, { label: "Spotify doesn't have audio analysis data for this song right now, so this animation is simulated and not synced to the music.", placement: "bottom" }, g.default.createElement("button", { className: "visualizer-top-btn", type: "button", "aria-label": "Simulated animation notice" }, g.default.createElement("span", { className: "material-symbols-outlined" }, "info"))), g.default.createElement(Spicetify.ReactComponent.TooltipWrapper, { label: showLyrics ? "Hide Lyrics" : "Show Lyrics", placement: "bottom" }, g.default.createElement("button", { className: "visualizer-top-btn" + (showLyrics ? " visualizer-top-btn--active" : ""), onClick: () => { var nextVal = !showLyrics; setShowLyrics(nextVal); if (nextVal) handleRefreshLyrics(); } }, g.default.createElement("span", { className: "material-symbols-outlined" }, "lyrics"))), g.default.createElement(Spicetify.ReactComponent.TooltipWrapper, { label: isRomanized ? "Show Original Lyrics" : "Show Romanized Lyrics", placement: "bottom" }, g.default.createElement("button", { className: "visualizer-top-btn" + (isRomanized ? " visualizer-top-btn--active" : ""), onClick: handleToggleRomanization }, g.default.createElement("span", { className: "material-symbols-outlined" }, "translate"))), g.default.createElement(Spicetify.ReactComponent.TooltipWrapper, { label: isAutoExposure ? "Disable Background Auto Exposure" : "Enable Background Auto Exposure", placement: "bottom" }, g.default.createElement("button", { className: "visualizer-top-btn" + (isAutoExposure ? " visualizer-top-btn--active" : ""), onClick: handleToggleAutoExposure }, g.default.createElement("span", { className: "material-symbols-outlined" }, "hdr_auto"))), g.default.createElement(Spicetify.ReactComponent.TooltipWrapper, { label: n ? "Exit Fullscreen" : "Enter Fullscreen", placement: "bottom" }, g.default.createElement("button", { className: "visualizer-top-btn", onClick: () => n ? a.current?.ownerDocument.exitFullscreen() : a.current?.requestFullscreen() }, g.default.createElement("span", { className: "material-symbols-outlined" }, n ? "fullscreen_exit" : "fullscreen"))), g.default.createElement("button", { className: "visualizer-top-btn", title: r.isSecondaryWindow ? "Close Window" : "Open Popup", onClick: () => r.isSecondaryWindow ? window.close() : (async r => { try { let e = null; try { e = window.open("about:blank", "_blank", "width=960,height=540"); } catch(err) { e = null; } if (!e) { let t = "fallback PiP API is not available"; if (window.documentPictureInPicture && (window.documentPictureInPicture.window ? t = "cannot open another PiP window" : e = await window.documentPictureInPicture.requestWindow({ width: 960, height: 540 }).catch(e => (t = e ? "" + e : "unknown error", null))), !e) return void Spicetify.showNotification(_.default.createElement("span", null, "Failed to open window: ", t, ". Try with devtools using", " ", _.default.createElement("code", { style: { fontSize: "12px", background: "rgba(0 0 0 / 0.2)", borderRadius: "4px", padding: "2px" } }, "spicetify enable-devtools"), "."), !0) } let t = e.document; Array.from(document.styleSheets).forEach(e => { e.ownerNode && "tagName" in e.ownerNode && (e = e.ownerNode, e = t.importNode(e, !0), t.head.appendChild(e)) }), _injectFonts(t), t.documentElement.className = document.documentElement.className, t.body.className = document.body.className; var i = D.getStyleSheetManager(), a = Spicetify.ReactDOM.unmountComponentAtNode(t.body), n = _.default.createElement(we, { isSecondaryWindow: !0, onWindowDestroyed: a, initialRenderer: r }); i ? Spicetify.ReactDOM.render(_.default.createElement(i, { target: t.head }, n), t.body) : (Spicetify.showNotification("[Visualizer] Could not find StyleSheetManager. Styles in popup window probably won't work.", !0), Spicetify.ReactDOM.render(n, t.body)) } catch (e) { console.error("[Visualizer]", "error opening popup window", e); let t = e ? "" + e : "unknown error"; Spicetify.showNotification("Failed to open window: " + t, !0) } })(t) }, g.default.createElement("span", { className: "material-symbols-outlined" }, r.isSecondaryWindow ? "pip_exit" : "pip")))), "loading" === o.state ? g.default.createElement(B, null) : "error" === o.state ? g.default.createElement("div", { className: y.error_container }, g.default.createElement("div", { className: y.error_message }, o.errorData.message), 0 === o.errorData.recovery && g.default.createElement(Spicetify.ReactComponent.ButtonPrimary, { onClick: () => m(Spicetify.Player.data) }, "Try again")) : null)
   } var _e = r(i()); return xe = k, M(n({}, "__esModule", { value: !0 }), xe)
 })(); let render = () => visualizer.default();

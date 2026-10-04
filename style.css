@@ -294,8 +294,13 @@
   pointer-events: auto;
 }
 
-.visualizer-overlay__progress-bar-container:hover {
-  height: clamp(6px, calc(var(--vis-h) * 0.01px), 10px);
+.visualizer-overlay__progress-bar-container::before {
+  content: '';
+  position: absolute;
+  top: -8px;
+  bottom: -8px;
+  left: 0;
+  right: 0;
 }
 
 .visualizer-overlay__progress-bar {
@@ -307,17 +312,30 @@
   box-shadow: 0 0 8px color-mix(in srgb, var(--theme-color, #8e95c2) 50%, transparent);
 }
 
+.visualizer-overlay__progress-bar-container:hover .visualizer-overlay__progress-bar,
+.visualizer-overlay__progress-bar-container--dragging .visualizer-overlay__progress-bar {
+  box-shadow: 0 0 12px color-mix(in srgb, var(--theme-color, #8e95c2) 75%, transparent);
+}
+
 .visualizer-overlay__progress-bar::after {
   content: '';
   position: absolute;
   right: calc(clamp(3px, calc(var(--vis-h) * 0.006px), 6px) * -1);
   top: 50%;
-  transform: translateY(-50%);
+  transform: translateY(-50%) scale(1);
+  transform-origin: center center;
   width: clamp(8px, calc(var(--vis-h) * 0.012px), 14px);
   height: clamp(8px, calc(var(--vis-h) * 0.012px), 14px);
   background: var(--theme-color, #ffffff);
   border-radius: 50%;
   box-shadow: 0 0 6px color-mix(in srgb, var(--theme-color, #8e95c2) 70%, transparent);
+  transition: transform 0.18s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.18s ease;
+}
+
+.visualizer-overlay__progress-bar-container:hover .visualizer-overlay__progress-bar::after,
+.visualizer-overlay__progress-bar-container--dragging .visualizer-overlay__progress-bar::after {
+  transform: translateY(-50%) scale(1.45);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--theme-color, #8e95c2) 85%, transparent), 0 0 4px #ffffff;
 }
 
 /* Media controls — inside overlay, centered below progress bar */

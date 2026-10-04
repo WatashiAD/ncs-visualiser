@@ -144,4 +144,10 @@ There is **no `package.json`, no node_modules, no bundler**. You edit `index.js`
     3. Added framerate-independent exponential eye adaptation lerp over ~0.8s (`1.0 - Math.exp(-2.4 * dt)`) in `Kawarp.render` to eliminate abrupt brightness jumps on song changes.
     4. Added audio-reactive exposure modulation in `BackgroundAnimationController` (loudness factor + beat pulse) and synced CSS custom property `--bg-exposure` to `.visualizer-container` and fallback parallax `<img>`.
     5. Added a top-bar toggle button (`hdr_auto` glyph) with tooltip and persistence in `Spicetify.LocalStorage.get/set("visualizer:autoExposure")`.
+- **Visualizer on-beat timing sync & authentic lyrics animation restoration**:
+  - *Problem*: The NCS particle sphere visualizer was noticeably off-beat with audio playback. It relied on `Spicetify.Player.getProgress() / 1000` (which only polls every 500-1000ms) and had an 800ms deadband (`Math.abs(smooth - actual) > 0.8`), causing drift and lag to persist indefinitely. In addition, experimental per-syllable zoom animations felt unnatural and choppy compared to the original design.
+  - *Fix*:
+    1. Implemented `_getPreciseVisualizerTime()` at module scope that reads Spotify's native `PlayerAPI._state` hardware clock (`positionAsOfTimestamp + (Date.now() - timestamp)`) and synced rAF `_currentVisualizerTime`, providing sub-frame time accuracy for the visualizer.
+    2. Updated the NCS renderer frame loop with responsive drift correction: snaps immediately on track changes or seek operations (`abs(err) > 0.25`), and applies smooth 20% correction per frame (`err * 0.20`), locking particle sphere pulses tight to the beat.
+    3. Reverted lyrics animation to the authentic, fluid style from commit `c38f74b`: smooth sinusoidal word swell (`Math.sin(prog * PI * 0.5)` to `1.18` / `1.10`), fast quadratic decay (`(1.0 - elapsed/returnDur)^2`), Gaussian letter bulge with $\sigma = 1.25$, and continuous `color-mix` gradient line fill.
 

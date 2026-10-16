@@ -358,6 +358,30 @@ void main() {
       });
     }
 
+    async function _importModule(url) {
+      try {
+        return await import(url);
+      } catch (e1) {
+        var fetchFn = (typeof window !== "undefined" && window.parent && window.parent.fetch) ? window.parent.fetch : fetch;
+        var resp = await fetchFn(url);
+        if (!resp.ok) throw new Error("HTTP " + resp.status);
+        var code = await resp.text();
+        if (typeof Blob !== "undefined" && typeof URL !== "undefined" && URL.createObjectURL) {
+          var blob = new Blob([code], { type: "text/javascript" });
+          var blobUrl = URL.createObjectURL(blob);
+          try {
+            var mod = await import(blobUrl);
+            URL.revokeObjectURL(blobUrl);
+            return mod;
+          } catch (e2) {
+            URL.revokeObjectURL(blobUrl);
+            throw e2;
+          }
+        }
+        throw e1;
+      }
+    }
+
     var _convPromises = {};
     function _loadConv(name) {
       if (_convPromises[name]) return _convPromises[name];
@@ -367,23 +391,33 @@ void main() {
           try {
             await _loadScript(_PKGS_CDN + "/Kuromoji/Kuromoji@1.0.0.js");
             var startWait = Date.now();
-            while (!(typeof window !== "undefined" && window.kuromoji) && Date.now() - startWait < 3000) {
+            while (!(typeof window !== "undefined" && (window.kuromoji || window.parent?.kuromoji)) && Date.now() - startWait < 3000) {
               await new Promise(function (r) { setTimeout(r, 50); });
             }
           } catch (e) { }
           await _loadScript("https://cdn.jsdelivr.net/npm/kuroshiro@1.2.0/dist/kuroshiro.min.js");
-          var KuroshiroClass = (typeof window !== "undefined" ? window.Kuroshiro : null) || globalThis.Kuroshiro;
+          var KuroshiroClass = (typeof window !== "undefined" ? window.Kuroshiro : null) || (typeof window !== "undefined" && window.parent ? window.parent.Kuroshiro : null) || globalThis.Kuroshiro;
           if (KuroshiroClass && KuroshiroClass.default) KuroshiroClass = KuroshiroClass.default;
 
-          if (typeof window !== "undefined" && window.kuromoji && KuroshiroClass) {
+          var kuromojiObj = (typeof window !== "undefined" ? window.kuromoji : null) || (typeof window !== "undefined" && window.parent ? window.parent.kuromoji : null) || globalThis.kuromoji;
+          if (kuromojiObj && KuroshiroClass) {
             var analyzer = {
               init: function () {
                 return new Promise(function (resolve, reject) {
-                  window.kuromoji.builder({ dicPath: "https://cdn.jsdelivr.net/npm/kuromoji@0.1.2/dict" }).build(function (error, _tokenizer) {
-                    if (error) return reject(error);
-                    analyzer._tokenizer = _tokenizer;
-                    resolve();
-                  });
+                  function tryBuild(dicPath, fallbackPath) {
+                    kuromojiObj.builder({ dicPath: dicPath }).build(function (error, _tokenizer) {
+                      if (error) {
+                        if (fallbackPath) {
+                          console.warn("[Visualizer] Kuromoji primary dicPath failed, trying fallback:", fallbackPath);
+                          return tryBuild(fallbackPath, null);
+                        }
+                        return reject(error);
+                      }
+                      analyzer._tokenizer = _tokenizer;
+                      resolve();
+                    });
+                  }
+                  tryBuild("https://kuromoji.pkgs.spikerko.org", "https://cdn.jsdelivr.net/npm/kuromoji@0.1.2/dict");
                 });
               },
               parse: function (text) {
@@ -404,10 +438,10 @@ void main() {
           }
 
           await _loadScript("https://cdn.jsdelivr.net/npm/kuroshiro-analyzer-kuromoji@1.1.0/dist/kuroshiro-analyzer-kuromoji.min.js");
-          var AnalyzerClass = (typeof window !== "undefined" ? window.KuromojiAnalyzer : null) || globalThis.KuromojiAnalyzer;
+          var AnalyzerClass = (typeof window !== "undefined" ? window.KuromojiAnalyzer : null) || (typeof window !== "undefined" && window.parent ? window.parent.KuromojiAnalyzer : null) || globalThis.KuromojiAnalyzer;
           if (AnalyzerClass && AnalyzerClass.default) AnalyzerClass = AnalyzerClass.default;
           if (!KuroshiroClass || !AnalyzerClass) throw new Error("Kuroshiro or Analyzer failed to load");
-          var analyzerFallback = new AnalyzerClass({ dictPath: "https://cdn.jsdelivr.net/npm/kuromoji@0.1.2/dict" });
+          var analyzerFallback = new AnalyzerClass({ dictPath: "https://kuromoji.pkgs.spikerko.org" });
           var kf = new KuroshiroClass();
           await kf.init(analyzerFallback);
           return { conv: function (t) { return kf.convert(t, { to: "romaji", mode: "spaced" }); } };
@@ -415,31 +449,34 @@ void main() {
       } else if (name === "pinyin") {
         pr = (async function () {
           try {
-            var pinyinMod = await import(_PKGS_CDN + "/pinyin/pinyin@4.0.0.mjs");
+            var pinyinMod = await _importModule(_PKGS_CDN + "/pinyin/pinyin@4.0.0.mjs");
             var fn = (pinyinMod && pinyinMod.pinyin) || (pinyinMod && pinyinMod.default);
             if (typeof fn === "function") return { conv: function (t) { return fn(t, { segment: false, group: true }).join("-"); } };
           } catch (e) { }
-          await _loadScript("https://cdn.jsdelivr.net/npm/pinyin@4.0.0/lib/umd/pinyin.js");
-          var pinyinObj = (typeof window !== "undefined" ? window.pinyin : null) || globalThis.pinyin;
-          var fn2 = (pinyinObj && pinyinObj.default) || pinyinObj;
-          return { conv: function (t) { return typeof fn2 === "function" ? fn2(t, { segment: false, group: true }).join("-") : null; } };
+          try {
+            await _loadScript("https://cdn.jsdelivr.net/npm/pinyin@4.0.0/lib/umd/pinyin.js");
+            var pinyinObj = (typeof window !== "undefined" ? window.pinyin : null) || (typeof window !== "undefined" && window.parent ? window.parent.pinyin : null) || globalThis.pinyin;
+            var fn2 = (pinyinObj && (pinyinObj.pinyin || pinyinObj.default)) || pinyinObj;
+            if (typeof fn2 === "function") return { conv: function (t) { return fn2(t, { segment: false, group: true }).join("-"); } };
+          } catch (e2) { }
+          return null;
         })();
       } else if (name === "aromanize") {
         pr = (async function () {
           try {
-            var aromanizeMod = await import(_PKGS_CDN + "/aromanize/aromanize@1.0.0.js");
+            var aromanizeMod = await _importModule(_PKGS_CDN + "/aromanize/aromanize@1.0.0.js");
             var arFn = aromanizeMod?.default || aromanizeMod;
             if (typeof arFn === "function") return { conv: function (t) { return arFn(t, "RevisedRomanizationTransliteration"); } };
             if (typeof arFn === "object" && typeof arFn.default === "function") return { conv: function (t) { return arFn.default(t, "RevisedRomanizationTransliteration"); } };
           } catch (e) {
-            console.warn("[Visualizer] aromanize CDN import failed, using built-in fallback:", e && e.message ? e.message : e);
+            console.warn("[Visualizer] aromanize import failed, using built-in fallback:", e && e.message ? e.message : e);
           }
           return { conv: function (t) { return _hangulToRomajiFallback(t); } };
         })();
       } else if (name === "cyrillic") {
         pr = (async function () {
           try {
-            var cyrMod = await import("https://cdn.jsdelivr.net/npm/cyrillic-romanization@1.2.1/dist/index.js");
+            var cyrMod = await _importModule("https://cdn.jsdelivr.net/npm/cyrillic-romanization@1.2.1/dist/index.js");
             var cyrFn = cyrMod?.default || cyrMod;
             if (typeof cyrFn === "function") return { conv: function (t) { var r = cyrFn(t); return r != null ? r : t; } };
           } catch (e) { }
@@ -448,7 +485,7 @@ void main() {
       } else if (name === "greek") {
         pr = (async function () {
           try {
-            var grkMod = await import(_PKGS_CDN + "/GreekRomanization/GreekRomanization@1.0.0.js");
+            var grkMod = await _importModule(_PKGS_CDN + "/GreekRomanization/GreekRomanization@1.0.0.js");
             var grkFn = (grkMod?.default && typeof grkMod.default === "function") ? grkMod.default : grkMod;
             if (typeof grkFn === "function") return { conv: function (t) { var r = grkFn(t); return r != null ? r : t; } };
             if (typeof grkFn === "object" && typeof grkFn.default === "function") return { conv: function (t) { var r = grkFn.default(t); return r != null ? r : t; } };
@@ -485,7 +522,17 @@ void main() {
       return out;
     }
 
-    var _CYR_MAP = { "а":"a","б":"b","в":"v","г":"g","д":"d","е":"e","ё":"e","ж":"zh","з":"z","и":"i","й":"y","к":"k","л":"l","м":"m","н":"n","о":"o","п":"p","р":"r","с":"s","т":"t","у":"u","ф":"f","х":"h","ц":"ts","ч":"ch","ш":"sh","щ":"shch","ъ":"","ы":"y","ь":"","э":"e","ю":"yu","я":"ya","А":"A","Б":"B","В":"V","Г":"G","Д":"D","Е":"E","Ё":"E","Ж":"Zh","З":"Z","И":"I","Й":"Y","К":"K","Л":"L","М":"M","Н":"N","О":"O","П":"P","Р":"R","С":"S","Т":"T","У":"U","Ф":"F","Х":"Kh","Ц":"Ts","Ч":"Ch","Ш":"Sh","Щ":"Shch","Ъ":"","Ы":"Y","Ь":"","Э":"E","Ю":"Yu","Я":"Ya" };
+    var _CYR_MAP = {
+      "а":"a","б":"b","в":"v","г":"g","д":"d","е":"e","ё":"e","ж":"zh","з":"z","и":"i","й":"y",
+      "к":"k","л":"l","м":"m","н":"n","о":"o","п":"p","р":"r","с":"s","т":"t","у":"u","ф":"f",
+      "х":"h","ц":"ts","ч":"ch","ш":"sh","щ":"shch","ъ":"","ы":"y","ь":"","э":"e","ю":"yu","я":"ya",
+      "А":"A","Б":"B","В":"V","Г":"G","Д":"D","Е":"E","Ё":"E","Ж":"Zh","З":"Z","И":"I","Й":"Y",
+      "К":"K","Л":"L","М":"M","Н":"N","О":"O","P":"R","С":"S","Т":"T","У":"U","Ф":"F",
+      "Х":"Kh","Ц":"Ts","Ч":"Ch","Ш":"Sh","Щ":"Shch","Ъ":"","Ы":"Y","Ь":"","Э":"E","Ю":"Yu","Я":"Ya",
+      "і":"i","І":"I","ї":"yi","Ї":"Yi","є":"ye","Є":"Ye","ґ":"g","Ґ":"G",
+      "ў":"u","Ў":"U","ћ":"ch","Ћ":"Ch","ђ":"dj","Ђ":"Dj","љ":"lj","Љ":"Lj",
+      "њ":"nj","Њ":"Nj","џ":"dz","Џ":"Dz","ѕ":"dz","Ѕ":"Dz"
+    };
     function _cyrillicToLatinFallback(txt) {
       var out = "";
       for (var i = 0; i < txt.length; i++) out += _CYR_MAP[txt[i]] !== undefined ? _CYR_MAP[txt[i]] : txt[i];
@@ -547,17 +594,18 @@ void main() {
     }
 
     async function _romanizeEntry(text, scripts, pkgs) {
+      if (!text || typeof text !== "string") return null;
       var changed = false;
       for (var si = 0; si < scripts.length; si++) {
         var sc = scripts[si];
-        if (sc === "Japanese" && (_JS_TEXT_TEST.test(text) || _ZH_TEXT_TEST.test(text))) {
+        if (sc === "Japanese" && (/[぀-ヿ一-鿿]/.test(text))) {
           if (pkgs.jpConv) {
             try {
               var r = await pkgs.jpConv(text);
-              if (r) { text = r; changed = true; }
+              if (r && r !== text) { text = r; changed = true; }
             } catch (e) { }
           }
-          if (!changed && !_ZH_TEXT_TEST.test(text)) {
+          if (!changed && _JS_TEXT_TEST.test(text)) {
             var fb = _kanaToRomaji(text);
             if (fb !== text) { text = fb; changed = true; }
           }
@@ -565,36 +613,36 @@ void main() {
           if (pkgs.cnConv) {
             try {
               var r = pkgs.cnConv(text);
-              if (r) { text = r; changed = true; }
+              if (r && r !== text) { text = r; changed = true; }
             } catch (e) { }
           }
         } else if (sc === "Korean" && _KR_TEXT_TEST.test(text)) {
           if (pkgs.korConv) {
             try {
               var r = pkgs.korConv(text);
-              if (r) { text = r; changed = true; }
+              if (r && r !== text) { text = r; changed = true; }
             } catch (e) { }
           }
           if (!changed) {
             var fb = _hangulToRomajiFallback(text);
             if (fb !== text) { text = fb; changed = true; }
           }
-        } else if (sc === "Cyrillic" && _CYR_TEXT_TEST.test(text)) {
+        } else if (sc === "Cyrillic" && /[Ѐ-ӿԀ-ԯⷠ-ⷿꙀ-ꚟ]/.test(text)) {
           if (pkgs.cyrConv) {
             try {
               var r = pkgs.cyrConv(text);
-              if (r) { text = r; changed = true; }
+              if (r && r !== text) { text = r; changed = true; }
             } catch (e) { }
           }
           if (!changed) {
             var fb = _cyrillicToLatinFallback(text);
             if (fb !== text) { text = fb; changed = true; }
           }
-        } else if (sc === "Greek" && _GRK_TEXT_TEST.test(text)) {
+        } else if (sc === "Greek" && /[Ͱ-Ͽἀ-῿]/.test(text)) {
           if (pkgs.grkConv) {
             try {
               var r = pkgs.grkConv(text);
-              if (r) { text = r; changed = true; }
+              if (r && r !== text) { text = r; changed = true; }
             } catch (e) { }
           }
           if (!changed) {
@@ -603,48 +651,68 @@ void main() {
           }
         }
       }
-      return changed ? text : null;
+      return changed ? _cleanRomanized(text) : null;
     }
 
     async function _romanizeLyrics(lyrics) {
-      if (!lyrics || !lyrics.Content || !Array.isArray(lyrics.Content) || (lyrics.Type !== "Line" && lyrics.Type !== "Syllable")) return lyrics;
+      if (!lyrics || typeof lyrics !== "object") return lyrics;
+      var linesArr = lyrics.Content || lyrics.Lines;
+      if (!linesArr || !Array.isArray(linesArr)) return lyrics;
       try {
+        var hadApiTranslit = lyrics.HasTransliterations === true;
         var probe = "";
-        for (var q = 0; q < lyrics.Content.length; q++) {
-          var item = lyrics.Content[q];
+        for (var q = 0; q < linesArr.length; q++) {
+          var item = linesArr[q];
           if (!item) continue;
           if (lyrics.Type === "Syllable") {
-            if (item.Lead) { var ls = item.Lead.Syllables || []; for (var u = 0; u < ls.length; u++) probe += (ls[u].Text || "") + "\n"; }
-            if (item.Background) for (var v = 0; v < item.Background.length; v++) { var bg = item.Background[v] || {}; var bs = bg.Syllables || []; for (var w = 0; w < bs.length; w++) probe += (bs[w].Text || "") + "\n"; }
-          } else if (item.Type === "Vocal" && item.Text) probe += item.Text + "\n";
+            if (item.Lead && item.Lead.Syllables) {
+              var ls = item.Lead.Syllables;
+              for (var u = 0; u < ls.length; u++) probe += (ls[u].Text || "") + "\n";
+            }
+            if (item.Background) {
+              for (var v = 0; v < item.Background.length; v++) {
+                var bg = item.Background[v] || {};
+                var bs = bg.Syllables || [];
+                for (var w = 0; w < bs.length; w++) probe += (bs[w].Text || "") + "\n";
+              }
+            }
+          } else if (item.Text) {
+            probe += item.Text + "\n";
+          }
         }
         var scripts = _detectPresentScripts(probe);
         if (scripts.length === 0) return lyrics;
         var pkgs = await _loadPackagesForScripts(scripts);
 
         var any = false;
-        for (var i = 0; i < lyrics.Content.length; i++) {
-          var it = lyrics.Content[i];
+        for (var i = 0; i < linesArr.length; i++) {
+          var it = linesArr[i];
           if (!it) continue;
           if (lyrics.Type === "Syllable") {
             var groups = [];
             if (it.Lead && it.Lead.Syllables) groups.push({ line: it, syl: it.Lead.Syllables });
-            if (it.Background) for (var b = 0; b < it.Background.length; b++) if (it.Background[b] && it.Background[b].Syllables) groups.push({ line: it, syl: it.Background[b].Syllables });
+            if (it.Background) {
+              for (var b = 0; b < it.Background.length; b++) {
+                if (it.Background[b] && it.Background[b].Syllables) {
+                  groups.push({ line: it, syl: it.Background[b].Syllables });
+                }
+              }
+            }
             for (var g = 0; g < groups.length; g++) {
               for (var s = 0; s < groups[g].syl.length; s++) {
                 var sy = groups[g].syl[s];
-                if (!sy || !sy.Text || sy.TransliteratedText !== undefined) continue;
+                if (!sy || !sy.Text || (sy.TransliteratedText !== undefined && sy.TransliteratedText !== "")) continue;
                 var romanized = await _romanizeEntry(sy.Text, scripts, pkgs);
                 if (romanized && _setTranslit(sy, groups[g].line, romanized)) any = true;
               }
             }
-          } else if (it.Type === "Vocal" && it.Text) {
-            if (it.TransliteratedText !== undefined) continue;
+          } else if (it.Text) {
+            if (it.TransliteratedText !== undefined && it.TransliteratedText !== "") continue;
             var romanized = await _romanizeEntry(it.Text, scripts, pkgs);
             if (romanized && _setTranslit(it, it, romanized)) any = true;
           }
         }
-        if (any) lyrics.HasTransliterations = true;
+        lyrics.HasTransliterations = hadApiTranslit || any;
       } catch (e) {
         console.warn("[Visualizer] Romanization pipeline error:", e && e.message ? e.message : e);
       }
@@ -1144,13 +1212,22 @@ void main() {
         uiState.romanization = nextVal;
         Spicetify.LocalStorage.set("SL:uiState", JSON.stringify(uiState));
       } catch (e) { }
-      var tid = Spicetify.Player.data?.item?.uri ? Spicetify.Player.data.item.uri.replace("spotify:track:", "") : "";
-      if (tid) {
-        _lyricsMemCache.delete(tid);
+      _lastLineIdx = -1;
+      _wordSpans = [];
+      _lineWords = [];
+      _lastBgLineIdx = -1;
+      _bgWordSpans = [];
+      _bgLineWords = [];
+      if (lyricsContainerRef.current) lyricsContainerRef.current.innerHTML = "";
+      if (lyricsBgContainerRef.current) {
+        lyricsBgContainerRef.current.innerHTML = "";
+        lyricsBgContainerRef.current.style.display = "none";
       }
-      _cachedTrackId = "";
-      _cachedLyrics = undefined;
-      setRefreshTrigger(prev => prev + 1);
+      if (_cachedLyrics && !_cachedLyrics.HasTransliterations) {
+        _romanizeLyrics(_cachedLyrics).then(() => {
+          _lastLineIdx = -1;
+        }).catch(() => {});
+      }
     };
     const _verifyLikedStatus = async (uri) => {
       if (!uri) return;
@@ -1459,9 +1536,29 @@ void main() {
       var _spotifyTokenExpiresAt = 0;
 
       async function _getSpotifyToken() {
-        if (_spotifyTokenCache && Date.now() < _spotifyTokenExpiresAt - 5000) {
+        if (_spotifyTokenCache && Date.now() < _spotifyTokenExpiresAt - 30000) {
           return _spotifyTokenCache;
         }
+        try {
+          var authState = Spicetify.Platform?.AuthorizationAPI?.getState?.();
+          if (authState && authState.token && authState.token.accessToken) {
+            _spotifyTokenCache = authState.token.accessToken;
+            _spotifyTokenExpiresAt = authState.token.accessTokenExpirationTimestampMs || (Date.now() + 3600000);
+            return _spotifyTokenCache;
+          }
+        } catch (e) { }
+        try {
+          var provider = Spicetify.Platform?.TokenProvider;
+          if (provider && typeof provider.getToken === "function") {
+            var pToken = await provider.getToken();
+            if (pToken && (pToken.accessToken || pToken.token)) {
+              var tok = pToken.accessToken || pToken.token;
+              _spotifyTokenCache = tok;
+              _spotifyTokenExpiresAt = pToken.expiresAtTime || (Date.now() + 3600000);
+              return _spotifyTokenCache;
+            }
+          }
+        } catch (e) { }
         try {
           if (Spicetify.CosmosAsync) {
             var tokenObj = await Spicetify.CosmosAsync.get("sp://oauth/v2/token");
@@ -1495,7 +1592,7 @@ void main() {
           if (window.parent?._spicy_lyrics?.version) return window.parent._spicy_lyrics.version;
           if (window._spicy_lyrics?.version) return window._spicy_lyrics.version;
         } catch (e) { }
-        return "6.3.142";
+        return "6.4.10";
       }
 
       async function _fetchSpicyLyricsApi(id, _retryCount) {
@@ -1975,77 +2072,25 @@ void main() {
 
       function _romanizeText(str) {
         if (!str || typeof str !== "string") return str;
-        if (_CYR_TEXT_TEST.test(str)) str = _cyrillicToLatin(str);
+        str = str.replace(/[\u200B\u200E\u200F\u2060\uFEFF]/g, "");
         if (_GRK_TEXT_TEST.test(str)) str = _greekToLatin(str);
-        var hasKana = /[\u3040-\u309F\u30A0-\u30FF]/.test(str);
-        var hasHangul = /[\uAC00-\uD7AF]/.test(str);
-        var hasKanji = /[一-鿿]/.test(str);
-        if (hasKanji) return str;
-        if (!hasKana && !hasHangul) return str;
-        var res = "";
-        if (hasKana) {
-          var kanaMap = {
-            'あ':'a','い':'i','う':'u','え':'e','お':'o','か':'ka','き':'ki','く':'ku','け':'ke','こ':'ko',
-            'さ':'sa','し':'shi','す':'su','せ':'se','そ':'so','た':'ta','ち':'chi','つ':'tsu','て':'te','と':'to',
-            'な':'na','に':'ni','ぬ':'nu','ね':'ne','の':'no','は':'ha','ひ':'hi','ふ':'fu','へ':'he','ほ':'ho',
-            'ま':'ma','み':'mi','む':'mu','め':'me','も':'mo','や':'ya','ゆ':'yu','よ':'yo',
-            'ら':'ra','り':'ri','る':'ru','れ':'re','ろ':'ro','わ':'wa','を':'wo','ん':'n',
-            'が':'ga','ぎ':'gi','ぐ':'gu','げ':'ge','ご':'go','ざ':'za','じ':'ji','ず':'zu','ぜ':'ze','ぞ':'zo',
-            'だ':'da','ぢ':'ji','づ':'zu','で':'de','ど':'do','ば':'ba','び':'bi','ぶ':'bu','べ':'be','ぼ':'bo',
-            'ぱ':'pa','ぴ':'pi','ぷ':'pu','ぺ':'pe','ぽ':'po',
-            'きゃ':'kya','きゅ':'kyu','きょ':'kyo','しゃ':'sha','しゅ':'shu','しょ':'sho','ちゃ':'cha','ちゅ':'chu','ちょ':'cho',
-            'にゃ':'nya','にゅ':'nyu','にょ':'nyo','ひゃ':'hya','ひゅ':'hyu','ひょ':'hyo','みゃ':'mya','みゅ':'myu','みょ':'myo',
-            'りゃ':'rya','りゅ':'ryu','りょ':'ryo','ぎゃ':'gya','ぎゅ':'gyu','ぎょ':'gyo','じゃ':'ja','じゅ':'ju','じょ':'jo',
-            'びゃ':'bya','びゅ':'byu','びょ':'byo','ぴゃ':'pya','ぴゅ':'pyu','ぴょ':'pyo',
-            'ア':'a','イ':'i','ウ':'u','エ':'e','オ':'o','カ':'ka','キ':'ki','ク':'ku','ケ':'ke','コ':'ko',
-            'サ':'sa','シ':'shi','ス':'su','セ':'se','ソ':'so','タ':'ta','チ':'chi','ツ':'tsu','テ':'te','ト':'to',
-            'ナ':'na','ニ':'ni','ヌ':'nu','ネ':'ne','ノ':'no','ハ':'ha','ヒ':'hi','フ':'fu','ヘ':'he','ホ':'ho',
-            'マ':'ma','ミ':'mi','ム':'mu','メ':'me','モ':'mo','ヤ':'ya','ユ':'yu','ヨ':'yo',
-            'ラ':'ra','リ':'ri','ル':'ru','レ':'re','ロ':'ro','ワ':'wa','ヲ':'wo','ン':'n',
-            'ガ':'ga','ギ':'gi','グ':'gu','ゲ':'ge','ゴ':'go','ザ':'za','ジ':'ji','ズ':'zu','ゼ':'ze','ゾ':'zo',
-            'ダ':'da','ヂ':'ji','ヅ':'zu','デ':'de','ド':'do','バ':'ba','ビ':'bi','ブ':'bu','ベ':'be','ボ':'bo',
-            'パ':'pa','ピ':'pi','プ':'pu','ペ':'pe','ポ':'po',
-            'キャ':'kya','キュ':'kyu','キョ':'kyo','シャ':'sha','シュ':'shu','ショ':'sho','チャ':'cha','チュ':'chu','チョ':'cho',
-            'ニャ':'nya','ニュ':'nyu','ニョ':'nyo','ヒャ':'hya','ヒュ':'hyu','ヒョ':'hyo','ミャ':'mya','ミュ':'myu','ミョ':'myo',
-            'リャ':'rya','リュ':'ryu','リョ':'ryo','ギャ':'gya','ギュ':'gyu','ギョ':'gyo','ジャ':'ja','ジュ':'ju','ジョ':'jo',
-            'ビャ':'bya','ビュ':'byu','ビョ':'byo','ピャ':'pya','ピュ':'pyu','ピョ':'pyo','ー':''
-          };
-          var i = 0;
-          while (i < str.length) {
-            var c1 = str[i];
-            var c2 = i + 1 < str.length ? c1 + str[i + 1] : "";
-            if (c2 && kanaMap[c2]) { res += kanaMap[c2]; i += 2; }
-            else if (kanaMap[c1]) { res += kanaMap[c1]; i++; }
-            else if (c1 === 'っ' || c1 === 'ッ') {
-              var nextC = i + 1 < str.length ? str[i + 1] : "";
-              var nextRom = kanaMap[nextC];
-              if (nextRom) { res += nextRom[0]; }
-              i++;
-            } else { res += c1; i++; }
-          }
-          str = res; res = "";
-        }
-        if (hasHangul) {
-          var initials = ["g", "n", "d", "r", "m", "b", "s", "", "j", "ch", "k", "t", "p", "h", "g", "d", "b", "s", "jj"];
-          var medials = ["a", "ae", "ya", "yae", "eo", "e", "yeo", "ye", "o", "wa", "wae", "oe", "yo", "u", "weo", "we", "wi", "yu", "eu", "ui", "i"];
-          var finals = ["", "g", "gg", "gs", "n", "nj", "nh", "d", "l", "lg", "lm", "lb", "ls", "lt", "lp", "lh", "m", "b", "bs", "s", "ss", "ng", "j", "ch", "k", "t", "p", "h"];
-          for (var k = 0; k < str.length; k++) {
-            var code = str.charCodeAt(k);
-            if (code >= 0xAC00 && code <= 0xD7A3) {
-              var sIndex = code - 0xAC00;
-              res += (initials[Math.floor(sIndex / 588)] || "") + (medials[Math.floor((sIndex % 588) / 28)] || "") + (finals[sIndex % 28] || "");
-            } else { res += str[k]; }
-          }
-          return res;
-        }
+        if (_CYR_TEXT_TEST.test(str)) str = _cyrillicToLatin(str);
+        if (/[\u3040-\u309F\u30A0-\u30FF]/.test(str)) str = _kanaToRomaji(str);
+        if (/[\uAC00-\uD7AF]/.test(str)) str = _hangulToRomajiFallback(str);
         return str;
       }
 
       function _getDisplayText(item, isRomanized) {
         if (!item) return "";
         if (isRomanized) {
-          if (item.TransliteratedText) return item.TransliteratedText;
-          if (item.Text) return _romanizeText(item.Text);
+          if (item.TransliteratedText !== undefined && item.TransliteratedText !== "") return item.TransliteratedText;
+          if (item.Text) {
+            var rom = _romanizeText(item.Text);
+            if (rom && rom !== item.Text) {
+              item.TransliteratedText = rom;
+              return rom;
+            }
+          }
         }
         return item.Text || "";
       }
@@ -2100,17 +2145,32 @@ void main() {
         } return null;
       }
 
+      var _JoinsNextRegex = /[्্੍્୍்్ް്ް္្‍]$/;
+      function _splitLetters(text) {
+        if (!text) return [];
+        text = text.replace(/[\u200B\u200E\u200F\u2060\uFEFF]/g, "");
+        var graphemes = (typeof Intl !== "undefined" && Intl.Segmenter)
+          ? Array.from(new Intl.Segmenter(undefined, { granularity: "grapheme" }).segment(text), function (s) { return s.segment; })
+          : Array.from(text);
+        var letters = [];
+        for (var i = 0; i < graphemes.length; i++) {
+          var g = graphemes[i];
+          var last = letters.length - 1;
+          if (last >= 0 && _JoinsNextRegex.test(letters[last]) && g.trim().length > 0) {
+            letters[last] += g;
+          } else {
+            letters.push(g);
+          }
+        }
+        return letters;
+      }
+
       function _getLineLetters(info, lyType, isRomanized) {
         var chars = [];
         if (!info.syllables) {
           var txt = info.text;
           var duration = info.endTime - info.startTime;
-          var graphemes = [];
-          var regex = /(\p{L}\p{M}*|[\s\d.,\/#!$%\^&\*;:{}=\-_`~()?"'’[\]+<>|\\—♪♫♬]|.)/gu;
-          var match;
-          while ((match = regex.exec(txt)) !== null) {
-            graphemes.push(match[0]);
-          }
+          var graphemes = _splitLetters(txt);
           var nonSpaceCount = 0;
           for (var j = 0; j < graphemes.length; j++) { if (graphemes[j] !== " ") nonSpaceCount++; }
           if (nonSpaceCount === 0) nonSpaceCount = 1;
@@ -2132,12 +2192,7 @@ void main() {
             var sy = syllables[i];
             if (i > 0 && !syllables[i - 1].IsPartOfWord) { chars.push({ char: " ", isSpace: true }); }
             var txt = _getDisplayText(sy, isRomanized);
-            var graphemes = [];
-            var regex = /(\p{L}\p{M}*|[\s\d.,\/#!$%\^&\*;:{}=\-_`~()?"'’[\]+<>|\\—♪♫♬]|.)/gu;
-            var match;
-            while ((match = regex.exec(txt)) !== null) {
-              graphemes.push(match[0]);
-            }
+            var graphemes = _splitLetters(txt);
             var duration = sy.EndTime - sy.StartTime;
             var nonSpaceCount = 0;
             for (var j = 0; j < graphemes.length; j++) { if (graphemes[j] !== " ") nonSpaceCount++; }
@@ -2385,7 +2440,12 @@ void main() {
                     words.push(currentWord);
                     currentWord = null;
                   }
-                  charIdx += segStr.length;
+                  var segSpaceLen = segStr.length;
+                  var matchedSpaceLen = 0;
+                  while (charIdx < charsArr.length && matchedSpaceLen < segSpaceLen) {
+                    var sc = charsArr[charIdx++];
+                    matchedSpaceLen += (sc && sc.char ? sc.char.length : 1);
+                  }
                   continue;
                 }
 
@@ -2403,12 +2463,15 @@ void main() {
                   };
                 }
 
-                for (var c = 0; c < segStr.length; c++) {
+                var segWordLen = segStr.length;
+                var matchedWordLen = 0;
+                while (charIdx < charsArr.length && matchedWordLen < segWordLen) {
                   var charObj = charsArr[charIdx++];
                   if (charObj) {
                     currentWord.text += charObj.char;
                     currentWord.chars.push(charObj);
                     currentWord.endTime = Math.max(currentWord.endTime, charObj.endTime);
+                    matchedWordLen += charObj.char.length;
                   }
                 }
               }

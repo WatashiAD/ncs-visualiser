@@ -1,22 +1,5 @@
 var visualizer = (() => {
-  var e, t, P = Object.create, n = Object.defineProperty, U = Object.getOwnPropertyDescriptor, I = Object.getOwnPropertyNames, N = Object.getPrototypeOf, O = Object.prototype.hasOwnProperty, M = (t, r, i, a) => { if (r && "object" == typeof r || "function" == typeof r) for (let e of I(r)) O.call(t, e) || e === i || n(t, e, { get: () => r[e], enumerable: !(a = U(r, e)) || a.enumerable }); return t }, r = (e, t, r) => (r = null != e ? P(N(e)) : {}, M(!t && e && e.__esModule ? r : n(r, "default", { value: e, enumerable: !0 }), e)), i = (e = { "external-global-plugin:react"(e, t) { t.exports = Spicetify.React } }, function () { return t || (0, e[I(e)[0]])((t = { exports: {} }).exports, t), t.exports }), k = {}, g = (((e, t) => { for (var r in t) n(e, r, { get: t[r], enumerable: !0 }) })(k, { default: () => function () { return _e.default.createElement(we, null) } }), r(i())), y = { main_menu_button: "app-module__main_menu_button___wQmMP_visualizer", error_container: "app-module__error_container___8JcIQ_visualizer", error_message: "app-module__error_message___soZdL_visualizer" }, a = r(i()); function B() { return a.default.createElement("svg", { width: "100px", height: "100px", viewBox: "0 0 100 100", preserveAspectRatio: "xMidYMid" }, a.default.createElement("circle", { cx: "50", cy: "50", r: "0", fill: "none", stroke: "currentColor", "stroke-width": "2" }, a.default.createElement("animate", { attributeName: "r", repeatCount: "indefinite", dur: "1s", values: "0;40", keyTimes: "0;1", keySplines: "0 0.2 0.8 1", calcMode: "spline", begin: "0s" }), a.default.createElement("animate", { attributeName: "opacity", repeatCount: "indefinite", dur: "1s", values: "1;0", keyTimes: "0;1", keySplines: "0.2 0 0.8 1", calcMode: "spline", begin: "0s" })), a.default.createElement("circle", { cx: "50", cy: "50", r: "0", fill: "none", stroke: "currentColor", "stroke-width": "2" }, a.default.createElement("animate", { attributeName: "r", repeatCount: "indefinite", dur: "1s", values: "0;40", keyTimes: "0;1", keySplines: "0 0.2 0.8 1", calcMode: "spline", begin: "-0.5s" }), a.default.createElement("animate", { attributeName: "opacity", repeatCount: "indefinite", dur: "1s", values: "1;0", keyTimes: "0;1", keySplines: "0.2 0 0.8 1", calcMode: "spline", begin: "-0.5s" }))) } var o = r(i()), m = r(i()); function s(a) { let { contextType: n, onInit: o, onResize: s, onRender: u, style: e, data: l, isEnabled: t } = a, c = (0, m.useRef)(null), [f, d] = (0, m.useState)(null), dataRef = (0, m.useRef)(l); dataRef.current = l; let h = (0, m.useCallback)((e, t) => { var r = Math.round(e.clientWidth * window.devicePixelRatio), i = Math.round(e.clientHeight * window.devicePixelRatio), { width: r, height: i } = a.sizeConstraint?.(r, i) ?? { width: r, height: i }; e.width === r && e.height === i || (e.width = r, e.height = i) }, []); return (0, m.useEffect)(() => { if (o) { var e = c.current; if (e) { var t, r, i = e.ownerDocument.defaultView; if (i) return t = e.getContext(n, { powerPreference: "high-performance" }), r = o(t), h(e, i), s(t, r), d(r), () => d(null) } } }, [n, o]), (0, m.useEffect)(() => { if (t && f && u) { var e = c.current; if (e) { let a = e.ownerDocument.defaultView; if (a) { let t = e.getContext(n, { powerPreference: "high-performance" }), r = 0, i = e => { f && (u(t, dataRef.current, f, e), r = a.requestAnimationFrame(i)) }; return r = a.requestAnimationFrame(i), () => { r && a.cancelAnimationFrame(r) } } } } }, [n, u, f, t]), (0, m.useEffect)(() => { if (c.current) { var t = c.current.ownerDocument.defaultView; if (t) { let e = new t.ResizeObserver(() => { var e, t = c.current; t && (e = t.ownerDocument.defaultView) && (h(t, e), e = t.getContext(n, { powerPreference: "high-performance" })) && f && s(e, f) }); return e.observe(c.current), () => e.disconnect() } } }, [n, s, f]), m.default.createElement("canvas", { ref: c, style: { ...e || {}, ...t ? {} : { visibility: "hidden" } } }) } function R(e, t, r) { let i = 0, a = e.length; for (; 1 < a - i;) { var n = Math.floor((a + i) / 2); t(e[n], n) <= r ? i = n : a = n } return i } function S(e) { return Math.min(Math.max(Math.pow(10, e / 20), 0), 1) } function V(e) { return e * e * (3 - 2 * e) } function w(e, t, r, i, a) { return e = (e = (e - t) / (r - t)) * (a - i) + i } function h(e, t) { return -.5 * (e.x - t.x) * (e.y + t.y) } function z(e, t, r, i, a) { var n, o = R(e, t, a), s = e[o]; return e.length - 2 < o ? r(s, o) : (e = e[o + 1], a = a, n = t(s, o), t = t(e, o + 1), i = i, s = r(s, o), r = r(e, o + 1), a = (a = i(a = (a - n) / (t - n))) * (r - s) + s) } var p = (0, r(i()).createContext)(() => { }); function X(e, t) { for (var r = new v(31), i = 0; i < 31; ++i)r[i] = t += 1 << e[i - 1]; for (var a = new G(r[30]), i = 1; i < 30; ++i)for (var n = r[i]; n < r[i + 1]; ++n)a[n] = n - r[i] << 5 | i; return { b: r, r: a } } var u, l = r(i()), q = Uint8Array, v = Uint16Array, G = Int32Array, j = new q([0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 0, 0, 0, 0]), Q = new q([0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13, 0, 0]), $ = new q([16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15]), c = X(j, 2), K = c.b, c = (c.r[K[28] = 258] = 28, X(Q, 0)), J = c.b, Z = new v(32768); for (d = 0; d < 32768; ++d)Z[d] = ((65280 & (u = (61680 & (u = (52428 & (u = (43690 & d) >> 1 | (21845 & d) << 1)) >> 2 | (13107 & u) << 2)) >> 4 | (3855 & u) << 4)) >> 8 | (255 & u) << 8) >> 1; var W = function (e, t, r) { for (var i = e.length, a = 0, n = new v(t); a < i; ++a)e[a] && ++n[e[a] - 1]; var o = new v(t); for (a = 1; a < t; ++a)o[a] = o[a - 1] + n[a - 1] << 1; if (r) { for (var s = new v(1 << t), u = 15 - t, a = 0; a < i; ++a)if (e[a]) for (var l = a << 4 | e[a], c = t - e[a], f = o[e[a] - 1]++ << c, d = f | (1 << c) - 1; f <= d; ++f)s[Z[f] >> u] = l } else for (s = new v(i), a = 0; a < i; ++a)e[a] && (s[a] = Z[o[e[a] - 1]++] >> 15 - e[a]); return s }, f = new q(288); for (d = 0; d < 144; ++d)f[d] = 8; for (d = 144; d < 256; ++d)f[d] = 9; for (d = 256; d < 280; ++d)f[d] = 7; for (d = 280; d < 288; ++d)f[d] = 8; var d, ee = new q(32); for (d = 0; d < 32; ++d)ee[d] = 5; var te = W(f, 9, 1), re = W(ee, 5, 1), ie = function (e) { for (var t = e[0], r = 1; r < e.length; ++r)t < e[r] && (t = e[r]); return t }, Y = function (e, t, r) { var i = t / 8 | 0; return (e[i] | e[1 + i] << 8) >> (7 & t) & r }, ae = function (e, t) { var r = t / 8 | 0; return (e[r] | e[1 + r] << 8 | e[2 + r] << 16) >> (7 & t) }, ne = function (e) { return (e + 7) / 8 | 0 }, oe = function (e, t, r) { return (null == r || r > e.length) && (r = e.length), new q(e.subarray(t = null == t || t < 0 ? 0 : t, r)) }, se = ["unexpected EOF", "invalid block type", "invalid length/literal", "invalid distance", "stream finished", "no stream handler", , "no callback", "invalid UTF-8 data", "extra field too long", "date not in range 1980-2099", "filename too long", "stream finishing", "invalid zip data"], H = function (e, t, r) { t = new Error(t || se[e]); if (t.code = e, Error.captureStackTrace && Error.captureStackTrace(t, H), r) return t; throw t }, ue = function (e, t, r, i) { var a = e.length, O = i ? i.length : 0; if (!a || t.f && !t.l) return r || new q(0); function n(e) { var t = r.length; t < e && ((t = new q(Math.max(2 * t, e))).set(r), r = t) } var o = !r, s = o || 2 != t.i, u = t.i, l = (o && (r = new q(3 * a)), t.f || 0), c = t.p || 0, f = t.b || 0, d = t.l, h = t.d, m = t.m, g = t.n, y = 8 * a; do { if (!d) { var l = Y(e, c, 1), p = Y(e, c + 1, 3); if (c += 3, !p) { var v = e[(w = ne(c) + 4) - 4] | e[w - 3] << 8, E = w + v; if (a < E) { u && H(0); break } s && n(f + v), r.set(e.subarray(w, E), f), t.b = f += v, t.p = c = 8 * E, t.f = l; continue } if (1 == p) d = te, h = re, m = 9, g = 5; else if (2 == p) { for (var v = Y(e, c, 31) + 257, x = Y(e, c + 10, 15) + 4, b = v + Y(e, c + 5, 31) + 1, T = (c += 14, new q(b)), R = new q(19), S = 0; S < x; ++S)R[$[S]] = Y(e, c + 3 * S, 7); c += 3 * x; for (var E = ie(R), M = (1 << E) - 1, k = W(R, E, 1), S = 0; S < b;) { var w, _ = k[Y(e, c, M)]; if (c += 15 & _, (w = _ >> 4) < 16) T[S++] = w; else { var A = 0, C = 0; for (16 == w ? (C = 3 + Y(e, c, 3), c += 2, A = T[S - 1]) : 17 == w ? (C = 3 + Y(e, c, 7), c += 3) : 18 == w && (C = 11 + Y(e, c, 127), c += 7); C--;)T[S++] = A } } var D = T.subarray(0, v), F = T.subarray(v), m = ie(D), g = ie(F), d = W(D, m, 1), h = W(F, g, 1) } else H(1); if (y < c) { u && H(0); break } } s && n(f + 131072); for (var B = (1 << m) - 1, V = (1 << g) - 1, L = c; ; L = c) { var P = (A = d[ae(e, c) & B]) >> 4; if (y < (c += 15 & A)) { u && H(0); break } if (A || H(2), P < 256) r[f++] = P; else { if (256 == P) { L = c, d = null; break } var U, I = P - 254, P = (264 < P && (U = j[S = P - 257], I = Y(e, c, (1 << U) - 1) + K[S], c += U), h[ae(e, c) & V]), N = P >> 4, F = (P || H(3), c += 15 & P, J[N]); if (3 < N && (U = Q[N], F += ae(e, c) & (1 << U) - 1, c += U), y < c) { u && H(0); break } s && n(f + 131072); var z = f + I; if (f < F) { var X = O - F, G = Math.min(F, z); for (X + f < 0 && H(3); f < G; ++f)r[f] = i[X + f] } for (; f < z; ++f)r[f] = r[f - F] } } t.l = d, t.p = L, t.b = f, t.f = l, d && (l = 1, t.m = m, t.d = h, t.n = g) } while (!l); return f != r.length && o ? oe(r, 0, f) : r.subarray(0, f) }, c = new q(0), le = function (e, t) { return (8 != (15 & e[0]) || 7 < e[0] >> 4 || (e[0] << 8 | e[1]) % 31) && H(6, "invalid zlib data"), (e[1] >> 5 & 1) == +!t && H(6, "invalid zlib data: " + (32 & e[1] ? "need" : "unexpected") + " dictionary"), 2 + (e[1] >> 3 & 4) }; var E = "undefined" != typeof TextDecoder && new TextDecoder; try { E.decode(c, { stream: !0 }) } catch (e) { } function ce(e) { e = e.replace(/-/g, "+").replace(/_/g, "/"); var e = new Uint8Array(atob(e).split("").map(e => e.charCodeAt(0))), e = ue(e.subarray(le(e, i && i.dictionary), -4), { i: 2 }, i && i.out, i && i.dictionary), t = (new TextDecoder).decode(e).split(" ").map(e => parseInt(e)), r = []; if (!(t.length < 3)) { var i = t.shift(), a = t.shift() / i, n = t.shift(); if (!(t.length < n)) for (let e = 0; e < n; e++) { var o = [], s = t.shift(); if (t.length < s + (n - e - 1)) return r; for (let e = 0; e < s; e++) { var u = t.shift() * a; o.push(0 == e ? u : o[e - 1] + u) } r.push(o) } } return r } var fe = [1, 2], de = [{ name: "Beats", layer: "background", render: (t, r, i, a) => { var n = R(r.analysis.beats, e => e.start, i.start), o = R(r.analysis.beats, e => e.start, i.end); t.lineWidth = 1, t.strokeStyle = "#FFFFFF33", t.beginPath(); for (let e = n; e <= o; e++) { var s = w(r.analysis.beats[e].start, i.start, i.end, a.x, a.x + a.width); t.moveTo(s, a.y), t.lineTo(s, a.y + a.height) } t.stroke() } }, { name: "Bars", layer: "background", render: (t, r, i, a) => { var n = R(r.analysis.bars, e => e.start, i.start), o = R(r.analysis.bars, e => e.start, i.end); t.lineWidth = 3, t.strokeStyle = "#FFFFFF66", t.beginPath(); for (let e = n; e <= o; e++) { var s = w(r.analysis.bars[e].start, i.start, i.end, a.x, a.x + a.width); t.moveTo(s, a.y), t.lineTo(s, a.y + a.height) } t.stroke() } }, { name: "Position", layer: "overlay", render: (e, t, r, i) => { e.lineWidth = 5, e.strokeStyle = e.fillStyle = "white", e.beginPath(); r = w(r.current, r.start, r.end, i.x, i.x + i.width); e.moveTo(r, i.y), e.lineTo(r, i.y + i.height), e.stroke(); e.beginPath(), e.moveTo(r - 10, i.y), e.lineTo(r + 10, i.y), e.lineTo(r, i.y + 10), e.lineTo(r - 10, i.y), e.moveTo(r - 10, i.y + i.height), e.lineTo(r + 10, i.y + i.height), e.lineTo(r, i.y + i.height - 10), e.lineTo(r - 10, i.y + i.height), e.fill() } }, { name: "Loudness", layer: "content", height: 1, render: (t, r, i, a) => { var n = R(r.analysis.segments, e => e.start, i.start), o = R(r.analysis.segments, e => e.start, i.end), s = e => S(e); t.lineWidth = 2, t.strokeStyle = "white", t.beginPath(); for (let e = n; e <= o + 1 && e < r.analysis.segments.length; e++) { var u = r.analysis.segments[e], l = w(u.start, i.start, i.end, a.x, a.x + a.width), c = w(s(u.loudness_start), 0, 1, a.y + a.height, a.y), f = w(u.start + u.loudness_max_time, i.start, i.end, a.x, a.x + a.width), d = w(s(u.loudness_max), 0, 1, a.y + a.height, a.y); e === n ? t.moveTo(l, c) : t.lineTo(l, c), t.lineTo(f, d), e === r.analysis.segments.length - 1 && (l = w(u.start + u.duration, i.start, i.end, a.x, a.x + a.width), c = w(s(u.loudness_end), 0, 1, a.y + a.height, a.y), t.lineTo(l, c)) } t.stroke() } }, { name: "Confidence", layer: "content", height: .25, render: (t, r, i, a) => { var n = R(r.analysis.segments, e => e.start, i.start), o = R(r.analysis.segments, e => e.start, i.end); t.beginPath(); for (let e = n; e <= o; e++) { var s = r.analysis.segments[e], u = w(s.start, i.start, i.end, a.x, a.x + a.width), l = w(s.start + s.duration, i.start, i.end, a.x, a.x + a.width); t.fillStyle = `rgba(255, 255, 255, ${s.confidence})`, t.fillRect(u, a.y, l - u, a.height) } t.fill() } }, { name: "Timbre", layer: "content", height: 1.5, render: (r, i, a, n) => { var o = n.height / 12, s = R(i.analysis.segments, e => e.start, a.start), u = R(i.analysis.segments, e => e.start, a.end); for (let t = 0; t < 12; t++) { var e = (Math.sqrt(5) - 1) / 2, l = t * e; r.beginPath(); for (let e = s; e <= u; e++) { var c = i.analysis.segments[e], f = w(Math.tanh(.02 * c.timbre[t]), -1, 1, 0, 1), d = w(c.start, a.start, a.end, n.x, n.x + n.width), c = w(c.start + c.duration, a.start, a.end, n.x, n.x + n.width), h = n.y + t / 12 * n.height; r.fillStyle = `hsla(${360 * l}, 100%, 70%, ${f})`, r.fillRect(d, h, c - d, o) } r.fill() } } }, { name: "Pitches", layer: "content", height: 1.5, render: (r, i, a, n) => { var o = n.height / 12, s = R(i.analysis.segments, e => e.start, a.start), u = R(i.analysis.segments, e => e.start, a.end); for (let t = 0; t < 12; t++) { var l = t / 12; r.beginPath(); for (let e = s; e <= u; e++) { var c = i.analysis.segments[e], f = w(c.start, a.start, a.end, n.x, n.x + n.width), d = w(c.start + c.duration, a.start, a.end, n.x, n.x + n.width), h = n.y + t / 12 * n.height; r.fillStyle = `hsla(${360 * l}, 100%, 70%, ${c.pitches[t]})`, r.fillRect(f, h, d - f, o) } r.fill() } } }, { name: "Rhythm", layer: "content", height: .5, render: (r, i, a, n) => { var o = n.height / i.rhythm.length, s = Math.min(o, 20), e = s / 2 / n.width * (a.end - a.start); r.fillStyle = "white", r.beginPath(); for (let t = i.rhythm.length - 1; 0 <= t; t--) { var u = R(i.rhythm[t], e => e, a.start - e), l = R(i.rhythm[t], e => e, a.end + e); for (let e = u; e <= l; e++) { var c = w(i.rhythm[t][e], a.start, a.end, n.x, n.x + n.width), f = n.y + t * o; r.rect(c - s / 2, f, s, o) } } r.fill() } }]; var x = r(i()); var b = r(i()), T = b.default.memo(e => b.default.createElement(Spicetify.ReactComponent.IconComponent, { semanticColor: "textBase", dangerouslySetInnerHTML: { __html: "empty" !== e.name ? Spicetify.SVGIcons[e.name] : void 0 }, iconSize: e.size })), he = b.default.memo(t => b.default.createElement(Spicetify.ReactComponent.Menu, null, b.default.createElement(Spicetify.ReactComponent.MenuSubMenuItem, { displayText: "Renderer" }, t.renderers.map(e => b.default.createElement(Spicetify.ReactComponent.MenuItem, { onClick: () => t.onSelectRenderer(e.id), leadingIcon: b.default.createElement(T, { name: e.id === t.currentRendererId ? "check" : "empty", size: 16 }) }, e.name))), b.default.createElement(Spicetify.ReactComponent.MenuItem, { onClick: () => t.isFullscreen ? t.onExitFullscreen() : t.onEnterFullscreen(), trailingIcon: b.default.createElement(T, { name: t.isFullscreen ? "minimize" : "fullscreen", size: 16 }) }, t.isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"), b.default.createElement(Spicetify.ReactComponent.MenuItem, { onClick: () => t.onOpenWindow(), trailingIcon: b.default.createElement(T, { name: "external-link", size: 16 }) }, "Open Window"))), me = b.default.memo(e => b.default.createElement(Spicetify.ReactComponent.ContextMenu, { trigger: "click", renderInline: e.renderInline, menu: b.default.createElement(he, { ...e }) }, b.default.createElement(Spicetify.ReactComponent.ButtonSecondary, { "aria-label": "menu", className: e.className, iconOnly: () => b.default.createElement(T, { name: "menu", size: 16 }) }))), _ = r(i()); function A(e, t, r = []) { if ("function" != typeof e) return !1; let i = (e => { try { return "function" == typeof e ? Function.prototype.toString.call(e) : String(e) } catch { return "" } })(e); return t.every(e => i.includes(e)) && r.every(e => !i.includes(e)) } function ge(e, t) { return "function" == typeof e && "SERVICE_ID" in e && e.SERVICE_ID === t } function C(e) { return !(!e || "object" != typeof e) && "$$typeof" in e && e.$$typeof === Symbol.for("react.memo") && "type" in e } var D = class { static init() { this.webpack = window.webpackChunkclient_web ?? window.webpackChunkopen, this.require = this.webpack.push([[Symbol()], {}, e => e]), this.refreshModules() } static async loadFiles(e) { this.require || this.init(), await Promise.allSettled(e.map(e => this.require.e(e))), this.refreshModules() } static refreshModules() { this.require || this.init(), this.loadedModules = {}; var e = Object.keys(this.require.m).map(e => { try { return this.require(e) } catch { } }); this.modules = e.filter(e => "object" == typeof e).map(e => { try { return Object.values(e) } catch { } }).flat() } static getValue(e, t) { this.require || this.init(), e in this.loadedModules || (this.loadedModules[e] = t()); t = this.loadedModules[e]; return "failed" === t.state ? null : "succeeded" === t.state ? t.value : void 0 } static getValueFiltered(e, t) { return this.getValue(e, () => { var e = this.modules.filter(t), e = [...new Set(e)]; return 1 === e.length ? { state: "succeeded", value: e[0] } : { state: "failed" } }) } static getMetadataService() { return this.getValueFiltered("metadataService", e => ge(e, "spotify.mdata_esperanto.proto.MetadataService")) } static getOfflinePlayableCache() { return this.getValueFiltered("offlinePlayableCache", e => ge(e, "spotify.offline_playable_cache_esperanto.proto.OfflinePlayableCache")) } static getCreateTransport() { return this.getValueFiltered("createTransport", e => A(e, ["executeEsperantoCall", "cancelEsperantoCall"])) } static getTrackList() { return this.getValueFiltered("trackList", e => C(e) && A(e.type, ["tracks", "nrTracks", "fetchTracks", "itemsCache", "initialItems"])) } static getTrackListItem() { return this.getValueFiltered("trackListItem", e => C(e) && A(e.type, ["displayedColumns", "albumOrShow", "associatedAudioUri"])) } static getCardRenderer() { return this.getValueFiltered("cardRenderer", e => { return !(!(t = e) || "object" != typeof t) && "$$typeof" in t && t.$$typeof === Symbol.for("react.forward_ref") && "render" in t && A(e.render, ["card-title-", "card-subtitle-"]); var t }) } static getStyleSheetManager() { return this.getValueFiltered("styleSheetManager", e => A(e, ["stylisPlugins", "reconstructWithOptions", "disableCSSOMInjection", "disableVendorPrefixes"])) } static getHeartRenderer() { return this.getValueFiltered("heartRenderer", e => C(e) && A(e.type, ["remove-from-library", "add-to-library", "className"], ["isEpisode"])) } static getAlignedCurationRenderer() { return this.getValueFiltered("alignedCurationRenderer", e => C(e) && A(e.type, ["defaultCurationContextUri", "web-player.aligned-curation", "isCurated", "default-curation"])) } }, ye = (D.webpack = null, D.require = null, D.modules = null, D.loadedModules = {}, (e => (e[e.UNKNOWN = 0] = "UNKNOWN", e[e.OK = 1] = "OK", e[e.NOT_RESOLVED = 2] = "NOT_RESOLVED", e[e.NOT_FOUND = 3] = "NOT_FOUND", e[e.UNAVAILABLE_FOR_LEGAL_REASONS = 4] = "UNAVAILABLE_FOR_LEGAL_REASONS", e))(ye || {})), pe = class { constructor() { var e = D.getMetadataService(), t = D.getCreateTransport(); e && t && (this.serviceDescriptor = e, this.service = new this.serviceDescriptor(t())) } fetch(e, t) { return new Promise((i, a) => { if (this.service && this.serviceDescriptor) { let r = this.service.observe(this.serviceDescriptor.METHODS.observe.requestType.fromPartial({ extensionQuery: [{ entityUri: t, extensionKind: e }] }), e => { try { if (e.pendingResponse) return; r.cancel(); var t = e?.extensionResult?.[0]; if (!t) return void a(0); 1 === t.status ? i(t.extensionData) : a(t.details?.cacheStatus ?? 0) } catch (e) { a(0) } }) } else a(0) }) } fetchAll(i) { return new Promise((r, e) => { if (this.service && this.serviceDescriptor) { let t = this.service.observe(this.serviceDescriptor.METHODS.observe.requestType.fromPartial({ extensionQuery: i.map(e => ({ entityUri: e.uri, extensionKind: e.kind })) }), e => { e.pendingResponse || (t.cancel(), r(e.extensionResult.map(e => { var t = 1 === e.status, r = { uri: e.entityUri, kind: e.extensionKind, success: t }; return t ? { ...r, typeUrl: e.extensionData.typeUrl, value: e.extensionData.value } : { ...r, status: e.details.cacheStatus } }))) }) } else e() }) } }, ve = class { constructor(e) { e instanceof DataView && (e = new Uint8Array(e.buffer, e.byteOffset, e.byteLength)), this.buffer = e, this.offset = 0 } getVarIntView() { let e = this.offset; for (; e < this.buffer.length - 1 && 128 & this.buffer[e];)e++; return e++, this.getView(e - this.offset) } getVarInt() { if (this.isExhausted()) return 0n; let e = 0n, t = 0n; for (var r; r = BigInt(this.buffer[this.offset++]), e |= (0x7fn & r) << t, t += 7n, 0x80n & r && !this.isExhausted();); return e } getArray(e) { var e = Math.min(e, this.buffer.length - this.offset), t = this.buffer.slice(this.offset, this.offset + e); return this.offset += e, t } getView(e) { var e = Math.min(e, this.buffer.length - this.offset), t = new DataView(this.buffer.buffer, this.buffer.byteOffset + this.offset, e); return this.offset += e, t } has(e) { return this.buffer.length - this.offset >= e } isExhausted() { return !this.has(1) } }; function Ee(e, t) { return e & 1n << BigInt(8 * t - 1) ? e - (1n << BigInt(8 * t)) : e } function F(t, r) { return [t[0], e => r(t[1](e))] } var E = [0, e => new ve(e).getVarInt()], c = F(E, e => !!e), xe = F(E, Number); F(E, e => Number(Ee(e, 4))), F(E, e => Ee(e, 8)); function L(e, t) { return { id: e, value: t } } function be(t) { return [3, e => { for (var r = new ve(e), i = {}, a = Object.entries(t).map(([e, t]) => ({ name: e, ...t })); !r.isExhausted();) { let t = Number(r.getVarInt()); var n = a.find(e => e.id == t >> 3); if (n && ((e, t) => { switch (t) { case 0: return 0 == (7 & e); case 1: return 5 == (7 & e); case 2: return 1 == (7 & e); case 3: return 2 == (7 & e) } })(t, n.value[0])) { var o = n.value, [s, u] = ((e, t) => { switch (t[0]) { case 1: return e.has(4) ? [!0, t[1](e.getView(4))] : [!1, void 0]; case 2: return e.has(8) ? [!0, t[1](e.getView(8))] : [!1, void 0]; case 0: return [!0, t[1](e.getVarIntView())]; case 3: var r = Number(e.getVarInt()); return [!0, t[1](e.getView(r))] } })(r, o); if (!s) break; o[2] ? (s = i[n.name] ?? [], i[n.name] = s.concat(u)) : i[n.name] = u } else { c = o = l = void 0; var l = r, o = t; switch (7 & o) { case 5: l.getView(4); break; case 1: l.getView(8); break; case 0: l.getVarIntView(); break; case 2: var c = Number(l.getVarInt()); l.getView(c) } } } return i }] } var E = be({ rgb: L(1, xe), isFallback: L(2, c) }), Te = be({ colorRaw: L(1, E), colorLight: L(2, E), colorDark: L(3, E) }); var Re = r(i());
-var _currentVisualizerTime = 0;
-function _getPreciseVisualizerTime() {
-  try {
-    var state = Spicetify.Player?.origin?._state || Spicetify.Platform?.PlayerAPI?._state;
-    if (state && state.timestamp && typeof state.positionAsOfTimestamp === "number") {
-      var isPaused = state.isPaused || !Spicetify.Player.isPlaying();
-      var now = Date.now();
-      var ms = isPaused ? state.positionAsOfTimestamp : state.positionAsOfTimestamp + (now - state.timestamp);
-      return Math.max(0, ms) / 1000;
-    }
-  } catch (_) { }
-  if (typeof _currentVisualizerTime === "number" && _currentVisualizerTime > 0 && Spicetify.Player.isPlaying()) {
-    return _currentVisualizerTime;
-  }
-  return (Spicetify.Player.getProgress() || 0) / 1000;
-}
-var Se = [{
+  var e, t, P = Object.create, n = Object.defineProperty, U = Object.getOwnPropertyDescriptor, I = Object.getOwnPropertyNames, N = Object.getPrototypeOf, O = Object.prototype.hasOwnProperty, M = (t, r, i, a) => { if (r && "object" == typeof r || "function" == typeof r) for (let e of I(r)) O.call(t, e) || e === i || n(t, e, { get: () => r[e], enumerable: !(a = U(r, e)) || a.enumerable }); return t }, r = (e, t, r) => (r = null != e ? P(N(e)) : {}, M(!t && e && e.__esModule ? r : n(r, "default", { value: e, enumerable: !0 }), e)), i = (e = { "external-global-plugin:react"(e, t) { t.exports = Spicetify.React } }, function () { return t || (0, e[I(e)[0]])((t = { exports: {} }).exports, t), t.exports }), k = {}, g = (((e, t) => { for (var r in t) n(e, r, { get: t[r], enumerable: !0 }) })(k, { default: () => function () { return _e.default.createElement(we, null) } }), r(i())), y = { main_menu_button: "app-module__main_menu_button___wQmMP_visualizer", error_container: "app-module__error_container___8JcIQ_visualizer", error_message: "app-module__error_message___soZdL_visualizer" }, a = r(i()); function B() { return a.default.createElement("svg", { width: "100px", height: "100px", viewBox: "0 0 100 100", preserveAspectRatio: "xMidYMid" }, a.default.createElement("circle", { cx: "50", cy: "50", r: "0", fill: "none", stroke: "currentColor", "stroke-width": "2" }, a.default.createElement("animate", { attributeName: "r", repeatCount: "indefinite", dur: "1s", values: "0;40", keyTimes: "0;1", keySplines: "0 0.2 0.8 1", calcMode: "spline", begin: "0s" }), a.default.createElement("animate", { attributeName: "opacity", repeatCount: "indefinite", dur: "1s", values: "1;0", keyTimes: "0;1", keySplines: "0.2 0 0.8 1", calcMode: "spline", begin: "0s" })), a.default.createElement("circle", { cx: "50", cy: "50", r: "0", fill: "none", stroke: "currentColor", "stroke-width": "2" }, a.default.createElement("animate", { attributeName: "r", repeatCount: "indefinite", dur: "1s", values: "0;40", keyTimes: "0;1", keySplines: "0 0.2 0.8 1", calcMode: "spline", begin: "-0.5s" }), a.default.createElement("animate", { attributeName: "opacity", repeatCount: "indefinite", dur: "1s", values: "1;0", keyTimes: "0;1", keySplines: "0.2 0 0.8 1", calcMode: "spline", begin: "-0.5s" }))) } var o = r(i()), m = r(i()); function s(a) { let { contextType: n, onInit: o, onResize: s, onRender: u, style: e, data: l, isEnabled: t } = a, c = (0, m.useRef)(null), [f, d] = (0, m.useState)(null), dataRef = (0, m.useRef)(l); dataRef.current = l; let h = (0, m.useCallback)((e, t) => { var r = Math.round(e.clientWidth * window.devicePixelRatio), i = Math.round(e.clientHeight * window.devicePixelRatio), { width: r, height: i } = a.sizeConstraint?.(r, i) ?? { width: r, height: i }; e.width === r && e.height === i || (e.width = r, e.height = i) }, []); return (0, m.useEffect)(() => { if (o) { var e = c.current; if (e) { var t, r, i = e.ownerDocument.defaultView; if (i) return t = e.getContext(n, { powerPreference: "high-performance" }), r = o(t), h(e, i), s(t, r), d(r), () => d(null) } } }, [n, o]), (0, m.useEffect)(() => { if (t && f && u) { var e = c.current; if (e) { let a = e.ownerDocument.defaultView; if (a) { let t = e.getContext(n, { powerPreference: "high-performance" }), r = 0, i = e => { f && (u(t, dataRef.current, f, e), r = a.requestAnimationFrame(i)) }; return r = a.requestAnimationFrame(i), () => { r && a.cancelAnimationFrame(r) } } } } }, [n, u, f, t]), (0, m.useEffect)(() => { if (c.current) { var t = c.current.ownerDocument.defaultView; if (t) { let e = new t.ResizeObserver(() => { var e, t = c.current; t && (e = t.ownerDocument.defaultView) && (h(t, e), e = t.getContext(n, { powerPreference: "high-performance" })) && f && s(e, f) }); return e.observe(c.current), () => e.disconnect() } } }, [n, s, f]), m.default.createElement("canvas", { ref: c, style: { ...e || {}, ...t ? {} : { visibility: "hidden" } } }) } function R(e, t, r) { let i = 0, a = e.length; for (; 1 < a - i;) { var n = Math.floor((a + i) / 2); t(e[n], n) <= r ? i = n : a = n } return i } function S(e) { return Math.min(Math.max(Math.pow(10, e / 20), 0), 1) } function V(e) { return e * e * (3 - 2 * e) } function w(e, t, r, i, a) { return e = (e = (e - t) / (r - t)) * (a - i) + i } function h(e, t) { return -.5 * (e.x - t.x) * (e.y + t.y) } function z(e, t, r, i, a) { var n, o = R(e, t, a), s = e[o]; return e.length - 2 < o ? r(s, o) : (e = e[o + 1], a = a, n = t(s, o), t = t(e, o + 1), i = i, s = r(s, o), r = r(e, o + 1), a = (a = i(a = (a - n) / (t - n))) * (r - s) + s) } var p = (0, r(i()).createContext)(() => { }); function X(e, t) { for (var r = new v(31), i = 0; i < 31; ++i)r[i] = t += 1 << e[i - 1]; for (var a = new G(r[30]), i = 1; i < 30; ++i)for (var n = r[i]; n < r[i + 1]; ++n)a[n] = n - r[i] << 5 | i; return { b: r, r: a } } var u, l = r(i()), q = Uint8Array, v = Uint16Array, G = Int32Array, j = new q([0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 0, 0, 0, 0]), Q = new q([0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13, 0, 0]), $ = new q([16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15]), c = X(j, 2), K = c.b, c = (c.r[K[28] = 258] = 28, X(Q, 0)), J = c.b, Z = new v(32768); for (d = 0; d < 32768; ++d)Z[d] = ((65280 & (u = (61680 & (u = (52428 & (u = (43690 & d) >> 1 | (21845 & d) << 1)) >> 2 | (13107 & u) << 2)) >> 4 | (3855 & u) << 4)) >> 8 | (255 & u) << 8) >> 1; var W = function (e, t, r) { for (var i = e.length, a = 0, n = new v(t); a < i; ++a)e[a] && ++n[e[a] - 1]; var o = new v(t); for (a = 1; a < t; ++a)o[a] = o[a - 1] + n[a - 1] << 1; if (r) { for (var s = new v(1 << t), u = 15 - t, a = 0; a < i; ++a)if (e[a]) for (var l = a << 4 | e[a], c = t - e[a], f = o[e[a] - 1]++ << c, d = f | (1 << c) - 1; f <= d; ++f)s[Z[f] >> u] = l } else for (s = new v(i), a = 0; a < i; ++a)e[a] && (s[a] = Z[o[e[a] - 1]++] >> 15 - e[a]); return s }, f = new q(288); for (d = 0; d < 144; ++d)f[d] = 8; for (d = 144; d < 256; ++d)f[d] = 9; for (d = 256; d < 280; ++d)f[d] = 7; for (d = 280; d < 288; ++d)f[d] = 8; var d, ee = new q(32); for (d = 0; d < 32; ++d)ee[d] = 5; var te = W(f, 9, 1), re = W(ee, 5, 1), ie = function (e) { for (var t = e[0], r = 1; r < e.length; ++r)t < e[r] && (t = e[r]); return t }, Y = function (e, t, r) { var i = t / 8 | 0; return (e[i] | e[1 + i] << 8) >> (7 & t) & r }, ae = function (e, t) { var r = t / 8 | 0; return (e[r] | e[1 + r] << 8 | e[2 + r] << 16) >> (7 & t) }, ne = function (e) { return (e + 7) / 8 | 0 }, oe = function (e, t, r) { return (null == r || r > e.length) && (r = e.length), new q(e.subarray(t = null == t || t < 0 ? 0 : t, r)) }, se = ["unexpected EOF", "invalid block type", "invalid length/literal", "invalid distance", "stream finished", "no stream handler", , "no callback", "invalid UTF-8 data", "extra field too long", "date not in range 1980-2099", "filename too long", "stream finishing", "invalid zip data"], H = function (e, t, r) { t = new Error(t || se[e]); if (t.code = e, Error.captureStackTrace && Error.captureStackTrace(t, H), r) return t; throw t }, ue = function (e, t, r, i) { var a = e.length, O = i ? i.length : 0; if (!a || t.f && !t.l) return r || new q(0); function n(e) { var t = r.length; t < e && ((t = new q(Math.max(2 * t, e))).set(r), r = t) } var o = !r, s = o || 2 != t.i, u = t.i, l = (o && (r = new q(3 * a)), t.f || 0), c = t.p || 0, f = t.b || 0, d = t.l, h = t.d, m = t.m, g = t.n, y = 8 * a; do { if (!d) { var l = Y(e, c, 1), p = Y(e, c + 1, 3); if (c += 3, !p) { var v = e[(w = ne(c) + 4) - 4] | e[w - 3] << 8, E = w + v; if (a < E) { u && H(0); break } s && n(f + v), r.set(e.subarray(w, E), f), t.b = f += v, t.p = c = 8 * E, t.f = l; continue } if (1 == p) d = te, h = re, m = 9, g = 5; else if (2 == p) { for (var v = Y(e, c, 31) + 257, x = Y(e, c + 10, 15) + 4, b = v + Y(e, c + 5, 31) + 1, T = (c += 14, new q(b)), R = new q(19), S = 0; S < x; ++S)R[$[S]] = Y(e, c + 3 * S, 7); c += 3 * x; for (var E = ie(R), M = (1 << E) - 1, k = W(R, E, 1), S = 0; S < b;) { var w, _ = k[Y(e, c, M)]; if (c += 15 & _, (w = _ >> 4) < 16) T[S++] = w; else { var A = 0, C = 0; for (16 == w ? (C = 3 + Y(e, c, 3), c += 2, A = T[S - 1]) : 17 == w ? (C = 3 + Y(e, c, 7), c += 3) : 18 == w && (C = 11 + Y(e, c, 127), c += 7); C--;)T[S++] = A } } var D = T.subarray(0, v), F = T.subarray(v), m = ie(D), g = ie(F), d = W(D, m, 1), h = W(F, g, 1) } else H(1); if (y < c) { u && H(0); break } } s && n(f + 131072); for (var B = (1 << m) - 1, V = (1 << g) - 1, L = c; ; L = c) { var P = (A = d[ae(e, c) & B]) >> 4; if (y < (c += 15 & A)) { u && H(0); break } if (A || H(2), P < 256) r[f++] = P; else { if (256 == P) { L = c, d = null; break } var U, I = P - 254, P = (264 < P && (U = j[S = P - 257], I = Y(e, c, (1 << U) - 1) + K[S], c += U), h[ae(e, c) & V]), N = P >> 4, F = (P || H(3), c += 15 & P, J[N]); if (3 < N && (U = Q[N], F += ae(e, c) & (1 << U) - 1, c += U), y < c) { u && H(0); break } s && n(f + 131072); var z = f + I; if (f < F) { var X = O - F, G = Math.min(F, z); for (X + f < 0 && H(3); f < G; ++f)r[f] = i[X + f] } for (; f < z; ++f)r[f] = r[f - F] } } t.l = d, t.p = L, t.b = f, t.f = l, d && (l = 1, t.m = m, t.d = h, t.n = g) } while (!l); return f != r.length && o ? oe(r, 0, f) : r.subarray(0, f) }, c = new q(0), le = function (e, t) { return (8 != (15 & e[0]) || 7 < e[0] >> 4 || (e[0] << 8 | e[1]) % 31) && H(6, "invalid zlib data"), (e[1] >> 5 & 1) == +!t && H(6, "invalid zlib data: " + (32 & e[1] ? "need" : "unexpected") + " dictionary"), 2 + (e[1] >> 3 & 4) }; var E = "undefined" != typeof TextDecoder && new TextDecoder; try { E.decode(c, { stream: !0 }) } catch (e) { } function ce(e) { e = e.replace(/-/g, "+").replace(/_/g, "/"); var e = new Uint8Array(atob(e).split("").map(e => e.charCodeAt(0))), e = ue(e.subarray(le(e, i && i.dictionary), -4), { i: 2 }, i && i.out, i && i.dictionary), t = (new TextDecoder).decode(e).split(" ").map(e => parseInt(e)), r = []; if (!(t.length < 3)) { var i = t.shift(), a = t.shift() / i, n = t.shift(); if (!(t.length < n)) for (let e = 0; e < n; e++) { var o = [], s = t.shift(); if (t.length < s + (n - e - 1)) return r; for (let e = 0; e < s; e++) { var u = t.shift() * a; o.push(0 == e ? u : o[e - 1] + u) } r.push(o) } } return r } var fe = [1, 2], de = [{ name: "Beats", layer: "background", render: (t, r, i, a) => { var n = R(r.analysis.beats, e => e.start, i.start), o = R(r.analysis.beats, e => e.start, i.end); t.lineWidth = 1, t.strokeStyle = "#FFFFFF33", t.beginPath(); for (let e = n; e <= o; e++) { var s = w(r.analysis.beats[e].start, i.start, i.end, a.x, a.x + a.width); t.moveTo(s, a.y), t.lineTo(s, a.y + a.height) } t.stroke() } }, { name: "Bars", layer: "background", render: (t, r, i, a) => { var n = R(r.analysis.bars, e => e.start, i.start), o = R(r.analysis.bars, e => e.start, i.end); t.lineWidth = 3, t.strokeStyle = "#FFFFFF66", t.beginPath(); for (let e = n; e <= o; e++) { var s = w(r.analysis.bars[e].start, i.start, i.end, a.x, a.x + a.width); t.moveTo(s, a.y), t.lineTo(s, a.y + a.height) } t.stroke() } }, { name: "Position", layer: "overlay", render: (e, t, r, i) => { e.lineWidth = 5, e.strokeStyle = e.fillStyle = "white", e.beginPath(); r = w(r.current, r.start, r.end, i.x, i.x + i.width); e.moveTo(r, i.y), e.lineTo(r, i.y + i.height), e.stroke(); e.beginPath(), e.moveTo(r - 10, i.y), e.lineTo(r + 10, i.y), e.lineTo(r, i.y + 10), e.lineTo(r - 10, i.y), e.moveTo(r - 10, i.y + i.height), e.lineTo(r + 10, i.y + i.height), e.lineTo(r, i.y + i.height - 10), e.lineTo(r - 10, i.y + i.height), e.fill() } }, { name: "Loudness", layer: "content", height: 1, render: (t, r, i, a) => { var n = R(r.analysis.segments, e => e.start, i.start), o = R(r.analysis.segments, e => e.start, i.end), s = e => S(e); t.lineWidth = 2, t.strokeStyle = "white", t.beginPath(); for (let e = n; e <= o + 1 && e < r.analysis.segments.length; e++) { var u = r.analysis.segments[e], l = w(u.start, i.start, i.end, a.x, a.x + a.width), c = w(s(u.loudness_start), 0, 1, a.y + a.height, a.y), f = w(u.start + u.loudness_max_time, i.start, i.end, a.x, a.x + a.width), d = w(s(u.loudness_max), 0, 1, a.y + a.height, a.y); e === n ? t.moveTo(l, c) : t.lineTo(l, c), t.lineTo(f, d), e === r.analysis.segments.length - 1 && (l = w(u.start + u.duration, i.start, i.end, a.x, a.x + a.width), c = w(s(u.loudness_end), 0, 1, a.y + a.height, a.y), t.lineTo(l, c)) } t.stroke() } }, { name: "Confidence", layer: "content", height: .25, render: (t, r, i, a) => { var n = R(r.analysis.segments, e => e.start, i.start), o = R(r.analysis.segments, e => e.start, i.end); t.beginPath(); for (let e = n; e <= o; e++) { var s = r.analysis.segments[e], u = w(s.start, i.start, i.end, a.x, a.x + a.width), l = w(s.start + s.duration, i.start, i.end, a.x, a.x + a.width); t.fillStyle = `rgba(255, 255, 255, ${s.confidence})`, t.fillRect(u, a.y, l - u, a.height) } t.fill() } }, { name: "Timbre", layer: "content", height: 1.5, render: (r, i, a, n) => { var o = n.height / 12, s = R(i.analysis.segments, e => e.start, a.start), u = R(i.analysis.segments, e => e.start, a.end); for (let t = 0; t < 12; t++) { var e = (Math.sqrt(5) - 1) / 2, l = t * e; r.beginPath(); for (let e = s; e <= u; e++) { var c = i.analysis.segments[e], f = w(Math.tanh(.02 * c.timbre[t]), -1, 1, 0, 1), d = w(c.start, a.start, a.end, n.x, n.x + n.width), c = w(c.start + c.duration, a.start, a.end, n.x, n.x + n.width), h = n.y + t / 12 * n.height; r.fillStyle = `hsla(${360 * l}, 100%, 70%, ${f})`, r.fillRect(d, h, c - d, o) } r.fill() } } }, { name: "Pitches", layer: "content", height: 1.5, render: (r, i, a, n) => { var o = n.height / 12, s = R(i.analysis.segments, e => e.start, a.start), u = R(i.analysis.segments, e => e.start, a.end); for (let t = 0; t < 12; t++) { var l = t / 12; r.beginPath(); for (let e = s; e <= u; e++) { var c = i.analysis.segments[e], f = w(c.start, a.start, a.end, n.x, n.x + n.width), d = w(c.start + c.duration, a.start, a.end, n.x, n.x + n.width), h = n.y + t / 12 * n.height; r.fillStyle = `hsla(${360 * l}, 100%, 70%, ${c.pitches[t]})`, r.fillRect(f, h, d - f, o) } r.fill() } } }, { name: "Rhythm", layer: "content", height: .5, render: (r, i, a, n) => { var o = n.height / i.rhythm.length, s = Math.min(o, 20), e = s / 2 / n.width * (a.end - a.start); r.fillStyle = "white", r.beginPath(); for (let t = i.rhythm.length - 1; 0 <= t; t--) { var u = R(i.rhythm[t], e => e, a.start - e), l = R(i.rhythm[t], e => e, a.end + e); for (let e = u; e <= l; e++) { var c = w(i.rhythm[t][e], a.start, a.end, n.x, n.x + n.width), f = n.y + t * o; r.rect(c - s / 2, f, s, o) } } r.fill() } }]; var x = r(i()); var b = r(i()), T = b.default.memo(e => b.default.createElement(Spicetify.ReactComponent.IconComponent, { semanticColor: "textBase", dangerouslySetInnerHTML: { __html: "empty" !== e.name ? Spicetify.SVGIcons[e.name] : void 0 }, iconSize: e.size })), he = b.default.memo(t => b.default.createElement(Spicetify.ReactComponent.Menu, null, b.default.createElement(Spicetify.ReactComponent.MenuSubMenuItem, { displayText: "Renderer" }, t.renderers.map(e => b.default.createElement(Spicetify.ReactComponent.MenuItem, { onClick: () => t.onSelectRenderer(e.id), leadingIcon: b.default.createElement(T, { name: e.id === t.currentRendererId ? "check" : "empty", size: 16 }) }, e.name))), b.default.createElement(Spicetify.ReactComponent.MenuItem, { onClick: () => t.isFullscreen ? t.onExitFullscreen() : t.onEnterFullscreen(), trailingIcon: b.default.createElement(T, { name: t.isFullscreen ? "minimize" : "fullscreen", size: 16 }) }, t.isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"), b.default.createElement(Spicetify.ReactComponent.MenuItem, { onClick: () => t.onOpenWindow(), trailingIcon: b.default.createElement(T, { name: "external-link", size: 16 }) }, "Open Window"))), me = b.default.memo(e => b.default.createElement(Spicetify.ReactComponent.ContextMenu, { trigger: "click", renderInline: e.renderInline, menu: b.default.createElement(he, { ...e }) }, b.default.createElement(Spicetify.ReactComponent.ButtonSecondary, { "aria-label": "menu", className: e.className, iconOnly: () => b.default.createElement(T, { name: "menu", size: 16 }) }))), _ = r(i()); function A(e, t, r = []) { if ("function" != typeof e) return !1; let i = (e => { try { return "function" == typeof e ? Function.prototype.toString.call(e) : String(e) } catch { return "" } })(e); return t.every(e => i.includes(e)) && r.every(e => !i.includes(e)) } function ge(e, t) { return "function" == typeof e && "SERVICE_ID" in e && e.SERVICE_ID === t } function C(e) { return !(!e || "object" != typeof e) && "$$typeof" in e && e.$$typeof === Symbol.for("react.memo") && "type" in e } var D = class { static init() { this.webpack = window.webpackChunkclient_web ?? window.webpackChunkopen, this.require = this.webpack.push([[Symbol()], {}, e => e]), this.refreshModules() } static async loadFiles(e) { this.require || this.init(), await Promise.allSettled(e.map(e => this.require.e(e))), this.refreshModules() } static refreshModules() { this.require || this.init(), this.loadedModules = {}; var e = Object.keys(this.require.m).map(e => { try { return this.require(e) } catch { } }); this.modules = e.filter(e => "object" == typeof e).map(e => { try { return Object.values(e) } catch { } }).flat() } static getValue(e, t) { this.require || this.init(), e in this.loadedModules || (this.loadedModules[e] = t()); t = this.loadedModules[e]; return "failed" === t.state ? null : "succeeded" === t.state ? t.value : void 0 } static getValueFiltered(e, t) { return this.getValue(e, () => { var e = this.modules.filter(t), e = [...new Set(e)]; return 1 === e.length ? { state: "succeeded", value: e[0] } : { state: "failed" } }) } static getMetadataService() { return this.getValueFiltered("metadataService", e => ge(e, "spotify.mdata_esperanto.proto.MetadataService")) } static getOfflinePlayableCache() { return this.getValueFiltered("offlinePlayableCache", e => ge(e, "spotify.offline_playable_cache_esperanto.proto.OfflinePlayableCache")) } static getCreateTransport() { return this.getValueFiltered("createTransport", e => A(e, ["executeEsperantoCall", "cancelEsperantoCall"])) } static getTrackList() { return this.getValueFiltered("trackList", e => C(e) && A(e.type, ["tracks", "nrTracks", "fetchTracks", "itemsCache", "initialItems"])) } static getTrackListItem() { return this.getValueFiltered("trackListItem", e => C(e) && A(e.type, ["displayedColumns", "albumOrShow", "associatedAudioUri"])) } static getCardRenderer() { return this.getValueFiltered("cardRenderer", e => { return !(!(t = e) || "object" != typeof t) && "$$typeof" in t && t.$$typeof === Symbol.for("react.forward_ref") && "render" in t && A(e.render, ["card-title-", "card-subtitle-"]); var t }) } static getStyleSheetManager() { return this.getValueFiltered("styleSheetManager", e => A(e, ["stylisPlugins", "reconstructWithOptions", "disableCSSOMInjection", "disableVendorPrefixes"])) } static getHeartRenderer() { return this.getValueFiltered("heartRenderer", e => C(e) && A(e.type, ["remove-from-library", "add-to-library", "className"], ["isEpisode"])) } static getAlignedCurationRenderer() { return this.getValueFiltered("alignedCurationRenderer", e => C(e) && A(e.type, ["defaultCurationContextUri", "web-player.aligned-curation", "isCurated", "default-curation"])) } }, ye = (D.webpack = null, D.require = null, D.modules = null, D.loadedModules = {}, (e => (e[e.UNKNOWN = 0] = "UNKNOWN", e[e.OK = 1] = "OK", e[e.NOT_RESOLVED = 2] = "NOT_RESOLVED", e[e.NOT_FOUND = 3] = "NOT_FOUND", e[e.UNAVAILABLE_FOR_LEGAL_REASONS = 4] = "UNAVAILABLE_FOR_LEGAL_REASONS", e))(ye || {})), pe = class { constructor() { var e = D.getMetadataService(), t = D.getCreateTransport(); e && t && (this.serviceDescriptor = e, this.service = new this.serviceDescriptor(t())) } fetch(e, t) { return new Promise((i, a) => { if (this.service && this.serviceDescriptor) { let r = this.service.observe(this.serviceDescriptor.METHODS.observe.requestType.fromPartial({ extensionQuery: [{ entityUri: t, extensionKind: e }] }), e => { try { if (e.pendingResponse) return; r.cancel(); var t = e?.extensionResult?.[0]; if (!t) return void a(0); 1 === t.status ? i(t.extensionData) : a(t.details?.cacheStatus ?? 0) } catch (e) { a(0) } }) } else a(0) }) } fetchAll(i) { return new Promise((r, e) => { if (this.service && this.serviceDescriptor) { let t = this.service.observe(this.serviceDescriptor.METHODS.observe.requestType.fromPartial({ extensionQuery: i.map(e => ({ entityUri: e.uri, extensionKind: e.kind })) }), e => { e.pendingResponse || (t.cancel(), r(e.extensionResult.map(e => { var t = 1 === e.status, r = { uri: e.entityUri, kind: e.extensionKind, success: t }; return t ? { ...r, typeUrl: e.extensionData.typeUrl, value: e.extensionData.value } : { ...r, status: e.details.cacheStatus } }))) }) } else e() }) } }, ve = class { constructor(e) { e instanceof DataView && (e = new Uint8Array(e.buffer, e.byteOffset, e.byteLength)), this.buffer = e, this.offset = 0 } getVarIntView() { let e = this.offset; for (; e < this.buffer.length - 1 && 128 & this.buffer[e];)e++; return e++, this.getView(e - this.offset) } getVarInt() { if (this.isExhausted()) return 0n; let e = 0n, t = 0n; for (var r; r = BigInt(this.buffer[this.offset++]), e |= (0x7fn & r) << t, t += 7n, 0x80n & r && !this.isExhausted();); return e } getArray(e) { var e = Math.min(e, this.buffer.length - this.offset), t = this.buffer.slice(this.offset, this.offset + e); return this.offset += e, t } getView(e) { var e = Math.min(e, this.buffer.length - this.offset), t = new DataView(this.buffer.buffer, this.buffer.byteOffset + this.offset, e); return this.offset += e, t } has(e) { return this.buffer.length - this.offset >= e } isExhausted() { return !this.has(1) } }; function Ee(e, t) { return e & 1n << BigInt(8 * t - 1) ? e - (1n << BigInt(8 * t)) : e } function F(t, r) { return [t[0], e => r(t[1](e))] } var E = [0, e => new ve(e).getVarInt()], c = F(E, e => !!e), xe = F(E, Number); F(E, e => Number(Ee(e, 4))), F(E, e => Ee(e, 8)); function L(e, t) { return { id: e, value: t } } function be(t) { return [3, e => { for (var r = new ve(e), i = {}, a = Object.entries(t).map(([e, t]) => ({ name: e, ...t })); !r.isExhausted();) { let t = Number(r.getVarInt()); var n = a.find(e => e.id == t >> 3); if (n && ((e, t) => { switch (t) { case 0: return 0 == (7 & e); case 1: return 5 == (7 & e); case 2: return 1 == (7 & e); case 3: return 2 == (7 & e) } })(t, n.value[0])) { var o = n.value, [s, u] = ((e, t) => { switch (t[0]) { case 1: return e.has(4) ? [!0, t[1](e.getView(4))] : [!1, void 0]; case 2: return e.has(8) ? [!0, t[1](e.getView(8))] : [!1, void 0]; case 0: return [!0, t[1](e.getVarIntView())]; case 3: var r = Number(e.getVarInt()); return [!0, t[1](e.getView(r))] } })(r, o); if (!s) break; o[2] ? (s = i[n.name] ?? [], i[n.name] = s.concat(u)) : i[n.name] = u } else { c = o = l = void 0; var l = r, o = t; switch (7 & o) { case 5: l.getView(4); break; case 1: l.getView(8); break; case 0: l.getVarIntView(); break; case 2: var c = Number(l.getVarInt()); l.getView(c) } } } return i }] } var E = be({ rgb: L(1, xe), isFallback: L(2, c) }), Te = be({ colorRaw: L(1, E), colorLight: L(2, E), colorDark: L(3, E) }); var Re = r(i()); var Se = [{
     id: "ncs", name: "NCS", renderer: function (a) {
       let M = (0, o.useContext)(p); var e = (0, o.useMemo)(() => { if (!a.audioAnalysis) return [{ x: 0, y: 0 }]; var e = a.audioAnalysis.segments; if (!e.length) { let r = a.audioAnalysis.track?.duration || 180, i = [], n = Math.max(8, Math.ceil(2 * r)); for (let e = 0; e <= n; e++) { var o = e / n * r, s = .45 + .18 * Math.sin(2 * Math.PI * o / 2.3) + .1 * Math.sin(2 * Math.PI * o / 0.9 + 1.4); i.push({ x: o, y: Math.min(Math.max(s, 0), 1) }) } return i[0].accumulatedIntegral = 0, i.forEach((e, t) => { 0 < t && (e.accumulatedIntegral = (i[t - 1].accumulatedIntegral ?? 0) + h(i[t - 1], e)) }), i } var t = e.flatMap(e => e.loudness_max_time ? [{ x: e.start, y: S(e.loudness_start) }, { x: e.start + e.loudness_max_time, y: S(e.loudness_max) }] : [{ x: e.start, y: S(e.loudness_start) }]); if (e.length) { t[0].accumulatedIntegral = 0; for (let e = 1; e < t.length; e++) { var r = t[e - 1], i = t[e]; i.accumulatedIntegral = (r.accumulatedIntegral ?? 0) + h(r, i) } e = e[e.length - 1]; t.push({ x: e.start + e.duration, y: S(e.loudness_end) }) } return t }, [a.audioAnalysis]), t = a.audioAnalysis?.meta?.timestamp ?? 0, r = (0, o.useCallback)(a => { if (!a) return M("Error: WebGL2 is not supported", 2), { isError: !0 }; let dbg = a.getExtension("WEBGL_debug_renderer_info"); if (dbg) console.log("[Visualizer WebGL Renderer]:", a.getParameter(dbg.UNMASKED_RENDERER_WEBGL)); if (!a.getExtension("EXT_color_buffer_float")) return M("Error: Rendering to floating-point textures is not supported", 2), { isError: !0 }; var e = (e, t, r) => { e = a.createShader(e); return a.shaderSource(e, t), a.compileShader(e), a.getShaderParameter(e, a.COMPILE_STATUS) || a.isContextLost() ? e : (t = `Error: Failed to compile '${r}' shader`, r = a.getShaderInfoLog(e), console.error("[Visualizer] " + t, r), M(t, 2), null) }, t = (e, t, r) => { var i = a.createProgram(); return a.attachShader(i, e), a.attachShader(i, t), a.linkProgram(i), a.getProgramParameter(i, a.LINK_STATUS) || a.isContextLost() ? i : (e = `Error: Failed to link '${r}' shader`, t = a.getProgramInfoLog(i), console.error("[Visualizer] " + e, t), M(e, 2), null) }, r = e => { var t = a.createFramebuffer(), r = (a.bindFramebuffer(a.FRAMEBUFFER, t), a.createTexture()); return a.bindTexture(a.TEXTURE_2D, r), a.texParameteri(a.TEXTURE_2D, a.TEXTURE_WRAP_S, a.CLAMP_TO_EDGE), a.texParameteri(a.TEXTURE_2D, a.TEXTURE_WRAP_T, a.CLAMP_TO_EDGE), a.texParameteri(a.TEXTURE_2D, a.TEXTURE_MIN_FILTER, e), a.texParameteri(a.TEXTURE_2D, a.TEXTURE_MAG_FILTER, e), a.framebufferTexture2D(a.FRAMEBUFFER, a.COLOR_ATTACHMENT0, a.TEXTURE_2D, r, 0), { framebuffer: t, texture: r } }, i = e(a.VERTEX_SHADER, `#version 300 es
 
@@ -251,7 +234,7 @@ void main() {
     outColor = vec4(fragOutputColor * value, value);
 }
 `, "finalize fragment")) && (t = t(_, e, "finalize")) ? (_ = a.getAttribLocation(t, "inPosition"), e = a.getUniformLocation(t, "uOutputColor"), A = a.getUniformLocation(t, "uBlurredTexture"), C = a.getUniformLocation(t, "uOriginalTexture"), { framebuffer: D, texture: F } = r(a.NEAREST), { framebuffer: L, texture: P } = r(a.NEAREST), { framebuffer: U, texture: I } = r(a.LINEAR), { framebuffer: r, texture: O } = r(a.NEAREST), N = a.createBuffer(), a.bindBuffer(a.ARRAY_BUFFER, N), a.bufferData(a.ARRAY_BUFFER, new Float32Array([-1, -1, -1, 1, 1, 1, 1, -1]), a.STATIC_DRAW), a.enable(a.BLEND), a.blendEquation(a.MAX), { isError: !1, particleShader: i, dotShader: g, blurShader: b, finalizeShader: t, viewportSize: 0, particleTextureSize: 0, inPositionLoc: n, inPositionLocDot: y, inPositionLocBlur: T, inPositionLocFinalize: _, uNoiseOffsetLoc: o, uAmplitudeLoc: s, uSeedLoc: u, uDotSpacingLoc: l, uDotOffsetLoc: c, uSphereRadiusLoc: f, uFeatherLoc: d, uNoiseFrequencyLoc: h, uNoiseAmplitudeLoc: m, uDotCountLoc: p, uDotRadiusLoc: v, uDotRadiusPXLoc: E, uParticleTextureLoc: x, uBlurRadiusLoc: R, uBlurDirectionLoc: S, uBlurInputTextureLoc: w, uOutputColorLoc: e, uBlurredTextureLoc: A, uOriginalTextureLoc: C, quadBuffer: N, particleFramebuffer: D, particleTexture: F, dotFramebuffer: L, dotTexture: P, blurXFramebuffer: U, blurXTexture: I, blurYFramebuffer: r, blurYTexture: O }) : { isError: !0 }; return { isError: !0 }
-      }, []), i = (0, o.useCallback)((e, t) => { !t.isError && e && (t.viewportSize = Math.min(1440, Math.min(e.canvas.width, e.canvas.height)), e.viewport(0, 0, e.canvas.width, e.canvas.height), e.bindTexture(e.TEXTURE_2D, t.dotTexture), e.texImage2D(e.TEXTURE_2D, 0, e.R8, t.viewportSize, t.viewportSize, 0, e.RED, e.UNSIGNED_BYTE, null), e.bindTexture(e.TEXTURE_2D, t.blurXTexture), e.texImage2D(e.TEXTURE_2D, 0, e.R8, t.viewportSize, t.viewportSize, 0, e.RED, e.UNSIGNED_BYTE, null), e.bindTexture(e.TEXTURE_2D, t.blurYTexture), e.texImage2D(e.TEXTURE_2D, 0, e.R8, t.viewportSize, t.viewportSize, 0, e.RED, e.UNSIGNED_BYTE, null)) }, []), n = (0, o.useCallback)((n, e, t) => { if (!t.isError && n) { let i = null, a = []; if (window.do_ncs_perf_test) { i = n.getExtension("EXT_disjoint_timer_query_webgl2"); for (let e = 0; e < 4; e++)a[e] = n.createQuery() } var now = performance.now(); var curTrackUri = Spicetify.Player.data?.item?.uri; var actualProgress = _getPreciseVisualizerTime(); if (!t.lastFrameTime || t.lastTrackUri !== curTrackUri) { t.lastFrameTime = now; t.lastTrackUri = curTrackUri; t.smoothProgress = actualProgress; } var dt = Math.max(0.001, Math.min(0.1, (now - t.lastFrameTime) / 1000)); t.lastFrameTime = now; if (e.isPlaying) { t.smoothProgress += dt; var err = actualProgress - t.smoothProgress; if (Math.abs(err) > 0.25) { t.smoothProgress = actualProgress; } else { t.smoothProgress += err * 0.20; } } else { t.smoothProgress = actualProgress; } var r = Math.max(0, t.smoothProgress), o = 75 * (.5 * r + (l = (e.amplitudeCurve && e.amplitudeCurve.length ? e.amplitudeCurve : [{ x: 0, y: 0.001, accumulatedIntegral: 0 }, { x: 1e9, y: 0.001, accumulatedIntegral: 0 }]), o = R(l, e => e.x, s = r), u = l[o], l.length <= o + 1 ? (u.accumulatedIntegral ?? 0) + u.y * (s - u.x) : (l = { x: s, y: w(s, u.x, (s = l[o + 1]).x, u.y, s.y) }, (u.accumulatedIntegral ?? 0) + h(u, l)))) * .01, s = ((i, e, t) => { if (!i || !i.length) return 0; if (0 == t) return z(i, e => e.x, e => e.y, e => e, e); var r, a = e - t / 2, e = e + t / 2, n = R(i, e => e.x, a), o = R(i, e => e.x, e); let s = 0; if (n == o) return u = i[n], i.length - 2 < n ? u.y : (w(a, u.x, (r = i[n + 1]).x, u.y, r.y) + w(e, u.x, r.x, u.y, r.y)) / 2; { let t = i[n], r = i[n + 1]; var u = { x: a, y: w(a, t.x, r.x, t.y, r.y) }; s = h(u, r); for (let e = n + 1; e < o; e++)t = r, r = i[e + 1], s += h(t, r); t = r, i.length - 2 < o ? s += t.y * (e - t.x) : (r = i[o + 1], u = { x: e, y: w(e, t.x, r.x, t.y, r.y) }, s += h(t, u)) } return s / t })(e.amplitudeCurve, r, .15), u = e.seed, l = 240, r = .9 / l, c = .5 * r * t.viewportSize, f = w(s, 0, 1, .73, .86), d = Math.pow(s + 3, 2) * (45 / 1568); if (t.particleTextureSize !== l && (t.particleTextureSize = l, n.bindTexture(n.TEXTURE_2D, t.particleTexture), n.texImage2D(n.TEXTURE_2D, 0, n.RG32F, l, l, 0, n.RG, n.FLOAT, null)), window.do_ncs_perf_test && n.beginQuery(i.TIME_ELAPSED_EXT, a[0]), n.disable(n.BLEND), n.bindFramebuffer(n.FRAMEBUFFER, t.particleFramebuffer), n.viewport(0, 0, l, l), n.clearColor(0, 0, 0, 0), n.clear(n.COLOR_BUFFER_BIT), n.useProgram(t.particleShader), n.uniform1f(t.uNoiseOffsetLoc, o), n.uniform1f(t.uAmplitudeLoc, s), n.uniform1i(t.uSeedLoc, u), n.uniform1f(t.uDotSpacingLoc, .9), n.uniform1f(t.uDotOffsetLoc, -.45), n.uniform1f(t.uSphereRadiusLoc, f), n.uniform1f(t.uFeatherLoc, d), n.uniform1f(t.uNoiseFrequencyLoc, 4), n.uniform1f(t.uNoiseAmplitudeLoc, .32 * .9), n.bindBuffer(n.ARRAY_BUFFER, t.quadBuffer), n.enableVertexAttribArray(t.inPositionLoc), n.vertexAttribPointer(t.inPositionLoc, 2, n.FLOAT, !1, 0, 0), n.drawArrays(n.TRIANGLE_FAN, 0, 4), window.do_ncs_perf_test && (n.endQuery(i.TIME_ELAPSED_EXT), n.beginQuery(i.TIME_ELAPSED_EXT, a[1])), n.enable(n.BLEND), n.bindFramebuffer(n.FRAMEBUFFER, t.dotFramebuffer), n.viewport(0, 0, t.viewportSize, t.viewportSize), n.clearColor(0, 0, 0, 0), n.clear(n.COLOR_BUFFER_BIT), n.useProgram(t.dotShader), n.uniform1i(t.uDotCountLoc, l), n.uniform1f(t.uDotRadiusLoc, r), n.uniform1f(t.uDotRadiusPXLoc, c), n.uniform1i(t.uParticleTextureLoc, 0), n.activeTexture(n.TEXTURE0), n.bindTexture(n.TEXTURE_2D, t.particleTexture), n.bindBuffer(n.ARRAY_BUFFER, t.quadBuffer), n.enableVertexAttribArray(t.inPositionLocDot), n.vertexAttribPointer(t.inPositionLocDot, 2, n.FLOAT, !1, 0, 0), n.drawArraysInstanced(n.TRIANGLE_FAN, 0, 4, l * l), window.do_ncs_perf_test && (n.endQuery(i.TIME_ELAPSED_EXT), n.beginQuery(i.TIME_ELAPSED_EXT, a[2])), n.bindFramebuffer(n.FRAMEBUFFER, t.blurXFramebuffer), n.clearColor(0, 0, 0, 0), n.clear(n.COLOR_BUFFER_BIT), n.useProgram(t.blurShader), n.uniform1f(t.uBlurRadiusLoc, .01 * t.viewportSize), n.uniform2f(t.uBlurDirectionLoc, 1 / t.viewportSize, 0), n.uniform1i(t.uBlurInputTextureLoc, 0), n.activeTexture(n.TEXTURE0), n.bindTexture(n.TEXTURE_2D, t.dotTexture), n.bindBuffer(n.ARRAY_BUFFER, t.quadBuffer), n.enableVertexAttribArray(t.inPositionLocBlur), n.vertexAttribPointer(t.inPositionLocBlur, 2, n.FLOAT, !1, 0, 0), n.drawArrays(n.TRIANGLE_FAN, 0, 4), n.bindFramebuffer(n.FRAMEBUFFER, t.blurYFramebuffer), n.clearColor(0, 0, 0, 0), n.clear(n.COLOR_BUFFER_BIT), n.uniform2f(t.uBlurDirectionLoc, 0, 1 / t.viewportSize), n.bindTexture(n.TEXTURE_2D, t.blurXTexture), n.drawArrays(n.TRIANGLE_FAN, 0, 4), n.bindFramebuffer(n.FRAMEBUFFER, null), n.clearColor(0, 0, 0, 0), n.clear(n.COLOR_BUFFER_BIT), window.do_ncs_perf_test && (n.endQuery(i.TIME_ELAPSED_EXT), n.beginQuery(i.TIME_ELAPSED_EXT, a[3])), n.useProgram(t.finalizeShader), n.uniform3f(t.uOutputColorLoc, e.themeColor.rgb.r / 255, e.themeColor.rgb.g / 255, e.themeColor.rgb.b / 255), n.uniform1i(t.uBlurredTextureLoc, 0), n.uniform1i(t.uOriginalTextureLoc, 1), n.activeTexture(n.TEXTURE0), n.bindTexture(n.TEXTURE_2D, t.blurYTexture), n.activeTexture(n.TEXTURE1), n.bindTexture(n.TEXTURE_2D, t.dotTexture), n.bindBuffer(n.ARRAY_BUFFER, t.quadBuffer), n.enableVertexAttribArray(t.inPositionLocFinalize), n.vertexAttribPointer(t.inPositionLocFinalize, 2, n.FLOAT, !1, 0, 0), n.drawArrays(n.TRIANGLE_FAN, 0, 4), window.do_ncs_perf_test) { n.endQuery(i.TIME_ELAPSED_EXT), window.do_ncs_perf_test = !1; let r = () => { var e, t; 0 !== a.length && (t = n.getParameter(i.GPU_DISJOINT_EXT), e = a.map(e => n.getQueryParameter(e, n.QUERY_RESULT_AVAILABLE)).reduce((e, t) => e && t, !0), t ? (a.map(e => n.deleteQuery(e)), console.log("NCS PERF RESULT: FAILED (disjoint)"), a.length = 0) : e ? (t = a.map(e => n.getQueryParameter(e, n.QUERY_RESULT)), console.log("NCS PERF RESULT: ", t), window.ncs_perf_test_out || (window.ncs_perf_test_out = []), window.ncs_perf_test_out.push(t), a.length = 0) : window.requestAnimationFrame(r)) }; r() } } }, []); return o.default.createElement(s, { isEnabled: a.isEnabled, data: { themeColor: a.themeColor, seed: t, amplitudeCurve: e, isPlaying: a.isPlaying }, contextType: "webgl2", onInit: r, onResize: i, onRender: n, style: { width: "100%", height: "100%", objectFit: "contain" }, sizeConstraint: (e, t) => { e = Math.min(e, t); return { width: e, height: e } } })
+      }, []), i = (0, o.useCallback)((e, t) => { !t.isError && e && (t.viewportSize = Math.min(1440, Math.min(e.canvas.width, e.canvas.height)), e.viewport(0, 0, e.canvas.width, e.canvas.height), e.bindTexture(e.TEXTURE_2D, t.dotTexture), e.texImage2D(e.TEXTURE_2D, 0, e.R8, t.viewportSize, t.viewportSize, 0, e.RED, e.UNSIGNED_BYTE, null), e.bindTexture(e.TEXTURE_2D, t.blurXTexture), e.texImage2D(e.TEXTURE_2D, 0, e.R8, t.viewportSize, t.viewportSize, 0, e.RED, e.UNSIGNED_BYTE, null), e.bindTexture(e.TEXTURE_2D, t.blurYTexture), e.texImage2D(e.TEXTURE_2D, 0, e.R8, t.viewportSize, t.viewportSize, 0, e.RED, e.UNSIGNED_BYTE, null)) }, []), n = (0, o.useCallback)((n, e, t) => { if (!t.isError && n) { let i = null, a = []; if (window.do_ncs_perf_test) { i = n.getExtension("EXT_disjoint_timer_query_webgl2"); for (let e = 0; e < 4; e++)a[e] = n.createQuery() } var now = performance.now(); if (!t.lastFrameTime) { t.lastFrameTime = now; t.smoothProgress = Spicetify.Player.getProgress() / 1000; } var dt = (now - t.lastFrameTime) / 1000; t.lastFrameTime = now; if (e.isPlaying) { t.smoothProgress += dt; var actualProgress = Spicetify.Player.getProgress() / 1000; if (Math.abs(t.smoothProgress - actualProgress) > 0.8) { t.smoothProgress = actualProgress; } } else { t.smoothProgress = Spicetify.Player.getProgress() / 1000; } var r = t.smoothProgress, o = 75 * (.5 * r + (l = (e.amplitudeCurve && e.amplitudeCurve.length ? e.amplitudeCurve : [{ x: 0, y: 0.001, accumulatedIntegral: 0 }, { x: 1e9, y: 0.001, accumulatedIntegral: 0 }]), o = R(l, e => e.x, s = r), u = l[o], l.length <= o + 1 ? (u.accumulatedIntegral ?? 0) + u.y * (s - u.x) : (l = { x: s, y: w(s, u.x, (s = l[o + 1]).x, u.y, s.y) }, (u.accumulatedIntegral ?? 0) + h(u, l)))) * .01, s = ((i, e, t) => { if (!i || !i.length) return 0; if (0 == t) return z(i, e => e.x, e => e.y, e => e, e); var r, a = e - t / 2, e = e + t / 2, n = R(i, e => e.x, a), o = R(i, e => e.x, e); let s = 0; if (n == o) return u = i[n], i.length - 2 < n ? u.y : (w(a, u.x, (r = i[n + 1]).x, u.y, r.y) + w(e, u.x, r.x, u.y, r.y)) / 2; { let t = i[n], r = i[n + 1]; var u = { x: a, y: w(a, t.x, r.x, t.y, r.y) }; s = h(u, r); for (let e = n + 1; e < o; e++)t = r, r = i[e + 1], s += h(t, r); t = r, i.length - 2 < o ? s += t.y * (e - t.x) : (r = i[o + 1], u = { x: e, y: w(e, t.x, r.x, t.y, r.y) }, s += h(t, u)) } return s / t })(e.amplitudeCurve, r, .15), u = e.seed, l = 240, r = .9 / l, c = .5 * r * t.viewportSize, f = w(s, 0, 1, .73, .86), d = Math.pow(s + 3, 2) * (45 / 1568); if (t.particleTextureSize !== l && (t.particleTextureSize = l, n.bindTexture(n.TEXTURE_2D, t.particleTexture), n.texImage2D(n.TEXTURE_2D, 0, n.RG32F, l, l, 0, n.RG, n.FLOAT, null)), window.do_ncs_perf_test && n.beginQuery(i.TIME_ELAPSED_EXT, a[0]), n.disable(n.BLEND), n.bindFramebuffer(n.FRAMEBUFFER, t.particleFramebuffer), n.viewport(0, 0, l, l), n.clearColor(0, 0, 0, 0), n.clear(n.COLOR_BUFFER_BIT), n.useProgram(t.particleShader), n.uniform1f(t.uNoiseOffsetLoc, o), n.uniform1f(t.uAmplitudeLoc, s), n.uniform1i(t.uSeedLoc, u), n.uniform1f(t.uDotSpacingLoc, .9), n.uniform1f(t.uDotOffsetLoc, -.45), n.uniform1f(t.uSphereRadiusLoc, f), n.uniform1f(t.uFeatherLoc, d), n.uniform1f(t.uNoiseFrequencyLoc, 4), n.uniform1f(t.uNoiseAmplitudeLoc, .32 * .9), n.bindBuffer(n.ARRAY_BUFFER, t.quadBuffer), n.enableVertexAttribArray(t.inPositionLoc), n.vertexAttribPointer(t.inPositionLoc, 2, n.FLOAT, !1, 0, 0), n.drawArrays(n.TRIANGLE_FAN, 0, 4), window.do_ncs_perf_test && (n.endQuery(i.TIME_ELAPSED_EXT), n.beginQuery(i.TIME_ELAPSED_EXT, a[1])), n.enable(n.BLEND), n.bindFramebuffer(n.FRAMEBUFFER, t.dotFramebuffer), n.viewport(0, 0, t.viewportSize, t.viewportSize), n.clearColor(0, 0, 0, 0), n.clear(n.COLOR_BUFFER_BIT), n.useProgram(t.dotShader), n.uniform1i(t.uDotCountLoc, l), n.uniform1f(t.uDotRadiusLoc, r), n.uniform1f(t.uDotRadiusPXLoc, c), n.uniform1i(t.uParticleTextureLoc, 0), n.activeTexture(n.TEXTURE0), n.bindTexture(n.TEXTURE_2D, t.particleTexture), n.bindBuffer(n.ARRAY_BUFFER, t.quadBuffer), n.enableVertexAttribArray(t.inPositionLocDot), n.vertexAttribPointer(t.inPositionLocDot, 2, n.FLOAT, !1, 0, 0), n.drawArraysInstanced(n.TRIANGLE_FAN, 0, 4, l * l), window.do_ncs_perf_test && (n.endQuery(i.TIME_ELAPSED_EXT), n.beginQuery(i.TIME_ELAPSED_EXT, a[2])), n.bindFramebuffer(n.FRAMEBUFFER, t.blurXFramebuffer), n.clearColor(0, 0, 0, 0), n.clear(n.COLOR_BUFFER_BIT), n.useProgram(t.blurShader), n.uniform1f(t.uBlurRadiusLoc, .01 * t.viewportSize), n.uniform2f(t.uBlurDirectionLoc, 1 / t.viewportSize, 0), n.uniform1i(t.uBlurInputTextureLoc, 0), n.activeTexture(n.TEXTURE0), n.bindTexture(n.TEXTURE_2D, t.dotTexture), n.bindBuffer(n.ARRAY_BUFFER, t.quadBuffer), n.enableVertexAttribArray(t.inPositionLocBlur), n.vertexAttribPointer(t.inPositionLocBlur, 2, n.FLOAT, !1, 0, 0), n.drawArrays(n.TRIANGLE_FAN, 0, 4), n.bindFramebuffer(n.FRAMEBUFFER, t.blurYFramebuffer), n.clearColor(0, 0, 0, 0), n.clear(n.COLOR_BUFFER_BIT), n.uniform2f(t.uBlurDirectionLoc, 0, 1 / t.viewportSize), n.bindTexture(n.TEXTURE_2D, t.blurXTexture), n.drawArrays(n.TRIANGLE_FAN, 0, 4), n.bindFramebuffer(n.FRAMEBUFFER, null), n.clearColor(0, 0, 0, 0), n.clear(n.COLOR_BUFFER_BIT), window.do_ncs_perf_test && (n.endQuery(i.TIME_ELAPSED_EXT), n.beginQuery(i.TIME_ELAPSED_EXT, a[3])), n.useProgram(t.finalizeShader), n.uniform3f(t.uOutputColorLoc, e.themeColor.rgb.r / 255, e.themeColor.rgb.g / 255, e.themeColor.rgb.b / 255), n.uniform1i(t.uBlurredTextureLoc, 0), n.uniform1i(t.uOriginalTextureLoc, 1), n.activeTexture(n.TEXTURE0), n.bindTexture(n.TEXTURE_2D, t.blurYTexture), n.activeTexture(n.TEXTURE1), n.bindTexture(n.TEXTURE_2D, t.dotTexture), n.bindBuffer(n.ARRAY_BUFFER, t.quadBuffer), n.enableVertexAttribArray(t.inPositionLocFinalize), n.vertexAttribPointer(t.inPositionLocFinalize, 2, n.FLOAT, !1, 0, 0), n.drawArrays(n.TRIANGLE_FAN, 0, 4), window.do_ncs_perf_test) { n.endQuery(i.TIME_ELAPSED_EXT), window.do_ncs_perf_test = !1; let r = () => { var e, t; 0 !== a.length && (t = n.getParameter(i.GPU_DISJOINT_EXT), e = a.map(e => n.getQueryParameter(e, n.QUERY_RESULT_AVAILABLE)).reduce((e, t) => e && t, !0), t ? (a.map(e => n.deleteQuery(e)), console.log("NCS PERF RESULT: FAILED (disjoint)"), a.length = 0) : e ? (t = a.map(e => n.getQueryParameter(e, n.QUERY_RESULT)), console.log("NCS PERF RESULT: ", t), window.ncs_perf_test_out || (window.ncs_perf_test_out = []), window.ncs_perf_test_out.push(t), a.length = 0) : window.requestAnimationFrame(r)) }; r() } } }, []); return o.default.createElement(s, { isEnabled: a.isEnabled, data: { themeColor: a.themeColor, seed: t, amplitudeCurve: e, isPlaying: a.isPlaying }, contextType: "webgl2", onInit: r, onResize: i, onRender: n, style: { width: "100%", height: "100%", objectFit: "contain" }, sizeConstraint: (e, t) => { e = Math.min(e, t); return { width: e, height: e } } })
     }
   }]; function _injectFonts(doc) {
     if (!doc) return;
@@ -375,6 +358,30 @@ void main() {
       });
     }
 
+    async function _importModule(url) {
+      try {
+        return await import(url);
+      } catch (e1) {
+        var fetchFn = (typeof window !== "undefined" && window.parent && window.parent.fetch) ? window.parent.fetch : fetch;
+        var resp = await fetchFn(url);
+        if (!resp.ok) throw new Error("HTTP " + resp.status);
+        var code = await resp.text();
+        if (typeof Blob !== "undefined" && typeof URL !== "undefined" && URL.createObjectURL) {
+          var blob = new Blob([code], { type: "text/javascript" });
+          var blobUrl = URL.createObjectURL(blob);
+          try {
+            var mod = await import(blobUrl);
+            URL.revokeObjectURL(blobUrl);
+            return mod;
+          } catch (e2) {
+            URL.revokeObjectURL(blobUrl);
+            throw e2;
+          }
+        }
+        throw e1;
+      }
+    }
+
     var _convPromises = {};
     function _loadConv(name) {
       if (_convPromises[name]) return _convPromises[name];
@@ -384,23 +391,33 @@ void main() {
           try {
             await _loadScript(_PKGS_CDN + "/Kuromoji/Kuromoji@1.0.0.js");
             var startWait = Date.now();
-            while (!(typeof window !== "undefined" && window.kuromoji) && Date.now() - startWait < 3000) {
+            while (!(typeof window !== "undefined" && (window.kuromoji || window.parent?.kuromoji)) && Date.now() - startWait < 3000) {
               await new Promise(function (r) { setTimeout(r, 50); });
             }
           } catch (e) { }
           await _loadScript("https://cdn.jsdelivr.net/npm/kuroshiro@1.2.0/dist/kuroshiro.min.js");
-          var KuroshiroClass = (typeof window !== "undefined" ? window.Kuroshiro : null) || globalThis.Kuroshiro;
+          var KuroshiroClass = (typeof window !== "undefined" ? window.Kuroshiro : null) || (typeof window !== "undefined" && window.parent ? window.parent.Kuroshiro : null) || globalThis.Kuroshiro;
           if (KuroshiroClass && KuroshiroClass.default) KuroshiroClass = KuroshiroClass.default;
 
-          if (typeof window !== "undefined" && window.kuromoji && KuroshiroClass) {
+          var kuromojiObj = (typeof window !== "undefined" ? window.kuromoji : null) || (typeof window !== "undefined" && window.parent ? window.parent.kuromoji : null) || globalThis.kuromoji;
+          if (kuromojiObj && KuroshiroClass) {
             var analyzer = {
               init: function () {
                 return new Promise(function (resolve, reject) {
-                  window.kuromoji.builder({ dicPath: "https://cdn.jsdelivr.net/npm/kuromoji@0.1.2/dict" }).build(function (error, _tokenizer) {
-                    if (error) return reject(error);
-                    analyzer._tokenizer = _tokenizer;
-                    resolve();
-                  });
+                  function tryBuild(dicPath, fallbackPath) {
+                    kuromojiObj.builder({ dicPath: dicPath }).build(function (error, _tokenizer) {
+                      if (error) {
+                        if (fallbackPath) {
+                          console.warn("[Visualizer] Kuromoji primary dicPath failed, trying fallback:", fallbackPath);
+                          return tryBuild(fallbackPath, null);
+                        }
+                        return reject(error);
+                      }
+                      analyzer._tokenizer = _tokenizer;
+                      resolve();
+                    });
+                  }
+                  tryBuild("https://kuromoji.pkgs.spikerko.org", "https://cdn.jsdelivr.net/npm/kuromoji@0.1.2/dict");
                 });
               },
               parse: function (text) {
@@ -421,10 +438,10 @@ void main() {
           }
 
           await _loadScript("https://cdn.jsdelivr.net/npm/kuroshiro-analyzer-kuromoji@1.1.0/dist/kuroshiro-analyzer-kuromoji.min.js");
-          var AnalyzerClass = (typeof window !== "undefined" ? window.KuromojiAnalyzer : null) || globalThis.KuromojiAnalyzer;
+          var AnalyzerClass = (typeof window !== "undefined" ? window.KuromojiAnalyzer : null) || (typeof window !== "undefined" && window.parent ? window.parent.KuromojiAnalyzer : null) || globalThis.KuromojiAnalyzer;
           if (AnalyzerClass && AnalyzerClass.default) AnalyzerClass = AnalyzerClass.default;
           if (!KuroshiroClass || !AnalyzerClass) throw new Error("Kuroshiro or Analyzer failed to load");
-          var analyzerFallback = new AnalyzerClass({ dictPath: "https://cdn.jsdelivr.net/npm/kuromoji@0.1.2/dict" });
+          var analyzerFallback = new AnalyzerClass({ dictPath: "https://kuromoji.pkgs.spikerko.org" });
           var kf = new KuroshiroClass();
           await kf.init(analyzerFallback);
           return { conv: function (t) { return kf.convert(t, { to: "romaji", mode: "spaced" }); } };
@@ -432,31 +449,34 @@ void main() {
       } else if (name === "pinyin") {
         pr = (async function () {
           try {
-            var pinyinMod = await import(_PKGS_CDN + "/pinyin/pinyin@4.0.0.mjs");
+            var pinyinMod = await _importModule(_PKGS_CDN + "/pinyin/pinyin@4.0.0.mjs");
             var fn = (pinyinMod && pinyinMod.pinyin) || (pinyinMod && pinyinMod.default);
             if (typeof fn === "function") return { conv: function (t) { return fn(t, { segment: false, group: true }).join("-"); } };
           } catch (e) { }
-          await _loadScript("https://cdn.jsdelivr.net/npm/pinyin@4.0.0/lib/umd/pinyin.js");
-          var pinyinObj = (typeof window !== "undefined" ? window.pinyin : null) || globalThis.pinyin;
-          var fn2 = (pinyinObj && pinyinObj.default) || pinyinObj;
-          return { conv: function (t) { return typeof fn2 === "function" ? fn2(t, { segment: false, group: true }).join("-") : null; } };
+          try {
+            await _loadScript("https://cdn.jsdelivr.net/npm/pinyin@4.0.0/lib/umd/pinyin.js");
+            var pinyinObj = (typeof window !== "undefined" ? window.pinyin : null) || (typeof window !== "undefined" && window.parent ? window.parent.pinyin : null) || globalThis.pinyin;
+            var fn2 = (pinyinObj && (pinyinObj.pinyin || pinyinObj.default)) || pinyinObj;
+            if (typeof fn2 === "function") return { conv: function (t) { return fn2(t, { segment: false, group: true }).join("-"); } };
+          } catch (e2) { }
+          return null;
         })();
       } else if (name === "aromanize") {
         pr = (async function () {
           try {
-            var aromanizeMod = await import(_PKGS_CDN + "/aromanize/aromanize@1.0.0.js");
+            var aromanizeMod = await _importModule(_PKGS_CDN + "/aromanize/aromanize@1.0.0.js");
             var arFn = aromanizeMod?.default || aromanizeMod;
             if (typeof arFn === "function") return { conv: function (t) { return arFn(t, "RevisedRomanizationTransliteration"); } };
             if (typeof arFn === "object" && typeof arFn.default === "function") return { conv: function (t) { return arFn.default(t, "RevisedRomanizationTransliteration"); } };
           } catch (e) {
-            console.warn("[Visualizer] aromanize CDN import failed, using built-in fallback:", e && e.message ? e.message : e);
+            console.warn("[Visualizer] aromanize import failed, using built-in fallback:", e && e.message ? e.message : e);
           }
           return { conv: function (t) { return _hangulToRomajiFallback(t); } };
         })();
       } else if (name === "cyrillic") {
         pr = (async function () {
           try {
-            var cyrMod = await import("https://cdn.jsdelivr.net/npm/cyrillic-romanization@1.2.1/dist/index.js");
+            var cyrMod = await _importModule("https://cdn.jsdelivr.net/npm/cyrillic-romanization@1.2.1/dist/index.js");
             var cyrFn = cyrMod?.default || cyrMod;
             if (typeof cyrFn === "function") return { conv: function (t) { var r = cyrFn(t); return r != null ? r : t; } };
           } catch (e) { }
@@ -465,7 +485,7 @@ void main() {
       } else if (name === "greek") {
         pr = (async function () {
           try {
-            var grkMod = await import(_PKGS_CDN + "/GreekRomanization/GreekRomanization@1.0.0.js");
+            var grkMod = await _importModule(_PKGS_CDN + "/GreekRomanization/GreekRomanization@1.0.0.js");
             var grkFn = (grkMod?.default && typeof grkMod.default === "function") ? grkMod.default : grkMod;
             if (typeof grkFn === "function") return { conv: function (t) { var r = grkFn(t); return r != null ? r : t; } };
             if (typeof grkFn === "object" && typeof grkFn.default === "function") return { conv: function (t) { var r = grkFn.default(t); return r != null ? r : t; } };
@@ -502,7 +522,17 @@ void main() {
       return out;
     }
 
-    var _CYR_MAP = { "а":"a","б":"b","в":"v","г":"g","д":"d","е":"e","ё":"e","ж":"zh","з":"z","и":"i","й":"y","к":"k","л":"l","м":"m","н":"n","о":"o","п":"p","р":"r","с":"s","т":"t","у":"u","ф":"f","х":"h","ц":"ts","ч":"ch","ш":"sh","щ":"shch","ъ":"","ы":"y","ь":"","э":"e","ю":"yu","я":"ya","А":"A","Б":"B","В":"V","Г":"G","Д":"D","Е":"E","Ё":"E","Ж":"Zh","З":"Z","И":"I","Й":"Y","К":"K","Л":"L","М":"M","Н":"N","О":"O","П":"P","Р":"R","С":"S","Т":"T","У":"U","Ф":"F","Х":"Kh","Ц":"Ts","Ч":"Ch","Ш":"Sh","Щ":"Shch","Ъ":"","Ы":"Y","Ь":"","Э":"E","Ю":"Yu","Я":"Ya" };
+    var _CYR_MAP = {
+      "а":"a","б":"b","в":"v","г":"g","д":"d","е":"e","ё":"e","ж":"zh","з":"z","и":"i","й":"y",
+      "к":"k","л":"l","м":"m","н":"n","о":"o","п":"p","р":"r","с":"s","т":"t","у":"u","ф":"f",
+      "х":"h","ц":"ts","ч":"ch","ш":"sh","щ":"shch","ъ":"","ы":"y","ь":"","э":"e","ю":"yu","я":"ya",
+      "А":"A","Б":"B","В":"V","Г":"G","Д":"D","Е":"E","Ё":"E","Ж":"Zh","З":"Z","И":"I","Й":"Y",
+      "К":"K","Л":"L","М":"M","Н":"N","О":"O","P":"R","С":"S","Т":"T","У":"U","Ф":"F",
+      "Х":"Kh","Ц":"Ts","Ч":"Ch","Ш":"Sh","Щ":"Shch","Ъ":"","Ы":"Y","Ь":"","Э":"E","Ю":"Yu","Я":"Ya",
+      "і":"i","І":"I","ї":"yi","Ї":"Yi","є":"ye","Є":"Ye","ґ":"g","Ґ":"G",
+      "ў":"u","Ў":"U","ћ":"ch","Ћ":"Ch","ђ":"dj","Ђ":"Dj","љ":"lj","Љ":"Lj",
+      "њ":"nj","Њ":"Nj","џ":"dz","Џ":"Dz","ѕ":"dz","Ѕ":"Dz"
+    };
     function _cyrillicToLatinFallback(txt) {
       var out = "";
       for (var i = 0; i < txt.length; i++) out += _CYR_MAP[txt[i]] !== undefined ? _CYR_MAP[txt[i]] : txt[i];
@@ -564,17 +594,18 @@ void main() {
     }
 
     async function _romanizeEntry(text, scripts, pkgs) {
+      if (!text || typeof text !== "string") return null;
       var changed = false;
       for (var si = 0; si < scripts.length; si++) {
         var sc = scripts[si];
-        if (sc === "Japanese" && (_JS_TEXT_TEST.test(text) || _ZH_TEXT_TEST.test(text))) {
+        if (sc === "Japanese" && (/[぀-ヿ一-鿿]/.test(text))) {
           if (pkgs.jpConv) {
             try {
               var r = await pkgs.jpConv(text);
-              if (r) { text = r; changed = true; }
+              if (r && r !== text) { text = r; changed = true; }
             } catch (e) { }
           }
-          if (!changed && !_ZH_TEXT_TEST.test(text)) {
+          if (!changed && _JS_TEXT_TEST.test(text)) {
             var fb = _kanaToRomaji(text);
             if (fb !== text) { text = fb; changed = true; }
           }
@@ -582,36 +613,36 @@ void main() {
           if (pkgs.cnConv) {
             try {
               var r = pkgs.cnConv(text);
-              if (r) { text = r; changed = true; }
+              if (r && r !== text) { text = r; changed = true; }
             } catch (e) { }
           }
         } else if (sc === "Korean" && _KR_TEXT_TEST.test(text)) {
           if (pkgs.korConv) {
             try {
               var r = pkgs.korConv(text);
-              if (r) { text = r; changed = true; }
+              if (r && r !== text) { text = r; changed = true; }
             } catch (e) { }
           }
           if (!changed) {
             var fb = _hangulToRomajiFallback(text);
             if (fb !== text) { text = fb; changed = true; }
           }
-        } else if (sc === "Cyrillic" && _CYR_TEXT_TEST.test(text)) {
+        } else if (sc === "Cyrillic" && /[Ѐ-ӿԀ-ԯⷠ-ⷿꙀ-ꚟ]/.test(text)) {
           if (pkgs.cyrConv) {
             try {
               var r = pkgs.cyrConv(text);
-              if (r) { text = r; changed = true; }
+              if (r && r !== text) { text = r; changed = true; }
             } catch (e) { }
           }
           if (!changed) {
             var fb = _cyrillicToLatinFallback(text);
             if (fb !== text) { text = fb; changed = true; }
           }
-        } else if (sc === "Greek" && _GRK_TEXT_TEST.test(text)) {
+        } else if (sc === "Greek" && /[Ͱ-Ͽἀ-῿]/.test(text)) {
           if (pkgs.grkConv) {
             try {
               var r = pkgs.grkConv(text);
-              if (r) { text = r; changed = true; }
+              if (r && r !== text) { text = r; changed = true; }
             } catch (e) { }
           }
           if (!changed) {
@@ -620,48 +651,68 @@ void main() {
           }
         }
       }
-      return changed ? text : null;
+      return changed ? _cleanRomanized(text) : null;
     }
 
     async function _romanizeLyrics(lyrics) {
-      if (!lyrics || !lyrics.Content || !Array.isArray(lyrics.Content) || (lyrics.Type !== "Line" && lyrics.Type !== "Syllable")) return lyrics;
+      if (!lyrics || typeof lyrics !== "object") return lyrics;
+      var linesArr = lyrics.Content || lyrics.Lines;
+      if (!linesArr || !Array.isArray(linesArr)) return lyrics;
       try {
+        var hadApiTranslit = lyrics.HasTransliterations === true;
         var probe = "";
-        for (var q = 0; q < lyrics.Content.length; q++) {
-          var item = lyrics.Content[q];
+        for (var q = 0; q < linesArr.length; q++) {
+          var item = linesArr[q];
           if (!item) continue;
           if (lyrics.Type === "Syllable") {
-            if (item.Lead) { var ls = item.Lead.Syllables || []; for (var u = 0; u < ls.length; u++) probe += (ls[u].Text || "") + "\n"; }
-            if (item.Background) for (var v = 0; v < item.Background.length; v++) { var bg = item.Background[v] || {}; var bs = bg.Syllables || []; for (var w = 0; w < bs.length; w++) probe += (bs[w].Text || "") + "\n"; }
-          } else if (item.Type === "Vocal" && item.Text) probe += item.Text + "\n";
+            if (item.Lead && item.Lead.Syllables) {
+              var ls = item.Lead.Syllables;
+              for (var u = 0; u < ls.length; u++) probe += (ls[u].Text || "") + "\n";
+            }
+            if (item.Background) {
+              for (var v = 0; v < item.Background.length; v++) {
+                var bg = item.Background[v] || {};
+                var bs = bg.Syllables || [];
+                for (var w = 0; w < bs.length; w++) probe += (bs[w].Text || "") + "\n";
+              }
+            }
+          } else if (item.Text) {
+            probe += item.Text + "\n";
+          }
         }
         var scripts = _detectPresentScripts(probe);
         if (scripts.length === 0) return lyrics;
         var pkgs = await _loadPackagesForScripts(scripts);
 
         var any = false;
-        for (var i = 0; i < lyrics.Content.length; i++) {
-          var it = lyrics.Content[i];
+        for (var i = 0; i < linesArr.length; i++) {
+          var it = linesArr[i];
           if (!it) continue;
           if (lyrics.Type === "Syllable") {
             var groups = [];
             if (it.Lead && it.Lead.Syllables) groups.push({ line: it, syl: it.Lead.Syllables });
-            if (it.Background) for (var b = 0; b < it.Background.length; b++) if (it.Background[b] && it.Background[b].Syllables) groups.push({ line: it, syl: it.Background[b].Syllables });
+            if (it.Background) {
+              for (var b = 0; b < it.Background.length; b++) {
+                if (it.Background[b] && it.Background[b].Syllables) {
+                  groups.push({ line: it, syl: it.Background[b].Syllables });
+                }
+              }
+            }
             for (var g = 0; g < groups.length; g++) {
               for (var s = 0; s < groups[g].syl.length; s++) {
                 var sy = groups[g].syl[s];
-                if (!sy || !sy.Text || sy.TransliteratedText !== undefined) continue;
+                if (!sy || !sy.Text || (sy.TransliteratedText !== undefined && sy.TransliteratedText !== "")) continue;
                 var romanized = await _romanizeEntry(sy.Text, scripts, pkgs);
                 if (romanized && _setTranslit(sy, groups[g].line, romanized)) any = true;
               }
             }
-          } else if (it.Type === "Vocal" && it.Text) {
-            if (it.TransliteratedText !== undefined) continue;
+          } else if (it.Text) {
+            if (it.TransliteratedText !== undefined && it.TransliteratedText !== "") continue;
             var romanized = await _romanizeEntry(it.Text, scripts, pkgs);
             if (romanized && _setTranslit(it, it, romanized)) any = true;
           }
         }
-        if (any) lyrics.HasTransliterations = true;
+        lyrics.HasTransliterations = hadApiTranslit || any;
       } catch (e) {
         console.warn("[Visualizer] Romanization pipeline error:", e && e.message ? e.message : e);
       }
@@ -1161,13 +1212,22 @@ void main() {
         uiState.romanization = nextVal;
         Spicetify.LocalStorage.set("SL:uiState", JSON.stringify(uiState));
       } catch (e) { }
-      var tid = Spicetify.Player.data?.item?.uri ? Spicetify.Player.data.item.uri.replace("spotify:track:", "") : "";
-      if (tid) {
-        _lyricsMemCache.delete(tid);
+      _lastLineIdx = -1;
+      _wordSpans = [];
+      _lineWords = [];
+      _lastBgLineIdx = -1;
+      _bgWordSpans = [];
+      _bgLineWords = [];
+      if (lyricsContainerRef.current) lyricsContainerRef.current.innerHTML = "";
+      if (lyricsBgContainerRef.current) {
+        lyricsBgContainerRef.current.innerHTML = "";
+        lyricsBgContainerRef.current.style.display = "none";
       }
-      _cachedTrackId = "";
-      _cachedLyrics = undefined;
-      setRefreshTrigger(prev => prev + 1);
+      if (_cachedLyrics && !_cachedLyrics.HasTransliterations) {
+        _romanizeLyrics(_cachedLyrics).then(() => {
+          _lastLineIdx = -1;
+        }).catch(() => {});
+      }
     };
     const _verifyLikedStatus = async (uri) => {
       if (!uri) return;
@@ -1476,9 +1536,29 @@ void main() {
       var _spotifyTokenExpiresAt = 0;
 
       async function _getSpotifyToken() {
-        if (_spotifyTokenCache && Date.now() < _spotifyTokenExpiresAt - 5000) {
+        if (_spotifyTokenCache && Date.now() < _spotifyTokenExpiresAt - 30000) {
           return _spotifyTokenCache;
         }
+        try {
+          var authState = Spicetify.Platform?.AuthorizationAPI?.getState?.();
+          if (authState && authState.token && authState.token.accessToken) {
+            _spotifyTokenCache = authState.token.accessToken;
+            _spotifyTokenExpiresAt = authState.token.accessTokenExpirationTimestampMs || (Date.now() + 3600000);
+            return _spotifyTokenCache;
+          }
+        } catch (e) { }
+        try {
+          var provider = Spicetify.Platform?.TokenProvider;
+          if (provider && typeof provider.getToken === "function") {
+            var pToken = await provider.getToken();
+            if (pToken && (pToken.accessToken || pToken.token)) {
+              var tok = pToken.accessToken || pToken.token;
+              _spotifyTokenCache = tok;
+              _spotifyTokenExpiresAt = pToken.expiresAtTime || (Date.now() + 3600000);
+              return _spotifyTokenCache;
+            }
+          }
+        } catch (e) { }
         try {
           if (Spicetify.CosmosAsync) {
             var tokenObj = await Spicetify.CosmosAsync.get("sp://oauth/v2/token");
@@ -1512,7 +1592,7 @@ void main() {
           if (window.parent?._spicy_lyrics?.version) return window.parent._spicy_lyrics.version;
           if (window._spicy_lyrics?.version) return window._spicy_lyrics.version;
         } catch (e) { }
-        return "6.3.142";
+        return "6.4.10";
       }
 
       async function _fetchSpicyLyricsApi(id, _retryCount) {
@@ -1992,77 +2072,25 @@ void main() {
 
       function _romanizeText(str) {
         if (!str || typeof str !== "string") return str;
-        if (_CYR_TEXT_TEST.test(str)) str = _cyrillicToLatin(str);
+        str = str.replace(/[\u200B\u200E\u200F\u2060\uFEFF]/g, "");
         if (_GRK_TEXT_TEST.test(str)) str = _greekToLatin(str);
-        var hasKana = /[\u3040-\u309F\u30A0-\u30FF]/.test(str);
-        var hasHangul = /[\uAC00-\uD7AF]/.test(str);
-        var hasKanji = /[一-鿿]/.test(str);
-        if (hasKanji) return str;
-        if (!hasKana && !hasHangul) return str;
-        var res = "";
-        if (hasKana) {
-          var kanaMap = {
-            'あ':'a','い':'i','う':'u','え':'e','お':'o','か':'ka','き':'ki','く':'ku','け':'ke','こ':'ko',
-            'さ':'sa','し':'shi','す':'su','せ':'se','そ':'so','た':'ta','ち':'chi','つ':'tsu','て':'te','と':'to',
-            'な':'na','に':'ni','ぬ':'nu','ね':'ne','の':'no','は':'ha','ひ':'hi','ふ':'fu','へ':'he','ほ':'ho',
-            'ま':'ma','み':'mi','む':'mu','め':'me','も':'mo','や':'ya','ゆ':'yu','よ':'yo',
-            'ら':'ra','り':'ri','る':'ru','れ':'re','ろ':'ro','わ':'wa','を':'wo','ん':'n',
-            'が':'ga','ぎ':'gi','ぐ':'gu','げ':'ge','ご':'go','ざ':'za','じ':'ji','ず':'zu','ぜ':'ze','ぞ':'zo',
-            'だ':'da','ぢ':'ji','づ':'zu','で':'de','ど':'do','ば':'ba','び':'bi','ぶ':'bu','べ':'be','ぼ':'bo',
-            'ぱ':'pa','ぴ':'pi','ぷ':'pu','ぺ':'pe','ぽ':'po',
-            'きゃ':'kya','きゅ':'kyu','きょ':'kyo','しゃ':'sha','しゅ':'shu','しょ':'sho','ちゃ':'cha','ちゅ':'chu','ちょ':'cho',
-            'にゃ':'nya','にゅ':'nyu','にょ':'nyo','ひゃ':'hya','ひゅ':'hyu','ひょ':'hyo','みゃ':'mya','みゅ':'myu','みょ':'myo',
-            'りゃ':'rya','りゅ':'ryu','りょ':'ryo','ぎゃ':'gya','ぎゅ':'gyu','ぎょ':'gyo','じゃ':'ja','じゅ':'ju','じょ':'jo',
-            'びゃ':'bya','びゅ':'byu','びょ':'byo','ぴゃ':'pya','ぴゅ':'pyu','ぴょ':'pyo',
-            'ア':'a','イ':'i','ウ':'u','エ':'e','オ':'o','カ':'ka','キ':'ki','ク':'ku','ケ':'ke','コ':'ko',
-            'サ':'sa','シ':'shi','ス':'su','セ':'se','ソ':'so','タ':'ta','チ':'chi','ツ':'tsu','テ':'te','ト':'to',
-            'ナ':'na','ニ':'ni','ヌ':'nu','ネ':'ne','ノ':'no','ハ':'ha','ヒ':'hi','フ':'fu','ヘ':'he','ホ':'ho',
-            'マ':'ma','ミ':'mi','ム':'mu','メ':'me','モ':'mo','ヤ':'ya','ユ':'yu','ヨ':'yo',
-            'ラ':'ra','リ':'ri','ル':'ru','レ':'re','ロ':'ro','ワ':'wa','ヲ':'wo','ン':'n',
-            'ガ':'ga','ギ':'gi','グ':'gu','ゲ':'ge','ゴ':'go','ザ':'za','ジ':'ji','ズ':'zu','ゼ':'ze','ゾ':'zo',
-            'ダ':'da','ヂ':'ji','ヅ':'zu','デ':'de','ド':'do','バ':'ba','ビ':'bi','ブ':'bu','ベ':'be','ボ':'bo',
-            'パ':'pa','ピ':'pi','プ':'pu','ペ':'pe','ポ':'po',
-            'キャ':'kya','キュ':'kyu','キョ':'kyo','シャ':'sha','シュ':'shu','ショ':'sho','チャ':'cha','チュ':'chu','チョ':'cho',
-            'ニャ':'nya','ニュ':'nyu','ニョ':'nyo','ヒャ':'hya','ヒュ':'hyu','ヒョ':'hyo','ミャ':'mya','ミュ':'myu','ミョ':'myo',
-            'リャ':'rya','リュ':'ryu','リョ':'ryo','ギャ':'gya','ギュ':'gyu','ギョ':'gyo','ジャ':'ja','ジュ':'ju','ジョ':'jo',
-            'ビャ':'bya','ビュ':'byu','ビョ':'byo','ピャ':'pya','ピュ':'pyu','ピョ':'pyo','ー':''
-          };
-          var i = 0;
-          while (i < str.length) {
-            var c1 = str[i];
-            var c2 = i + 1 < str.length ? c1 + str[i + 1] : "";
-            if (c2 && kanaMap[c2]) { res += kanaMap[c2]; i += 2; }
-            else if (kanaMap[c1]) { res += kanaMap[c1]; i++; }
-            else if (c1 === 'っ' || c1 === 'ッ') {
-              var nextC = i + 1 < str.length ? str[i + 1] : "";
-              var nextRom = kanaMap[nextC];
-              if (nextRom) { res += nextRom[0]; }
-              i++;
-            } else { res += c1; i++; }
-          }
-          str = res; res = "";
-        }
-        if (hasHangul) {
-          var initials = ["g", "n", "d", "r", "m", "b", "s", "", "j", "ch", "k", "t", "p", "h", "g", "d", "b", "s", "jj"];
-          var medials = ["a", "ae", "ya", "yae", "eo", "e", "yeo", "ye", "o", "wa", "wae", "oe", "yo", "u", "weo", "we", "wi", "yu", "eu", "ui", "i"];
-          var finals = ["", "g", "gg", "gs", "n", "nj", "nh", "d", "l", "lg", "lm", "lb", "ls", "lt", "lp", "lh", "m", "b", "bs", "s", "ss", "ng", "j", "ch", "k", "t", "p", "h"];
-          for (var k = 0; k < str.length; k++) {
-            var code = str.charCodeAt(k);
-            if (code >= 0xAC00 && code <= 0xD7A3) {
-              var sIndex = code - 0xAC00;
-              res += (initials[Math.floor(sIndex / 588)] || "") + (medials[Math.floor((sIndex % 588) / 28)] || "") + (finals[sIndex % 28] || "");
-            } else { res += str[k]; }
-          }
-          return res;
-        }
+        if (_CYR_TEXT_TEST.test(str)) str = _cyrillicToLatin(str);
+        if (/[\u3040-\u309F\u30A0-\u30FF]/.test(str)) str = _kanaToRomaji(str);
+        if (/[\uAC00-\uD7AF]/.test(str)) str = _hangulToRomajiFallback(str);
         return str;
       }
 
       function _getDisplayText(item, isRomanized) {
         if (!item) return "";
         if (isRomanized) {
-          if (item.TransliteratedText) return item.TransliteratedText;
-          if (item.Text) return _romanizeText(item.Text);
+          if (item.TransliteratedText !== undefined && item.TransliteratedText !== "") return item.TransliteratedText;
+          if (item.Text) {
+            var rom = _romanizeText(item.Text);
+            if (rom && rom !== item.Text) {
+              item.TransliteratedText = rom;
+              return rom;
+            }
+          }
         }
         return item.Text || "";
       }
@@ -2117,17 +2145,32 @@ void main() {
         } return null;
       }
 
+      var _JoinsNextRegex = /[्্੍્୍்్ް്ް္្‍]$/;
+      function _splitLetters(text) {
+        if (!text) return [];
+        text = text.replace(/[\u200B\u200E\u200F\u2060\uFEFF]/g, "");
+        var graphemes = (typeof Intl !== "undefined" && Intl.Segmenter)
+          ? Array.from(new Intl.Segmenter(undefined, { granularity: "grapheme" }).segment(text), function (s) { return s.segment; })
+          : Array.from(text);
+        var letters = [];
+        for (var i = 0; i < graphemes.length; i++) {
+          var g = graphemes[i];
+          var last = letters.length - 1;
+          if (last >= 0 && _JoinsNextRegex.test(letters[last]) && g.trim().length > 0) {
+            letters[last] += g;
+          } else {
+            letters.push(g);
+          }
+        }
+        return letters;
+      }
+
       function _getLineLetters(info, lyType, isRomanized) {
         var chars = [];
         if (!info.syllables) {
           var txt = info.text;
           var duration = info.endTime - info.startTime;
-          var graphemes = [];
-          var regex = /(\p{L}\p{M}*|[\s\d.,\/#!$%\^&\*;:{}=\-_`~()?"'’[\]+<>|\\—♪♫♬]|.)/gu;
-          var match;
-          while ((match = regex.exec(txt)) !== null) {
-            graphemes.push(match[0]);
-          }
+          var graphemes = _splitLetters(txt);
           var nonSpaceCount = 0;
           for (var j = 0; j < graphemes.length; j++) { if (graphemes[j] !== " ") nonSpaceCount++; }
           if (nonSpaceCount === 0) nonSpaceCount = 1;
@@ -2149,12 +2192,7 @@ void main() {
             var sy = syllables[i];
             if (i > 0 && !syllables[i - 1].IsPartOfWord) { chars.push({ char: " ", isSpace: true }); }
             var txt = _getDisplayText(sy, isRomanized);
-            var graphemes = [];
-            var regex = /(\p{L}\p{M}*|[\s\d.,\/#!$%\^&\*;:{}=\-_`~()?"'’[\]+<>|\\—♪♫♬]|.)/gu;
-            var match;
-            while ((match = regex.exec(txt)) !== null) {
-              graphemes.push(match[0]);
-            }
+            var graphemes = _splitLetters(txt);
             var duration = sy.EndTime - sy.StartTime;
             var nonSpaceCount = 0;
             for (var j = 0; j < graphemes.length; j++) { if (graphemes[j] !== " ") nonSpaceCount++; }
@@ -2225,16 +2263,8 @@ void main() {
           } return;
         }
 
-        var playbackOffset = 0;
         var isRomanized = false;
         try {
-          var settingsRaw = Spicetify.LocalStorage.get("SL:settings");
-          if (settingsRaw) {
-            var settings = JSON.parse(settingsRaw);
-            if (settings && settings.playbackOffset !== undefined) {
-              playbackOffset = Number(settings.playbackOffset);
-            }
-          }
           var uiStateRaw = Spicetify.LocalStorage.get("SL:uiState");
           if (uiStateRaw) {
             var uiState = JSON.parse(uiStateRaw);
@@ -2260,7 +2290,7 @@ void main() {
           } catch (e) {
             rawProgressMs = Spicetify.Player.getProgress();
           }
-          progressMs = rawProgressMs - playbackOffset;
+          progressMs = rawProgressMs;
         } else {
           var StartedSyncAt = syncedPosition.StartedSyncAt;
           var Position = syncedPosition.Position;
@@ -2268,14 +2298,13 @@ void main() {
           var deltaTime = now - StartedSyncAt;
 
           if (!Spicetify.Player.isPlaying()) {
-            progressMs = normalizeProgress(Position - playbackOffset, false);
+            progressMs = normalizeProgress(Position, false);
           } else {
             var FinalPosition = Position + deltaTime;
-            progressMs = normalizeProgress(FinalPosition - playbackOffset, true);
+            progressMs = normalizeProgress(FinalPosition, true);
           }
         }
         var ps = progressMs / 1000;
-        _currentVisualizerTime = (progressMs + playbackOffset) / 1000;
         if (kawarpInstanceRef.current && u.audioAnalysis && Spicetify.Player.isPlaying()) {
           var bgSpeed = _bgAnimController.getSpeedMultiplier(ps, u.audioAnalysis);
           kawarpInstanceRef.current.setOptions({ animationSpeed: bgSpeed });
@@ -2411,7 +2440,12 @@ void main() {
                     words.push(currentWord);
                     currentWord = null;
                   }
-                  charIdx += segStr.length;
+                  var segSpaceLen = segStr.length;
+                  var matchedSpaceLen = 0;
+                  while (charIdx < charsArr.length && matchedSpaceLen < segSpaceLen) {
+                    var sc = charsArr[charIdx++];
+                    matchedSpaceLen += (sc && sc.char ? sc.char.length : 1);
+                  }
                   continue;
                 }
 
@@ -2429,12 +2463,15 @@ void main() {
                   };
                 }
 
-                for (var c = 0; c < segStr.length; c++) {
+                var segWordLen = segStr.length;
+                var matchedWordLen = 0;
+                while (charIdx < charsArr.length && matchedWordLen < segWordLen) {
                   var charObj = charsArr[charIdx++];
                   if (charObj) {
                     currentWord.text += charObj.char;
                     currentWord.chars.push(charObj);
                     currentWord.endTime = Math.max(currentWord.endTime, charObj.endTime);
+                    matchedWordLen += charObj.char.length;
                   }
                 }
               }
@@ -2647,16 +2684,14 @@ void main() {
               }
               continue;
             }
-
-            var dur = word.endTime - word.startTime;
-            var avgCharDur = numLetters > 0 ? dur / numLetters : dur;
-            var speedFactor = Math.min(1.0, Math.max(0.0, (avgCharDur - 0.08) / 0.35));
-            var maxBulge = (0.18 + 0.16 * speedFactor) * (isBg ? 0.7 : 1.0);
-            var peakScale = isBg ? 1.10 : 1.18;
-
             if (ps <= word.endTime) {
+              var dur = word.endTime - word.startTime;
               var progress = dur > 0 ? (ps - word.startTime) / dur : 1;
               progress = Math.max(0, Math.min(1, progress));
+
+              var avgCharDur = numLetters > 0 ? dur / numLetters : dur;
+              var speedFactor = Math.min(1.0, Math.max(0.0, (avgCharDur - 0.08) / 0.35));
+              var maxBulge = (0.18 + 0.16 * speedFactor) * (isBg ? 0.7 : 1.0);
 
               var activeCharIdx = 0;
               for (var cIdx = 0; cIdx < numLetters; cIdx++) {
@@ -2708,11 +2743,14 @@ void main() {
                 }
               }
 
+              var peakScale = isBg ? 1.10 : 1.18;
               var growEase = Math.sin(progress * Math.PI * 0.5);
               var wordScale = 1.0 + (peakScale - 1.0) * growEase;
               _setStyle(span, "transform", "scale(" + wordScale.toFixed(4) + ") translateZ(0)");
               _setStyle(span, "filter", "none");
             } else {
+              var dur = word.endTime - word.startTime;
+              var peakScale = isBg ? 1.10 : 1.18;
               var elapsed = ps - word.endTime;
               var returnDur = Math.min(0.40, Math.max(0.18, dur * 0.50));
               var decayFactor = elapsed < returnDur ? Math.pow(1.0 - elapsed / returnDur, 2.0) : 0;
@@ -2759,7 +2797,6 @@ void main() {
 
       var _songChangeHandler = async function () {
         try {
-          _currentVisualizerTime = 0;
           var uri = Spicetify.Player.data?.item?.uri;
           if (!uri) return;
           var tid = uri.split(":")[2];

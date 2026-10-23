@@ -1592,7 +1592,7 @@ void main() {
           if (window.parent?._spicy_lyrics?.version) return window.parent._spicy_lyrics.version;
           if (window._spicy_lyrics?.version) return window._spicy_lyrics.version;
         } catch (e) { }
-        return "6.4.10";
+        return "6.4.70";
       }
 
       async function _fetchSpicyLyricsApi(id, _retryCount) {

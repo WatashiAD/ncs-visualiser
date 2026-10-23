@@ -1350,6 +1350,10 @@ void main() {
       var syncTimings = [0.05, 0.1, 0.15, 0.75];
       var canSyncNonLocalTimestamp = Spicetify.Player.isPlaying() ? syncTimings.length : 0;
       var syncTimeoutId = null;
+      var _lastLocalSample = null, _lastRawLocalSample = null, _localSourceHealth = null, _lastStateReading = null;
+      var _ANCHOR_RESYNC = 1000, _SRC_STALL = 500, _SRC_RECOVERY = 3;
+      function _uriNow() { try { return Spicetify.Player.data?.item?.uri ?? null; } catch (e) { return null; } }
+      function _isPlayingNow() { try { return !!Spicetify.Player.isPlaying(); } catch (e) { return false; } }
 
       function clampToTrack(position) {
         var duration = Spicetify.Player.data?.item?.duration?.milliseconds || (u.audioAnalysis?.track?.duration * 1000) || 180000;
@@ -1362,7 +1366,8 @@ void main() {
 
       function normalizeProgress(position, isPlaying) {
         var trackId = Spicetify.Player.data?.item?.uri ?? null;
-        var measured = clampToTrack(position);
+        var m = Number(position);
+        var measured = clampToTrack(Number.isFinite(m) ? m : (Spicetify.Player.getProgress() || 0));
         var now = Date.now();
 
         if (
@@ -1394,19 +1399,61 @@ void main() {
       function requestPositionSync() {
         try {
           var SpotifyPlatform = Spicetify.Platform;
-          if (!SpotifyPlatform) return;
+          if (!SpotifyPlatform) { syncTimeoutId = setTimeout(requestPositionSync, 1000); return; }
           var startedAt = Date.now();
           var isLocallyPlaying = SpotifyPlatform.PlaybackAPI?._isLocal;
+          var requestedUri = _uriNow();
 
           var getLocalPosition = function() {
-            return SpotifyPlatform.PlayerAPI._contextPlayer
-              .getPositionState({})
-              .then(function(res) {
-                return {
-                  StartedSyncAt: startedAt + (Date.now() - startedAt) / 2,
-                  Position: Number(res.position)
-                };
-              });
+            return Promise.race([
+              SpotifyPlatform.PlayerAPI._contextPlayer.getPositionState({}),
+              new Promise(function(_, rej) { setTimeout(function() { rej(new Error("getPositionState timeout")); }, 1000); })
+            ]).then(function(res) {
+              var sampledAt = startedAt + (Date.now() - startedAt) / 2;
+              var sampled = Number(res.position);
+              var trkUri = _uriNow();
+              var isPlaying = _isPlayingNow();
+              var st = SpotifyPlatform.PlayerAPI?._state;
+              var stateReading = st
+                ? (isPlaying ? st.positionAsOfTimestamp + (sampledAt - st.timestamp) : st.positionAsOfTimestamp)
+                : Number.NaN;
+              var stateJumped = false;
+              if (Number.isFinite(stateReading)) {
+                if (_lastStateReading && _lastStateReading.WasPlaying && isPlaying) {
+                  var expected = _lastStateReading.Position + (sampledAt - _lastStateReading.ReadAt);
+                  stateJumped = Math.abs(stateReading - expected) > _ANCHOR_RESYNC;
+                }
+                _lastStateReading = { Position: stateReading, ReadAt: sampledAt, WasPlaying: isPlaying };
+              }
+              var changedSinceLast = _lastRawLocalSample !== sampled;
+              _lastRawLocalSample = sampled;
+              if (isPlaying) {
+                if (!_localSourceHealth) {
+                  _localSourceHealth = { LastChangeAt: sampledAt, ConsecutiveChanges: changedSinceLast ? 1 : 0, UsingState: false };
+                } else {
+                  _localSourceHealth.ConsecutiveChanges = changedSinceLast ? _localSourceHealth.ConsecutiveChanges + 1 : 0;
+                  if (changedSinceLast) _localSourceHealth.LastChangeAt = sampledAt;
+                }
+                var stalled = sampledAt - _localSourceHealth.LastChangeAt > _SRC_STALL;
+                if (_localSourceHealth.UsingState && _localSourceHealth.ConsecutiveChanges >= _SRC_RECOVERY) {
+                  _localSourceHealth.UsingState = false;
+                } else if (stalled) {
+                  _localSourceHealth.UsingState = true;
+                }
+              } else if (_localSourceHealth) {
+                _localSourceHealth.LastChangeAt = sampledAt;
+                _localSourceHealth.ConsecutiveChanges = 0;
+              }
+              if (_localSourceHealth && _localSourceHealth.UsingState && isPlaying && Number.isFinite(stateReading)) {
+                _lastLocalSample = { Position: stateReading, SampledAt: sampledAt, TrackUri: trkUri };
+                return { StartedSyncAt: sampledAt, Position: stateReading };
+              }
+              var anchorIsStale = _lastLocalSample !== null && isPlaying && (_lastLocalSample.TrackUri !== trkUri || stateJumped);
+              if (!_lastLocalSample || _lastLocalSample.Position !== sampled || !isPlaying || anchorIsStale) {
+                _lastLocalSample = { Position: sampled, SampledAt: sampledAt, TrackUri: trkUri };
+              }
+              return { StartedSyncAt: _lastLocalSample.SampledAt, Position: _lastLocalSample.Position };
+            });
           };
 
           var getNonLocalPosition = function() {
@@ -1416,14 +1463,11 @@ void main() {
             }
             return promise.then(function() {
               canSyncNonLocalTimestamp = Math.max(0, canSyncNonLocalTimestamp - 1);
-              var state = SpotifyPlatform.PlayerAPI?._state;
+              var st = SpotifyPlatform.PlayerAPI?._state;
               var Position = Spicetify.Player.isPlaying()
-                ? state.positionAsOfTimestamp + (Date.now() - state.timestamp)
-                : state.positionAsOfTimestamp;
-              return {
-                StartedSyncAt: startedAt,
-                Position: Position
-              };
+                ? st.positionAsOfTimestamp + (Date.now() - st.timestamp)
+                : st.positionAsOfTimestamp;
+              return { StartedSyncAt: startedAt, Position: Position };
             });
           };
 
@@ -1431,7 +1475,12 @@ void main() {
 
           sync
             .then(function(pos) {
+              if ((_uriNow() ?? null) !== requestedUri) return;
               syncedPosition = pos;
+              syncedPosition.TrackUri = requestedUri;
+            })
+            .catch(function(error) {
+              console.warn("Sync Position: Poll failed, More Details:", error?.message || error);
             })
             .then(function() {
               var delay = isLocallyPlaying
@@ -1444,7 +1493,27 @@ void main() {
             });
         } catch (error) {
           console.error("Sync Position: Fail, More Details:", error);
+          syncTimeoutId = setTimeout(requestPositionSync, 1000);
         }
+      }
+
+      function _getProgressMs() {
+        var type = Spicetify.Player?.data?.item?.type;
+        if (type && type !== "track") {
+          return Spicetify.Player.getProgress();
+        }
+        if (!syncedPosition) {
+          return Spicetify.Player.getProgress();
+        }
+        var uri = _uriNow();
+        if (syncedPosition.TrackUri !== uri) {
+          return normalizeProgress(Spicetify.Player.getProgress(), _isPlayingNow());
+        }
+        if (!_isPlayingNow()) {
+          return normalizeProgress(syncedPosition.Position, false);
+        }
+        var deltaTime = Date.now() - syncedPosition.StartedSyncAt;
+        return normalizeProgress(syncedPosition.Position + deltaTime, true);
       }
 
       requestPositionSync();
@@ -2274,36 +2343,7 @@ void main() {
           }
         } catch (e) { }
 
-        var progressMs = 0;
-        if (!syncedPosition) {
-          var rawProgressMs = 0;
-          try {
-            var state = Spicetify.Player.origin?._state || Spicetify.Platform?.PlayerAPI?._state;
-            if (state && state.timestamp) {
-              var now = Date.now();
-              rawProgressMs = state.isPaused
-                ? state.positionAsOfTimestamp
-                : state.positionAsOfTimestamp + (now - state.timestamp);
-            } else {
-              rawProgressMs = Spicetify.Player.getProgress();
-            }
-          } catch (e) {
-            rawProgressMs = Spicetify.Player.getProgress();
-          }
-          progressMs = rawProgressMs;
-        } else {
-          var StartedSyncAt = syncedPosition.StartedSyncAt;
-          var Position = syncedPosition.Position;
-          var now = Date.now();
-          var deltaTime = now - StartedSyncAt;
-
-          if (!Spicetify.Player.isPlaying()) {
-            progressMs = normalizeProgress(Position, false);
-          } else {
-            var FinalPosition = Position + deltaTime;
-            progressMs = normalizeProgress(FinalPosition, true);
-          }
-        }
+        var progressMs = _getProgressMs();
         var ps = progressMs / 1000;
         if (kawarpInstanceRef.current && u.audioAnalysis && Spicetify.Player.isPlaying()) {
           var bgSpeed = _bgAnimController.getSpeedMultiplier(ps, u.audioAnalysis);
@@ -2785,7 +2825,7 @@ void main() {
         if (bgEl && _bgWordSpans.length > 0 && _bgWordSpans.length === _bgLineWords.length) {
           _animateWords(_bgWordSpans, _bgLineWords, true, _isLineOnlyLyrics);
         }
-        } catch (e) { }
+        } catch (e) { console.error("[Visualizer Lyrics] _tick error:", e); }
       }
 
       var _raf;
